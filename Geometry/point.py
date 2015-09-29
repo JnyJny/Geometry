@@ -10,8 +10,8 @@ import random
 import math
 import hashlib
 
-from .Constants import *
-from .Exceptions import *
+from .constants import *
+from .exceptions import *
 
 class Point(object):
     ordinateNamesAll = 'xyzw'

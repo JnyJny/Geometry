@@ -3,10 +3,13 @@
 It's awesome.
 '''
 
-from .Exceptions import *
-from .Point import Point
+from .point import Point
+from .exceptions import *
 
 class Line(object):
+    '''
+    A line with infinite length defined by two points.
+    '''
     
     @classmethod
     def fromSegment(cls,segment):
@@ -255,7 +258,7 @@ class Line(object):
     
 class Segment(Line):
     '''
-    A Line subclass with a finite length.
+    A Line subclass with finite length.
     '''
 
     @classmethod
@@ -324,7 +327,7 @@ class Segment(Line):
     
 class Ray(Line):
     '''
-    Rays have an origin vertex and an infinite length in the direction of
+    Rays have an origin vertex and infinite length in the direction of
     the second vertex 'B'.
     '''
 
@@ -410,3 +413,5 @@ class Ray(Line):
 
     # rays can be treated much like vectors so many of the point operations
     # can be reused here
+
+    

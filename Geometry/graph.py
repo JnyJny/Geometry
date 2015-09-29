@@ -2,10 +2,12 @@
 
 Nodes and edges, not pretty colors and pitchers.
 '''
-import math
-from .Point import Point
-from .Line import Segment
 
+import math
+
+from .point import Point
+from .line import Segment
+from .exceptions import *
 
 class Edge(Segment):
     pass

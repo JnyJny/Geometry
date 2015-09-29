@@ -2,8 +2,9 @@
 
 Tastes like chicken!
 '''
-from .Point import Point
-from .Line import Segment
+from .point import Point
+from .line import Segment
+from .exceptions import *
 
 class Triangle(object):
     vertexNames = 'ABC'

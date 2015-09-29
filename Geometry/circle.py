@@ -4,9 +4,9 @@ Super awesome.
 '''
 
 import math
-from .Point import Point
-from .Rectangle import Rectangle
-from .Triangle import Triangle
+from .point import Point
+from .rectangle import Rectangle
+from .triangle import Triangle
 
 class Circle(object):
 

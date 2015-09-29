@@ -3,16 +3,28 @@
 Super awesome.
 '''
 
-from .Point import Point
-from .Line import Line
+import math
+from .point import Point
+from .rectangle import Rectangle
+from .triangle import Triangle
+from .line import Line
+
 
 class Ellipse(object):
+    '''
+    XXX Missing doc string
+    '''
 
     def __init__(self,x_radius,y_radius,center=None):
         '''
         :param: x_radius  - float
         :param: y_radius  - float
         :param: center    - optional Point subclass initializer
+
+        Returns an ellipse in the XY plane with the supplied radii.
+        The default value for the center is the origin if it is not
+        specified by the caller.
+
         '''
         self.x_radius = x_radius
         self.y_radius = y_radius
@@ -21,6 +33,8 @@ class Ellipse(object):
     @property
     def x_radius(self):
         '''
+        The absolute value of the X ordinate of a point on the ellipse
+        when y == 0, float.
 
         '''
         try:
@@ -37,6 +51,8 @@ class Ellipse(object):
     @property
     def y_radius(self):
         '''
+        The absolute value of the Y ordinate of a point on the ellipse
+        when y == 0, float.
 
         '''
         try:
@@ -78,7 +94,13 @@ class Ellipse(object):
 
     @C.setter
     def C(self,newCenter):
-        self.center.xyz = newCenter        
+        self.center.xyz = newCenter
+
+    def __repr__(self):
+        return '%s(%s,%s,%s,%s)'% (self.__class__.__name__,
+                                   self.x_radius,
+                                   self.y_radius,
+                                   self.center)
         
     @property
     def majorRadius(self):
@@ -232,7 +254,7 @@ class Ellipse(object):
         '''
         A list of four points where the axes intersect the ellipse, list.
         '''
-        return [self.a,self.b,self.a_neg,self.b_neg]        
+        return [self.a,self.b,self.a_neg,self.b_neg]
 
     @property
     def focus0(self):
@@ -301,8 +323,392 @@ class Ellipse(object):
         '''
         return Segment(self.b_neg,self.b)
 
+    @property
+    def isCircle(self):
+        '''
+        Is true if the major and minor axes are equal, boolean.
+
+        '''
+        return self.x_radius == self.y_radius
+
+    @property
+    def isEllipse(self):
+        '''
+        Is true if the major and minor axes are not equal, boolean.
+
+        '''
+        return self.x_radius != self.y_radius
 
 
 
+class Circle(Ellipse):
+    '''
+    XXX missing doc string
+    '''
 
+    @classmethod
+    def inscribedInRectangle(cls,rectangle):
+        raise NotImplemented('inscribedInRectangle')
+
+    @classmethod
+    def inscribedInTriangle(cls,triangle):
+        raise NotImplemented('inscribedInTriangle')
+        pass
+
+    @classmethod
+    def circumscribingRectangle(cls,rectangle):
+        raise NotImplemented('circumscribingRectangle')
+
+    @classmethod
+    def circumscribingTriangle(cls,triangle):
+        raise NotImplemented('circumscribingTriangle')
+
+
+    @classmethod
+    def circumscribingPoints(cls,points):
+        '''
+        :param: points - list of at least two Point subclasses
+        :return: Circle
+
+        '''
+        raise NotImplemented('circumscribingPoints')
     
+
+    def __init__(self,radius=1.0,origin=None):
+        '''
+        :param: radius - float 
+        :param: origin - Point subclass initializer
+
+        Returns a circle in the XY plane.
+
+        '''
+        self.radius = radius
+        self.origin = origin
+
+    @property
+    def origin(self):
+        '''
+        The origin of the circle, Point subclass.
+        
+        Defaults to (0,0).
+        '''
+        return self.center
+
+    @origin.setter
+    def origin(self,newValue):
+        self.center = newValue
+        
+    '''
+    Shorthand notation for origin, Point subclass.
+    '''
+    @property
+    def O(self):
+        return self.origin
+
+    @O.setter
+    def O(self,newValue):
+        self.center = newValue
+        
+    @property
+    def radius(self):
+        '''
+        The circle's radius, float.
+
+        Defaults to 1.0.
+        '''
+        return self.x_radius
+
+    @radius.setter
+    def radius(self,newValue):
+        self.x_radius = newValue
+        self.y_radius = newValue
+
+    @property
+    def r(self):
+        '''
+        Shorthand notation for radius, float.
+        '''
+        return self.x_radius
+
+    @r.setter
+    def r(self,newValue):
+        self.radius = newValue
+
+    @property
+    def diameter(self):
+        '''
+        The circle's diameter, float.
+        '''
+        return self.radius * 2
+
+    @property
+    def circumfrence(self):
+        '''
+        The circle's circumfrence, float.
+        '''
+        return 2 * math.pi * self.radius
+
+    @property
+    def area(self):
+        '''
+        The circle's area, float.
+        '''
+        return  math.pi * (self.radius**2)
+
+    @property
+    def volume(self):
+        '''
+        The circle's volume, float.
+        '''
+        return (4./3.) * math.pi * (self.radius**3)
+        
+
+    def __eq__(self,other):
+        '''
+        :param: other - Circle subclass
+        :return: boolean
+
+        True if self.origin == other.origin 
+                and 
+                self.radius == other.radius.
+        '''
+        if self.radius != other.radius:
+            return False
+        
+        return self.origin == other.origin
+
+    def __hash__(self):
+        '''
+        '''
+        # this will cause circles to hash to points
+        return hash(self.origin)
+        
+
+    def __contains__(self,point):
+        '''
+        :param: Point subclass
+        :return: boolean
+
+        Returns True if the distance from the origin to the point
+        is less than or equal to the radius.
+        '''
+        return point.distance(self.origin) <= self.radius
+
+    def __repr__(self):
+        '''
+        Representative string for a circle instance.
+        '''
+        return '%s(%s,%.2f' % (self.__class__.__name,
+                               str(self.origin),
+                               self.radius)
+
+
+    def __add__(self,other):
+        '''
+        x + y => Circle(x.radius+y.radius,x.origin.midpoint(y.origin))
+        
+        Returns a new Circle object.
+        '''
+
+        try:
+            return Circle(self.radius+other.radius,
+                          self.origin.midpoint(other.origin))
+        except AttributeError:
+            return self.__radd__(other)
+
+    def __radd__(self,other):
+        '''
+        x + y => Circle(x.radius+y,x.origin)
+
+        Returns a new Circle object.
+        '''
+        # other isn't a circle
+        return Circle(self.radius+other,self.origin)
+
+    def __iadd__(self,other):
+        '''
+        x += y => 
+          x.origin += y.origin
+          x.origin /= 2
+          x.radius += y.radius
+
+        Updates the current object.
+        '''
+        try:
+            self.origin += other.origin
+            self.origin /= 2.
+            self.radius += other.radius
+        except AttributeError:
+            self.radius += other
+        return self
+
+
+    def __sub__(self,other):
+        '''
+        x - y => 
+
+        Returns a new Circle object.
+        '''
+        raise NotImplemented('__sub__')
+
+    def __rsub__(self,other):
+        '''
+        x - y => 
+
+        Returns a new Circle object.
+        '''
+        raise NotImplemented('__rsub__')
+
+    def __isub__(self,other):
+        '''
+        x -= y
+
+        Updates the current object.
+        '''
+        raise NotImplemented('__isub__')
+
+    def __mul__(self,other):
+        '''
+        x * y => 
+
+        Returns a new Circle object.
+        '''
+        raise NotImplemented('__mul__')
+
+    def __rmul__(self,other):
+        '''
+        x * y => 
+
+        Returns a new Circle object.
+        '''
+        raise NotImplemented('__rmul__')
+
+    def __imul__(self,other):
+        '''
+        x *= y
+
+        Returns a new Circle object
+        Updates the current object..
+        '''
+        raise NotImplemented('__imul__')
+
+    def __floordiv__(self,other):
+        '''
+        x // y =>
+
+        Returns a new Circle object.
+        '''
+        raise NotImplemented('__floordiv__')
+    
+    def __rfloordiv__(self,other):
+        '''
+        x // y =>
+
+        Returns a new Circle object.
+        '''  
+        raise NotImplemented('__rfloordiv__')
+    
+    def __ifloordiv__(self,other):
+        '''
+        x //= y
+
+        Updates the current object.
+        '''
+        raise NotImplemented('__rfloordiv__')
+
+    def __truediv__(self,other):
+        '''
+        x / y =>
+
+        Returns a new Circle object.
+        '''
+        raise NotImplemented('__truediv__')
+    
+    def __rtruediv__(self,other):
+        '''
+        x / y =>
+
+        Returns a new Circle object.
+        '''  
+        raise NotImplemented('__rtruediv__')
+    
+    def __itruediv__(self,other):
+        '''
+        x /= y
+
+        Updates the current object.
+        '''
+        raise NotImplemented('__rtruediv__')
+
+    def __mod__(self,other):
+        '''
+        x % y 
+
+        Returns a new Circle object
+        '''
+        raise NotImplemented('__mod__')
+    
+    def __rmod__(self,other):
+        '''
+        x % y 
+
+        Returns a new Circle object
+        '''
+        raise NotImplemented('__rmod__')
+
+    def __imod__(self,other):
+        '''
+        x %= y 
+
+        Updates the current object.
+        '''
+        raise NotImplemented('__imod__')
+
+    def __pow__(self,other):
+        '''
+        x ** y 
+
+        Returns a new Circle object
+        '''
+        raise NotImplemented('__pow__')
+    
+    def __rpow__(self,other):
+        '''
+        x ** y 
+
+        Returns a new Circle object
+        '''
+        raise NotImplemented('__rpow__')
+
+    def __ipow__(self,other):
+        '''
+        x **= y 
+
+        Updates the current object.
+        '''
+        raise NotImplemented('__ipow__')
+
+    def __neg__(self):
+        '''
+        -x
+
+        '''
+        raise NotImplemented('__neg__')
+
+    def __pos__(self):
+        '''
+        +x
+
+        '''
+        raise NotImplemented('__pos__')    
+
+    def doesIntersect(self,other):
+        '''
+        :param: other - Circle subclass
+
+        Returns True iff:
+          self.orgin.distance(other.origin) <= self.radius+other.radius
+
+        '''
+        return self.origin.distance(other.origin) <= (self.radius+other.radius)
+        

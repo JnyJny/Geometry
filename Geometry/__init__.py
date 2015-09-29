@@ -10,19 +10,19 @@ except:
     __path__ = extend_path(__path__,__name__)
 
 from .point import Point
-from .circle import Circle
-from .ellipse import Ellipse
+from .ellipse import Ellipse, Circle
 from .line import Line
 from .triangle import Triangle
 from .rectangle import Rectangle
 from .graph import Node, Edge, Graph
 from .constants import *
 from .exceptions import *
-#
-#__all__ =  [ 'Point',
-#             'Line','Segment','Ray',
-#             'Triangle','Rectangle',
-#             'Graph','Node','Edge' ]
+
+__all__ =  [ 'Point',
+             'Circle','Ellipse',
+             'Line','Segment','Ray',
+             'Triangle','Rectangle',
+             'Graph','Node','Edge' ]
 
 
 
