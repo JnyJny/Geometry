@@ -1,9 +1,6 @@
-'''a pythonic Point
+'''a pythonic Point, foundation of Euclidean space.
 
-It's three dimensional and super flexible. 
-The foundation of Euclidean space.
-
-This one is badass.
+XXX missing doc string
 '''
 
 import random
@@ -14,6 +11,44 @@ from .constants import *
 from .exceptions import *
 
 class Point(object):
+    '''
+    A three dimensional Point initialized with x,y,z values supplied
+    or the origin if no ordinates are given.
+
+    You can initialize this thing practically any way you want:
+        	a = Point()
+                b = Point(None)
+        	c = Point(x)
+        	d = Point(x,y)
+        	e = Point(x,y,z)
+                f = Point([])
+        	g = Point([x])
+        	h = Point([x,y])
+        	i = Point([x,y,z])
+                j = Point(())
+                k = Point((x))
+                l = Point((x,y))
+                m = Point((x,y,z))
+                n = Point({})
+                o = Point({'x':x,'y':y,'z':z})
+        	p = Point(self.__class__(...))
+        	q = Point(x=x,y=y,z=z)
+                r = Point(<any object that defines attributes x,y,z>)
+
+    Calls resulting in Origin:
+                s = Point()
+                t = Point(None)
+                u = Point([])
+                v = Point(())
+                w = Point({})
+                x = Point(<any object whose attributes x,y,z are zero>)
+
+    Note: Subclasses should always return an object initialized with
+          origin coordinates if called with no arguments.  If not, things
+          will break.
+    '''
+
+    
     ordinateNamesAll = 'xyzw'
     ordinateNamesXYZ = 'xyz'
     ordinateNamesXY = 'xy'
@@ -24,9 +59,6 @@ class Point(object):
     ordinateNameZ = 'z'
     ordinateNameW = 'w'
 
-    
-    
-
     @classmethod
     def gaussian(cls,mu=0,sigma=1):
         '''
@@ -35,6 +67,7 @@ class Point(object):
 
         Returns a point whose coordinates were picked from a Gaussian
         distribution with mean 'mu' and standard deviation 'sigma'.
+        See random.gauss for further information on these parameters.
 
         '''
         return cls(random.gauss(mu,sigma),
@@ -42,29 +75,17 @@ class Point(object):
                    random.gauss(mu,sigma))
         
     @classmethod
-    def randomLocationInRectangle(cls,width,height,origin=None,depth=0):
-        '''
-        :param: width  - integer describing max X coordinate relative to origin
-        :param: height - integer describing max Y coordinate relative to origin
-        :param: origin - Point subclass specifying origin of rectangle
-        :param: depth  - integer describing max Z coordinate relative to origin
-        :return: Point subclass initialized with random X,Y and optionally Z
+    def randomLocationInRectangle(cls,origin=None,width=1,height=1):
+        ''':param: origin - optional Point subclass 
+        :param: width  - optional integer
+        :param: height - optional integer
+        :return: Point subclass
 
-        If the caller does not supply an origin paramter, (0,0) is assumed.
+        Returns a Point with random x,y coordinates which are bounded
+        by the rectangle defined by (origin,width,height).  
 
-        If the caller supplies a dimension as zero, that coordinate is not
-        randomized and is set to zero.
-
-        e.g:
-
-        p = Point.randomLocation(width=0,height=20,depth=10)
-
-        The point 'p' will have coordinates in the YZ plane:
-          x : 0
-          y : origin.y <= y <= origin.y + height
-          z : origin.z <= z <= origin.z + depth
-        
-        The default signature supports creating rectangles in the XY plane.
+        If a rectangle is not supplied, a unit square with vertex A
+        on the origin is used.
 
         '''
         if origin is None:
@@ -73,30 +94,24 @@ class Point(object):
         O = cls()
         O += origin             # this will typically be a no-op
 
-        x,y,z = 0,0,0
-
-        if width:
-            x = random.randint(O.x,O.x+width)
+        x = random.randint(O.x,O.x+width)
+        y = random.randint(O.y,O.y+height)
             
-        if height:
-            y = random.randint(O.y,O.y+height)
-            
-        if depth:
-            z = random.randint(O.z,O.z+depth)
-            
-        return cls(x,y,z)
+        return cls(x,y,O.z)
     
     @classmethod
-    def randomLocation(cls,radius,origin=None):
-        '''
-        :param: radius - float
+    def randomLocation(cls,origin=None,radius=1):
+        ''':param: radius - float
         :param: origin - optional Point subclass
         :return: Point sublcass
 
-        Returns a point with random x,y coordinates within the circle
-        determined (origin, radius).
+        Returns a Point with random x,y coordinates bounded by the
+        circle defined by (origin,radius). 
+
+        If a circle is given, a unit circle at the origin is used.
         
         If origin is not supplied, (0,0) is assumed.
+
         '''
         
         if origin is None:
@@ -117,36 +132,6 @@ class Point(object):
         return cls(x,y)
     
     def __init__(self,*args,**kwds):
-        '''
-        Called with no arguments will return an object initialized with zeros.
-
-        Note: Subclasses should always return an object initialized
-              with origin coordinates if called with no arguments.
-              If not, things will break.
-
-        You can initialize this thing practically any way that makes sense!
-
-        	a = Point()
-                b = Point(None)
-        	c = Point(x)
-        	d = Point(x,y)
-        	e = Point(x,y,z)
-        	f = Point([x])
-        	g = Point([x,y])
-        	h = Point([x,y,z])
-                i = Point({'x':x,'y':y,'z':z})
-        	j = Point(Point(...))
-        	k = Point(x=x,y=y,z=z)
-                l = Point(<some object that has x,y,z attributes>)
-
-        Origins:
-               Point()
-               Point(None)
-               Point([])
-               Point({})
-               Point(<any initializer composed of zeros>)
-
-        '''
 
         nargs = len(args)
         
@@ -176,6 +161,10 @@ class Point(object):
 
     @x.setter
     def x(self,newValue):
+
+        if newValue is None:
+            self._x = 0
+            return
 
         try:
             self._x = float(newValue)
@@ -493,7 +482,7 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self.x+other.x,self.y+other.y,self.z+other.z)
+            return self.__class__(self.x+other.x,self.y+other.y,self.z+other.z)
         except AttributeError:
             return self.__radd__(other)
 
@@ -509,9 +498,9 @@ class Point(object):
         '''
         
         try:
-            return Point(self._vfunc(iterable,lambda p:p[0]+p[1]))
+            return self.__class__(self._vfunc(iterable,lambda p:p[0]+p[1]))
         except TypeError:
-            return Point(self.x+iterable,self.y+iterable,self.z+iterable)
+            return self.__class__(self.x+iterable,self.y+iterable,self.z+iterable)
 
     def __iadd__(self,iterable):
         '''
@@ -531,7 +520,7 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self.x-other.x,self.y-other.y,self.z-other.z)
+            return self.__class__(self.x-other.x,self.y-other.y,self.z-other.z)
         except AttributeError:
             return self.__rsub__(other)
 
@@ -542,9 +531,9 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self._vfunc(iterable,lambda p:p[0]-p[1]))
+            return self.__class__(self._vfunc(iterable,lambda p:p[0]-p[1]))
         except TypeError:
-            return Point(self.x-iterable,self.y-iterable,self.z-iterable)
+            return self.__class__(self.x-iterable,self.y-iterable,self.z-iterable)
 
     def __isub__(self,iterable):
         '''
@@ -564,7 +553,9 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self.x * other.x,self.y * other.y,self.z * other.z)
+            return self.__class__(self.x * other.x,
+                                  self.y * other.y,
+                                  self.z * other.z)
         except AttributeError:
             return self.__rmul__(other)
 
@@ -575,9 +566,9 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self._vfunc(iterable,lambda p:p[0]*p[1]))
+            return self.__class__(self._vfunc(iterable,lambda p:p[0]*p[1]))
         except TypeError:
-            return Point(self.x*iterable,self.y*iterable,self.z*iterable)
+            return self.__class__(self.x*iterable,self.y*iterable,self.z*iterable)
 
     def __imul__(self,iterable):
         '''
@@ -598,10 +589,12 @@ class Point(object):
         '''
         try:
             try:
-                return Point(self.x / other.x,self.y / other.y,self.z / other.z)
+                return self.__class__(self.x / other.x,
+                                      self.y / other.y,
+                                      self.z / other.z)
             except AttributeError:
-                self.__rtruediv__(other)
-        except ZeroDivisionError:
+                return self.__rtruediv__(other)
+        except ZeroDivisionError as e:
             pass
         
         raise ZeroDivisionError('zero present in %s' %(other))
@@ -614,9 +607,11 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self._vfunc(other,lambda p:p[0]/p[1]))
+            return self.__class__(self._vfunc(other,lambda p:p[0]/p[1]))
         except TypeError:
-            return Point(self.x / other,self.y / other,self.z / other)
+            return self.__class__(self.x / other,
+                                  self.y / other,
+                                  self.z / other)
 
     def __itruediv__(self,iterable):
         '''
@@ -642,9 +637,9 @@ class Point(object):
         '''
         try:
             try:
-                return Point(self.x // other.x,
-                             self.y // other.y,
-                             self.z // other.z)
+                return self.__class__(self.x // other.x,
+                                      self.y // other.y,
+                                      self.z // other.z)
             except AttributeError:
                 return self.__rfloordiv__(other)
         except ZeroDivisionError:
@@ -659,9 +654,11 @@ class Point(object):
         '''
         try:
             try:
-                return Point(self._vfunc(other,lambda p:p[0]//p[1]))
+                return self.__class__(self._vfunc(other,lambda p:p[0]//p[1]))
             except TypeError:
-                return Point(self.x // other,self.y // other,self.z // other)
+                return self.__class__(self.x // other,
+                                      self.y // other,
+                                      self.z // other)
         except ZeroDivisionError:
             pass
         
@@ -693,7 +690,9 @@ class Point(object):
 
         try:
             try:
-                return Point(self.x % other.x,self.y % other.x,self.z % other.z)
+                return self.__class__(self.x % other.x,
+                                      self.y % other.x,
+                                      self.z % other.z)
             except AttributeError:
                 return self.__rmod__(other)
         except ZeroDivisionError:
@@ -707,9 +706,11 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self._vfunc(other,lambda p:p[0]%p[1]))
+            return self.__class__(self._vfunc(other,lambda p:p[0]%p[1]))
         except TypeError:
-            return Point(self.x % other,self.y % other,self.z % other)
+            return self.__class__(self.x % other,
+                                  self.y % other,
+                                  self.z % other)
 
     def __imod__(self,iterable):
         '''
@@ -733,7 +734,9 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self.x**other.x,self.y**other.y,self.z**other.z)
+            return self.__class__(self.x**other.x,
+                                  self.y**other.y,
+                                  self.z**other.z)
         except AttributeError:
             return self.__rpow__(other)
 
@@ -744,9 +747,11 @@ class Point(object):
         Returns a new object.
         '''
         try:
-            return Point(self._vfunc(other,lambda p:p[0] ** p[1]))
+            return self.__class__(self._vfunc(other,lambda p:p[0] ** p[1]))
         except TypeError:
-            return Point(self.x**other,self.y**other,self.z**other)
+            return self.__class__(self.x**other,
+                                  self.y**other,
+                                  self.z**other)
 
     def __ipow__(self,iterable):
         '''
@@ -783,7 +788,7 @@ class Point(object):
         Returns a new object.
         '''
         
-        return Point(abs(self.x),abs(self.y),abs(self.z))
+        return self.__class__(abs(self.x),abs(self.y),abs(self.z))
     
     def __invert__(self):
         '''
@@ -791,7 +796,7 @@ class Point(object):
 
         Returns a new object.
         '''
-        return Point(~int(self.x),~int(self.y),~int(self.z))
+        return self.__class__(~int(self.x),~int(self.y),~int(self.z))
 
     def __len__(self):
         '''
@@ -964,10 +969,11 @@ class Point(object):
         :param: b - Point subclass
         :return: boolean
 
-        Check to see if the calling object's coordinates are within the X, Y
-        and Z ranges of the supplied points 'a' and 'b'.
+        Check to see if the calling object's coordinates are within
+        the X, Y and Z ranges of the supplied points 'a' and 'b'.
 
         This is *NOT* a collinearity check.
+
         '''
         
         if not self.isBetweenX(a,b):
@@ -1030,10 +1036,12 @@ class Point(object):
         :param: c - Point subclass
         :return: boolean
 
-        True if the angle formed by self,b,c has a counter-clockwise rotation.
+        True if the angle formed by self,b,c has a counter-clockwise
+        rotation.
 
-        Can raise CollinearPoints() if self, b, and c all lie on the
-        same line.
+        Can raise CollinearPoints() if self,b,c all lie on the same
+        line.
+
         '''
         
         result = self.ccw(b,c,axis)
@@ -1050,13 +1058,14 @@ class Point(object):
         :param: axis - string specifying axis of rotation
         :return: float
 
-        Returns an integer signifying whether the angle described by the
-        points self,b,c has a counter-clockwise rotation around the specified
-        axis.
+        Returns an integer signifying whether the angle described by
+        the points self,b,c has a counter-clockwise rotation around
+        the specified axis.
         
         > 0 : counter-clockwise
           0 : points are collinear 
         < 0 : clockwise
+
         '''
         
         bsuba = b - self
