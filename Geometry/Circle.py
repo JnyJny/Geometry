@@ -8,19 +8,21 @@ class Circle(object):
 
     @classmethod
     def inscribedInRectangle(cls,rectangle):
-        pass
+        raise NotImplemented('inscribedInRectangle')
 
     @classmethod
     def inscribedInTriangle(cls,triangle):
+        raise NotImplemented('inscribedInTriangle')
         pass
 
     @classmethod
     def circumscribingRectangle(cls,rectangle):
-        pass
+        raise NotImplemented('circumscribingRectangle')
 
     @classmethod
     def circumscribingTriangle(cls,triangle):
-        pass
+        raise NotImplemented('circumscribingTriangle')
+
 
     @classmethod
     def circumscribingPoints(cls,points):
@@ -29,7 +31,8 @@ class Circle(object):
         :return: Circle
 
         '''
-        pass
+        raise NotImplemented('circumscribingPoints')
+    
 
     def __init__(self,radius=1.0,origin=None):
         '''
