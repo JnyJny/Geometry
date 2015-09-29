@@ -12,18 +12,29 @@ from .line import Line
 
 class Ellipse(object):
     '''
-    XXX Missing doc string
+    Implements an ellipse in the XY plane with the supplied radii.
+
+    Returns a unit ellipse centered on the origin by default.
+
+    Usage:
+    >>> from Geometry import Ellipse
+    >>> e = Ellipse()
+    >>> e.isCircle
+    True
+    >>> type(e)
+    <class 'Geometry.ellipse.Ellipse'>
+    >>> e.x_radius *= 2
+    >>> e.isCircle,e.isEllipse
+    (False,True)
     '''
-
-    def __init__(self,x_radius,y_radius,center=None):
+    
+    
+    def __init__(self,center=None,x_radius=1,y_radius=1):
         '''
-        :param: x_radius  - float
-        :param: y_radius  - float
         :param: center    - optional Point subclass initializer
-
-        Returns an ellipse in the XY plane with the supplied radii.
-        The default value for the center is the origin if it is not
-        specified by the caller.
+        :param: x_radius  - optional float
+        :param: y_radius  - optional float
+        Defaults to a unit ellipse centered on the origin.
 
         '''
         self.x_radius = x_radius
@@ -82,7 +93,7 @@ class Ellipse(object):
 
     @center.setter
     def center(self,newCenter):
-        self._center.xyz = newCenter
+        self.center.xyz = newCenter
 
     @property
     def C(self):
@@ -97,11 +108,17 @@ class Ellipse(object):
         self.center.xyz = newCenter
 
     def __repr__(self):
-        return '%s(%s,%s,%s,%s)'% (self.__class__.__name__,
-                                   self.x_radius,
-                                   self.y_radius,
-                                   self.center)
-        
+        return '%s(%s,x_radius=%s,y_radius=%s)'% (self.__class__.__name__,
+                                                  self.center,
+                                                  self.x_radius,
+                                                  self.y_radius)
+    
+    def __hash__(self):
+        '''
+        '''
+        # this will cause circles to hash to points
+        return hash(self.center)
+    
     @property
     def majorRadius(self):
         '''
@@ -339,11 +356,30 @@ class Ellipse(object):
         '''
         return self.x_radius != self.y_radius
 
+    def __eq__(self,other):
+        '''
+        x == y iff:
+            x.center == y.center
+            x.x_radius == y.x_radius
+            x.y_radius == y.y_radius
+        '''
+        if self.center != other.center:
+            return False
+
+        if self.x_radius != other.x_radius:
+            return False
+
+        if self.y_radius != other.y_radius:
+            return False
+
+        return True
 
 
 class Circle(Ellipse):
     '''
-    XXX missing doc string
+    Implements a circle in the XY plane with the supplied
+    center point and radius.
+    
     '''
 
     @classmethod
@@ -374,54 +410,33 @@ class Circle(Ellipse):
         raise NotImplemented('circumscribingPoints')
     
 
-    def __init__(self,radius=1.0,origin=None):
+    def __init__(self,center=None,radius=1.0):
         '''
-        :param: radius - float 
-        :param: origin - Point subclass initializer
-
-        Returns a circle in the XY plane.
-
+        :param: center - optional Point subclass initializer
+        :param: radius - optional float 
+        Defaults to a unit circle centered on the origin.
         '''
+        self.center = center
         self.radius = radius
-        self.origin = origin
 
-    @property
-    def origin(self):
-        '''
-        The origin of the circle, Point subclass.
-        
-        Defaults to (0,0).
-        '''
-        return self.center
+    @Ellipse.x_radius.setter
+    def x_radius(self,newValue):
+        self._x_radius = self._y_radius = float(newValue)
 
-    @origin.setter
-    def origin(self,newValue):
-        self.center = newValue
-        
-    '''
-    Shorthand notation for origin, Point subclass.
-    '''
-    @property
-    def O(self):
-        return self.origin
-
-    @O.setter
-    def O(self,newValue):
-        self.center = newValue
+    @Ellipse.y_radius.setter
+    def y_radius(self,newValue):
+        self._y_radius = self._x_radius = float(newValue)
         
     @property
     def radius(self):
         '''
         The circle's radius, float.
-
-        Defaults to 1.0.
         '''
         return self.x_radius
 
     @radius.setter
     def radius(self,newValue):
         self.x_radius = newValue
-        self.y_radius = newValue
 
     @property
     def r(self):
@@ -458,61 +473,39 @@ class Circle(Ellipse):
     @property
     def volume(self):
         '''
-        The circle's volume, float.
+        The spherical volume bounded by this circle, float.
         '''
         return (4./3.) * math.pi * (self.radius**3)
         
-
-    def __eq__(self,other):
-        '''
-        :param: other - Circle subclass
-        :return: boolean
-
-        True if self.origin == other.origin 
-                and 
-                self.radius == other.radius.
-        '''
-        if self.radius != other.radius:
-            return False
-        
-        return self.origin == other.origin
-
-    def __hash__(self):
-        '''
-        '''
-        # this will cause circles to hash to points
-        return hash(self.origin)
-        
-
     def __contains__(self,point):
         '''
         :param: Point subclass
         :return: boolean
 
-        Returns True if the distance from the origin to the point
+        Returns True if the distance from the center to the point
         is less than or equal to the radius.
         '''
-        return point.distance(self.origin) <= self.radius
+        return point.distance(self.center) <= self.radius
 
     def __repr__(self):
         '''
         Representative string for a circle instance.
         '''
-        return '%s(%s,%.2f' % (self.__class__.__name,
-                               str(self.origin),
-                               self.radius)
+        return '%s(%s,%.2f)' % (self.__class__.__name__,
+                                str(self.center),
+                                self.radius)
 
 
     def __add__(self,other):
         '''
-        x + y => Circle(x.radius+y.radius,x.origin.midpoint(y.origin))
+        x + y => Circle(x.radius+y.radius,x.center.midpoint(y.center))
         
         Returns a new Circle object.
         '''
 
         try:
             return Circle(self.radius+other.radius,
-                          self.origin.midpoint(other.origin))
+                          self.center.midpoint(other.center))
         except AttributeError:
             return self.__radd__(other)
 
@@ -523,20 +516,20 @@ class Circle(Ellipse):
         Returns a new Circle object.
         '''
         # other isn't a circle
-        return Circle(self.radius+other,self.origin)
+        return Circle(self.radius+other,self.center)
 
     def __iadd__(self,other):
         '''
         x += y => 
-          x.origin += y.origin
-          x.origin /= 2
+          x.center += y.center
+          x.center /= 2
           x.radius += y.radius
 
         Updates the current object.
         '''
         try:
-            self.origin += other.origin
-            self.origin /= 2.
+            self.center += other.center
+            self.center /= 2.
             self.radius += other.radius
         except AttributeError:
             self.radius += other
@@ -707,8 +700,8 @@ class Circle(Ellipse):
         :param: other - Circle subclass
 
         Returns True iff:
-          self.orgin.distance(other.origin) <= self.radius+other.radius
+          self.center.distance(other.center) <= self.radius+other.radius
 
         '''
-        return self.origin.distance(other.origin) <= (self.radius+other.radius)
+        return self.center.distance(other.center) <= (self.radius+other.radius)
         
