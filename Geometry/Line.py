@@ -1,4 +1,5 @@
 '''
+XXX missing doc string
 '''
 
 from .Exceptions import *
@@ -321,7 +322,6 @@ class Segment(Line):
         Returns a segment normal to this segment.
         '''
         return Segment.fromLine(super(Segment,self).normal())
-
     
     
 class Ray(Line):

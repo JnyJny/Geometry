@@ -3,9 +3,6 @@
 Provides an implementation of a rectangle designed to be easy to use:
  - built on a very friendly Point class
  - provides a wealth of accessors that are read-write
- - 
-
-
 '''
 
 import random
@@ -282,10 +279,14 @@ class Rectangle(object):
         '''
         return self.origin.y + self.height
 
+    ## Note: The setters for the following points don't actually
+    ##       create that point.  Instead they adjust the rectangle's
+    ##       origin with respect to the requested point.
+
     @property
     def A(self):
         '''
-        Point whose coordinates are (minX,minY,origin.z)
+        Point whose coordinates are (minX,minY,origin.z), Point.
         '''
         return Point(self.origin)
 
@@ -296,7 +297,7 @@ class Rectangle(object):
     @property
     def B(self):
         '''
-        Point whose coordinates are (maxX,minY,origin.z)
+        Point whose coordinates are (maxX,minY,origin.z), Point.
         '''
         return Point(self.maxX,self.minY,self.origin.z)
 
@@ -308,7 +309,7 @@ class Rectangle(object):
     @property
     def C(self):
         '''
-        Point whose coordinates are (maxX,maxY,origin.z)
+        Point whose coordinates are (maxX,maxY,origin.z), Point.
         '''
         return Point(self.maxX,self.maxY,self.origin.z)
 
@@ -321,7 +322,7 @@ class Rectangle(object):
     @property
     def D(self):
         '''
-        Point whose coordinates are (minX,maxY,origin.Z)
+        Point whose coordinates are (minX,maxY,origin.Z), Point.
         '''
         return Point(self.minX,self.maxY,self.origin.z)
 
@@ -333,7 +334,7 @@ class Rectangle(object):
     @property
     def center(self):
         '''
-        Point whose coordinates are (midX,midY,origin.z)
+        Point whose coordinates are (midX,midY,origin.z), Point.
         '''
         return Point(self.midX,self.midY,self.origin.z)
     
@@ -346,7 +347,7 @@ class Rectangle(object):
     @property
     def midAB(self):
         '''
-        Point inbetween A and B.
+        Point inbetween A and B, Point.
         '''
         return self.A.midpoint(B)
     
@@ -358,7 +359,7 @@ class Rectangle(object):
     @property
     def midBC(self):
         '''
-        Point inbetween B and C.
+        Point inbetween B and C, Point.
         '''
         return self.B.midpoint(C)
     
@@ -371,7 +372,7 @@ class Rectangle(object):
     @property
     def midCD(self):
         '''
-        Point inbetween C and D.
+        Point inbetween C and D, Point.
         '''
         return self.C.midpoint(D)
     
@@ -384,7 +385,7 @@ class Rectangle(object):
     @property
     def midAD(self):
         '''
-        Point inbetween A and D.
+        Point inbetween A and D, Point.
         '''
         return self.A.midpoint(D)
     
@@ -396,47 +397,53 @@ class Rectangle(object):
     @property
     def perimeter(self):
         '''
-        Returns the permeter of the rectangle, float.
+        The perimeter of the rectangle, float.
         '''
         return (self.width*2) + (self.height*2)        
 
     @property
     def area(self):
         '''
-        Returns the area of the rectangle, float.
+        The area of the rectangle, float.
         '''
         return self.width * self.height
 
     @property
     def isSquare(self):
         '''
-        Returns true of self.width equals self.height.
+        Is true if self.width == self.height.
         '''
         return self.width == self.height
 
     @property
+    def isRectangle(self):
+        '''
+        Is true if self.width != self.height.
+        '''
+        return self.width != self.height
+
+    @property
     def isCCW(self):
         '''
-        Returns True of the points A, B, C form a counter clockwise angle.
+        Is true if the angle ABC denotes a counter clockwise rotation
+        with respect to the Z axis.
         '''
         return self.A.isCCW(self.B,self.C)
 
     @property
     def ccw(self):
         '''
-        Returns A.ccw(B,C), float.
+        Returns the CCW value for the rectangle using the angle ABC with
+        respect to the Z axis.
 
         >0 : counter clockwise and the area of the parallelpiped 
          0 : collinear, not genearlly possible in a well-formed rectangle
-        <0 : clockwise and also the area of the parallelpipled
+        <0 : clockwise and the negative area of the parallelpipled
         '''
         return self.A.ccw(self.B,self.C)
-    
-    def __str__(self):
-        return repr(self)
 
     def __repr__(self):
-        fmt = '<%s(width=%.2f,height=%.2f,origin=%s)>'
+        fmt = '%s(width=%.2f,height=%.2f,origin=%s)'
         return fmt % (self.__class__.__name__,self.w,self.h,self.origin)
 
     def __eq__(self,other):
@@ -453,8 +460,12 @@ class Rectangle(object):
 
     def __contains__(self,other):
         '''
+        :param: other - Rectangle subclass
+        :return: boolean
+
         x in y iff:
           (y.A in x) or (y.B in x) or (y.C in x) or (y.D in x)
+
         '''
         # does ccw/cw of self or other matter here?
         
@@ -472,6 +483,9 @@ class Rectangle(object):
         '''
         :param: dx - optional float
         :param: dy - optional float
+        
+        Scales the rectangle's width and height by dx and dy.
+
         '''
         self.width *= dx
         self.height *= dy
@@ -481,14 +495,15 @@ class Rectangle(object):
         :param: other       - Rectangle subclass
         :param: percentagle - float
         '''
-        pass
+        raise NotImplemented('inset')
     
     def union(self,other):
         '''
         :param: other - Rectangle subclass
         '''
         # returns a rectangle composed of the bounds of self and other
-        pass
+        raise NotImplemented('union')
+
 
     def intersect(self,other):
         '''
@@ -496,12 +511,19 @@ class Rectangle(object):
         '''
         # returns an iterable of rectangles that compose the intersection
         # a limit of 0 to 4 rects?
-        pass
+        raise NotImplemented('intersect')
 
     def containsPoint(self,point,Zorder=False):
         '''
         :param: point  - Point subclass
         :param: Zorder - optional Boolean
+        
+        Is true if the point is contain in the rectangle or
+        along the rectangle's edges.
+
+        If Zorder is True, the method will check point.z for
+        equality with the rectangle origin's Z coordinate.
+
         '''
         if not point.isBetweenX(self.A,self.B):
             return False
@@ -521,16 +543,22 @@ class Rectangle(object):
         >0:  self <  other
          0:  self eq other
         <0:  self > other
+
         '''
-        
         return other.origin.z - self.origin.z
 
     def flipX(self):
         '''
+        :return: None
+
+        Inverts the X axis of the rectangle.
         '''
         self.width *= -1
 
     def flipY(self):
         '''
+        :return: None
+
+        Inverts the Y axis of the rectangle.
         '''
         self.height *= -1
