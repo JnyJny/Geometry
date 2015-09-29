@@ -510,6 +510,7 @@ class Point(object):
 
         Returns a new object.
         '''
+        
         try:
             return Point(self._vfunc(iterable,lambda p:p[0]+p[1]))
         except TypeError:
@@ -916,6 +917,9 @@ class Point(object):
         '''
         :param: other - Point subclass
         :return: Point subclass
+        
+        Point midway between 'a' and 'b'.
+
         '''
         m = self + other  # create a new point
         m /= 2.           # scale it by half
