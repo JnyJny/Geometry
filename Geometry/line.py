@@ -8,7 +8,16 @@ from .exceptions import *
 
 class Line(object):
     '''
-    A line with infinite length defined by two points.
+    A line with infinite length defined by two points; A and B.
+
+    Usage:
+    >>> a = Line() # ha! a trick, this will fail with TypeError 
+    ...
+    >>> b = Line((0,0),(1,1))
+    >>> c = Line(Point(),{'y':1,'x':1])
+    >>> b == c
+    True
+    >>> 
     '''
     
     @classmethod
@@ -30,14 +39,10 @@ class Line(object):
         Returns a coincident Line object.
         '''
         return cls(ray.A,ray.B)
-    
-    '''
-    A Line defined by two Points; A and B.
-    '''
+
+
     def __init__(self,A,B):
         '''
-        :param: A - Point subclass or Point initializer
-        :param: B - Point subclass or Point initializer
         '''
         self.A = A
         self.B = B
@@ -45,6 +50,7 @@ class Line(object):
     @property
     def A(self):
         '''
+        A point on the line, Point subclass.
         '''
         try:
             return self._A
@@ -60,6 +66,7 @@ class Line(object):
     @property
     def B(self):
         '''
+        A point on the line, Point subclass.
         '''
         try:
             return self._B
@@ -165,7 +172,7 @@ class Line(object):
 
         Swaps the positions of A and B.
         '''
-        tmp = Point(self.A)
+        tmp = self.A.xyz
         self.A = self.B
         self.B = tmp
 
@@ -235,6 +242,7 @@ class Line(object):
         n = (d.y*point.x) - (d.x*point.y) + self.A.cross(self.B)
         return n / self.length
 
+    @property
     def normal(self):
         '''
         :return: Line
@@ -251,7 +259,7 @@ class Line(object):
         :param: other - Line subclass
         :return: boolean
 
-        Returns True if this line is normal (perpendicular) to the other line.
+        Returns True if this line is perpendicular to the other line.
         '''
         raise NotImplemented('isNormal')
     
@@ -315,14 +323,15 @@ class Segment(Line):
         if not super(self.__class__,self).__contains__(point):
             return False
         return point.isBetween(self.A,self.B)
-        
+
+    @property
     def normal(self):
         '''
         :return: Segment
     
         Returns a segment normal (perpendicular) to this segment.
         '''
-        return Segment.fromLine(super(Segment,self).normal())
+        return Segment.fromLine(super(Segment,self).normal)
     
     
 class Ray(Line):
@@ -403,13 +412,14 @@ class Ray(Line):
         '''
         raise NotImplemented('gamma')
 
+    @property
     def normal(self):
         '''
         :return: Ray
     
         Returns a ray normal (perpendicular) to this segment.
         '''
-        return Ray.fromLine(super(Segment,self).normal())
+        return Ray.fromLine(super(Ray,self).normal)
 
     # rays can be treated much like vectors so many of the point operations
     # can be reused here
