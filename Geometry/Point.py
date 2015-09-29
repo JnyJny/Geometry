@@ -156,12 +156,12 @@ class Point(object):
         if nargs == 0 and len(kwds) == 0:
             return
 
-        if len(args) == 1:
+        if nargs == 1:
             if args[0] is None:
                 return
             self.xyz = args[0]
             
-        if len(args) > 1:
+        if nargs > 1:
             self.xyz = args
 
         self.xyz = kwds
