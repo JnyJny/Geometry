@@ -5,6 +5,27 @@ from .Exceptions import *
 from .Point import Point
 
 class Line(object):
+    
+    @classmethod
+    def fromSegment(cls,segment):
+        '''
+        :param: segment - Segment subclass
+        :return: Line
+
+        Returns a coincident Line object.
+        '''
+        return cls(segment.A,segment.B)
+
+    @classmethod
+    def fromRay(cls,ray):
+        '''
+        :param: ray - Ray subclass
+        :return: Line
+
+        Returns a coincident Line object.
+        '''
+        return cls(ray.A,ray.B)
+    
     '''
     A Line defined by two Points; A and B.
     '''
@@ -79,17 +100,24 @@ class Line(object):
         # <xyz> = <x0y0z0> + t<mxmymz>
         return self.A + (t * self.m)
 
-    def __str__(self):
-        return repr(self)
-        
     def __repr__(self):
-        fmt = '<%s(A=%s,B=%s)>'
+        '''
+        Returns a representation string of this instance.
+        '''
+        fmt = '%s(A=%s,B=%s)'
         return fmt % (self.__class__.__name__,self.A,self.B)
     
     def __len__(self):
+        '''
+        Treat a line as a two item container with length '2'.
+        '''
         return 2
 
     def __getitem__(self,key):
+        '''
+        line[0] retrieves A
+        line[1] retrieves B
+        '''
         key = int(key)
         if key == 0:
             return self.A
@@ -98,6 +126,11 @@ class Line(object):
         raise IndexError('index %d out of range %s only have two items' %(key))
 
     def __setitem__(self,key,value):
+        '''
+        line[0] == line.A
+        line[1] == line.B
+
+        '''
         key = int(key)
         if key == 0:
             self.A = value
@@ -107,6 +140,10 @@ class Line(object):
 
     def __contains__(self,point):
         '''
+        p in l
+
+        Returns True iff p is collinear with l.A and l.B.
+
         '''
         return self.A.isCollinear(point,self.B)
 
@@ -119,54 +156,17 @@ class Line(object):
 
     def flip(self):
         '''
+        :returns: None
+
+        Swaps the positions of A and B.
         '''
         tmp = Point(self.A)
         self.A = self.B
         self.B = tmp
-    
-class Segment(Line):
-    '''
-    A Line subclass.
-    '''
-
-    @property
-    def length(self):
-        '''
-        The scalar distance between A and B, float.
-        '''
-        return self.A.distance(self.B)
-
-    @property
-    def midpoint(self):
-        '''
-        The point between A and B, Point subclass.
-        '''
-        return self.A.midpoint(self.B)
-
-    def __eq__(self,other):
-        '''
-        x == y iff:
-         ((x.A == y.A) and (x.B == y.B)) 
-           or 
-         ((x.A == y.B) and (x.B == y.A))
-        '''
-        if (self.A == other.A) and (self.B == other.B):
-            return True
-        return (self.A == other.B) and (self.B == other.A)
-        
-    def __contains__(self,point):
-        '''
-        point in segment
-        Returns True iff:
-               A,point,B are collinear and A.xyz <= point.xyz <= B.xyz
-        '''
-        if not super(self.__class__,self).__contains__(point):
-            return False
-        return point.isBetween(self.A,self.B)
 
     def doesIntersect(self,other):
         '''
-        :param: other - Segment or Line subclass
+        :param: other - Line subclass
         :return: boolean
 
         Returns True iff:
@@ -185,15 +185,16 @@ class Segment(Line):
 
     def intersection(self,other):
         '''
-        :param: other - Segment subclass
+        :param: other - Line subclass
         :return: Point subclass
 
         Returns a Point object with the coordinates of the intersection
-        between the current segment and the other segment. 
+        between the current line and the other line. 
 
-        Can raise the Parallel() if the two segments are parallel.
+        Can raise the Parallel() if the two lines are parallel.
 
-        Can also raise NoIntersection() but honestly I think it might be a bug.
+        XXX Can also raise NoIntersection() 
+            but honestly I think it might be a bug.
         '''
 
         if self == other:
@@ -232,14 +233,182 @@ class Segment(Line):
         n = (d.y*point.x) - (d.x*point.y) + self.A.cross(self.B)
         return n / self.length
 
-        
-    def normalSegment(self):
+    def normal(self):
         '''
-        :return: Segment
+        :return: Line
     
-        Returns a line segment normal to this segment.
+        Returns a line normal to this line.
         '''
         
         d = self.B - self.A
 
-        return Segment([-d.y,d.x],[d.y,-d.x])
+        return Line([-d.y,d.x],[d.y,-d.x])
+
+    def isNormal(self,other):
+        '''
+        :param: other - Line subclass
+        :return: boolean
+
+        Returns True if this line is normal to the other line.
+        '''
+        raise NotImplemented('isNormal')
+    
+    
+class Segment(Line):
+    '''
+    A Line subclass with a finite length.
+    '''
+
+    @classmethod
+    def fromLine(cls,line):
+        '''
+        :param: line - Line subclass
+        :return: Segment
+
+        Returns a coincident Segment object.
+        '''
+        return cls(line.A,line.B)
+
+    @classmethod
+    def fromRay(cls,ray):
+        '''
+        :param: ray - Ray subclass
+        :return: Segment
+
+        Returns a coincident Segment object.
+        '''
+        return cls(ray.A,ray.B)
+
+    @property
+    def length(self):
+        '''
+        The scalar distance between A and B, float.
+        '''
+        return self.A.distance(self.B)
+
+    @property
+    def midpoint(self):
+        '''
+        The point between A and B, Point subclass.
+        '''
+        return self.A.midpoint(self.B)
+
+    def __eq__(self,other):
+        '''
+        x == y iff:
+         ((x.A == y.A) and (x.B == y.B)) 
+           or 
+         ((x.A == y.B) and (x.B == y.A))
+        '''
+        if (self.A == other.A) and (self.B == other.B):
+            return True
+        return (self.A == other.B) and (self.B == other.A)
+        
+    def __contains__(self,point):
+        '''
+        p in s
+        Returns True iff:
+               A,point,B are collinear and A.xyz <= point.xyz <= B.xyz
+        '''
+        if not super(self.__class__,self).__contains__(point):
+            return False
+        return point.isBetween(self.A,self.B)
+        
+    def normal(self):
+        '''
+        :return: Segment
+    
+        Returns a segment normal to this segment.
+        '''
+        return Segment.fromLine(super(Segment,self).normal())
+
+    
+    
+class Ray(Line):
+    '''
+    Rays have an origin vertex and an infinite length in the direction of
+    the second vertex 'B'.
+    '''
+
+    @classmethod
+    def fromLine(cls,line):
+        '''
+        :param: line - Line subclass
+        :return: Ray
+
+        Returns a coincident Ray object.
+        '''
+        return cls(line.A,line.B)
+
+    @classmethod
+    def fromSegment(cls,segment):
+        '''
+        :param: segment - Segment subclass
+        :return: Ray
+
+        Returns a coincident Ray object.
+        '''        
+        return cls(segment.A,segment.B)
+    
+    @property
+    def origin(self):
+        '''
+        The start of the ray, Point subclass.
+        '''
+        return self.A
+
+    @origin.setter
+    def origin(self,newValue):
+        self.A = newValue
+
+    @property
+    def O(self):
+        '''
+        Shorthand notation for origin, Point subclass.
+        '''
+        return self.A
+
+    @O.setter
+    def O(self,newValue):
+        self.A = newValue
+
+    def __contains__(self,point):
+        '''
+        point in Ray
+        '''
+        raise NotImplemented('__contains__')
+
+        # probably ccw magic that will tell us the answer
+        
+    @property
+    def alpha(self):
+        '''
+        Angle in radians relative to the X axis.
+        '''
+        raise NotImplemented('alpha')
+
+
+    @property
+    def beta(self):
+        '''
+        Angle in radians relative to the Y axis.
+        '''
+        raise NotImplemented('beta')
+
+    @property
+    def gamma(self):
+        '''
+        Angle in radians relative to the Z axis.
+        '''
+        raise NotImplemented('gamma')
+
+    def normal(self):
+        '''
+        :return: Ray
+    
+        Returns a ray normal to this segment.
+        '''
+        return Ray.fromLine(super(Segment,self).normal())
+
+    # rays can be treated much like vectors so many of the point operations
+    # can be reused here
