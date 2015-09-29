@@ -1,4 +1,7 @@
+''' a pythonic Triangle
 
+Tastes like chicken!
+'''
 from .Point import Point
 from .Line import Segment
 

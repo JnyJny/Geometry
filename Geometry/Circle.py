@@ -1,3 +1,7 @@
+'''a pythonic Circle
+
+Super awesome.
+'''
 
 import math
 from .Point import Point
@@ -61,11 +65,11 @@ class Circle(object):
     @origin.setter
     def origin(self,initializer):
         self._origin = Point(initializer)
-
-    @property
+        
     '''
     Shorthand notation for origin, Point subclass.
     '''
+    @property
     def O(self):
         return self.origin
 

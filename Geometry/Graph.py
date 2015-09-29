@@ -1,4 +1,7 @@
+'''a broken pythonic Graph
 
+Nodes and edges, not pretty colors and pitchers.
+'''
 import math
 from .Point import Point
 from .Line import Segment

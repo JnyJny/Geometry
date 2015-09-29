@@ -1,4 +1,6 @@
+''' geometry exceptions
 
+'''
 
 class ZeroSlope(Exception):
     pass
@@ -17,6 +19,9 @@ class Parallel(Exception):
 
 class UngrokkableObject(Exception):
     def __init__(self,obj):
+        '''
+        :param: the object that cannot be grokked
+        '''
         self.obj = obj
 
     def __str__(self):

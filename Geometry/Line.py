@@ -1,5 +1,6 @@
-'''
-XXX missing doc string
+'''a pythonic Line
+
+It's awesome.
 '''
 
 from .Exceptions import *

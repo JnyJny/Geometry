@@ -1,4 +1,4 @@
-'''a very user friendly Rectangle.
+'''a pythonic Rectangle
 
 Provides an implementation of a rectangle designed to be easy to use:
  - built on a very friendly Point class

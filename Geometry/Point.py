@@ -1,3 +1,10 @@
+'''a pythonic Point
+
+It's three dimensional and super flexible. 
+The foundation of Euclidean space.
+
+This one is badass.
+'''
 
 import random
 import math
@@ -17,17 +24,7 @@ class Point(object):
     ordinateNameZ = 'z'
     ordinateNameW = 'w'
 
-    '''
-    A very user friendly three dimensional Point.
-
-    - it provides an embarrasment of setters/getters
-    - very pythonic
-    - much wow
-    - operators overridden where makes sense, skipped it where it was weird.
-        eg. all the rich comparison operators.
-    - 
-
-    '''
+    
     
 
     @classmethod

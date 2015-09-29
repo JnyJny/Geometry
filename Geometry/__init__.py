@@ -1,5 +1,6 @@
 '''
-XXX missing doc string
+support for geometric computation
+
 '''
 
 try:
@@ -8,27 +9,20 @@ except:
     from pkgutil import extend_path
     __path__ = extend_path(__path__,__name__)
 
-from .Point import Point as Point
-
-from .Line import Line as Line
-from .Line import Segment as Segment
-from .Line import Ray as Ray
-
-from .Triangle import Triangle as Triangle
-
-from .Rectangle import Rectangle as Rectangle
-
-from .Graph import Graph 
-from .Graph import Node
-from .Graph import Edge
-
-from .Constants import *
-from .Exceptions import *
-
-__all__ =  [ 'Point',
-             'Line','Segment','Ray',
-             'Triangle','Rectangle',
-             'Graph','Node','Edge' ]
+from .point import Point
+from .circle import Circle
+from .ellipse import Ellipse
+from .line import Line
+from .triangle import Triangle
+from .rectangle import Rectangle
+from .graph import Node, Edge, Graph
+from .constants import *
+from .exceptions import *
+#
+#__all__ =  [ 'Point',
+#             'Line','Segment','Ray',
+#             'Triangle','Rectangle',
+#             'Graph','Node','Edge' ]
 
 
 
