@@ -192,10 +192,7 @@ class Line(object):
         Returns a Point object with the coordinates of the intersection
         between the current line and the other line. 
 
-        Can raise the Parallel() if the two lines are parallel.
-
-        XXX Can also raise NoIntersection() 
-            but honestly I think it might be a bug.
+        Will raise Parallel() if the two lines are parallel or coincident.
         '''
 
         if self == other:
@@ -221,16 +218,16 @@ class Line(object):
         if p in self and p in other:
             return p
         
-        raise NoIntersection('%s and %s do not intesect' %(self,other))
+        raise Parallel("Didn't I already check this?") # XXX bug?
     
     def distanceFromPoint(self,point):
         '''
         :param: point - Point subclass
         :return: float
 
+        Distance from the line to the given point.
         '''
         d = self.B - self.A
-
         n = (d.y*point.x) - (d.x*point.y) + self.A.cross(self.B)
         return n / self.length
 
@@ -238,7 +235,7 @@ class Line(object):
         '''
         :return: Line
     
-        Returns a line normal to this line.
+        Returns a line normal (perpendicular) to this line.
         '''
         
         d = self.B - self.A
@@ -250,7 +247,7 @@ class Line(object):
         :param: other - Line subclass
         :return: boolean
 
-        Returns True if this line is normal to the other line.
+        Returns True if this line is normal (perpendicular) to the other line.
         '''
         raise NotImplemented('isNormal')
     
@@ -319,7 +316,7 @@ class Segment(Line):
         '''
         :return: Segment
     
-        Returns a segment normal to this segment.
+        Returns a segment normal (perpendicular) to this segment.
         '''
         return Segment.fromLine(super(Segment,self).normal())
     
@@ -406,7 +403,7 @@ class Ray(Line):
         '''
         :return: Ray
     
-        Returns a ray normal to this segment.
+        Returns a ray normal (perpendicular) to this segment.
         '''
         return Ray.fromLine(super(Segment,self).normal())
 

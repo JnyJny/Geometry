@@ -15,9 +15,6 @@ class InfiniteLength(Exception):
 class Parallel(Exception):
     pass
 
-class NoIntersection(Exception):
-    pass
-
 class UngrokkableObject(Exception):
     def __init__(self,obj):
         self.obj = obj
