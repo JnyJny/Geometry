@@ -9,72 +9,51 @@ from .point import Point
 from .line import Segment
 from .exceptions import *
 
-class Edge(Segment):
-    pass
 
 class Node(Point):
-    
-    @property
-    def neighbors(self):
+    '''
+    XXX missing doc string
+    '''
+    pass
+
+class Edge(Segment):
+    '''
+    XXX missing doc string
+    '''
+
+    @Segment.A.getter
+    def A(self):
         try:
-            return self._neighbors
+            return self._A
         except AttributeError:
-            self._neighbors = []
-        return self._neighbors
+            pass
+        self._A = Node()
+        return self._A
 
-    @property
-    def edges(self):
-        e = []
-        for neighbor in self.neighbors:
-            e.append((self,neighbor))
-        return e
+    @Segment.B.getter
+    def B(self):
+        try:
+            return self._B
+        except AttributeError:
+            pass
+        self._B = Node()
+        return self._B
 
-    def addNeighbor(self,target):
-        if target is self:
-            return
-        if target in self.neighbors:
-            return
-        self.neighbors.append(target)
-
-    def addNeighbors(self,targets):
-        for target in targets:
-            self.addNeighbor(target)
-
-    def disconnect(self,target=None):
-        if target:
-            self.neighbors.remove(target)
-            return
-        self.neighbors.clear()
-        
-
-    def weighted_edges(self,weightFunc=None):
-        if not weightFunc:
-            weightFunc = lambda a,b: a.distance(b)
-        return dict([weightFunc(a,b) for a,b in self.edges])
-
-    def connected(self,target,visited=None):
-        if visited is None:
-            visited = []
-        else:
-            if self in visited:
-                raise GraphCycleDetected(self,target,visited)
-
-        visited.append(self)
-            
-        if target in self.neighbors:
-            return True
-
-        for neighbor in self.neighbors:
-            if self.neighbor.connected(target,visited):
-                return True
-        return False
+    def __hash__(self):
+        # XOR is uh.. transitive? A^B == B^A
+        # so edges AB and BA will hash to the same value.
+        return hash(self.A) ^ hash(self.B)    
 
 
 class Graph(object):
+    '''
+    XXX missing doc string
+    '''
     
     @classmethod
     def randomGraph(cls,radius,nodes,origin=None):
-
+        '''
+        '''
         if origin is None:
             origin = Point()
 
@@ -88,16 +67,43 @@ class Graph(object):
 
         return graph
     
-    def __init__(self,points=None):
-        self.nodes = []
+    def __init__(self,nodes=None,edges=None):
         try:
-            for point in points:
-                self.addNode(point,skipSort=True)
+            for node in nodes:
+                self.nodes.add(Node(node))
         except TypeError:
             pass
-        self.edges = []
+
+        try:
+            for edge in edges:
+                self.nodes.add(edge.A)
+                self.nodes.add(edge.B)
+                self.edges.add(edge)
+        except TypeError:
+            pass
+
+    @property
+    def nodes(self):
+        try:
+            return self._nodes
+        except AttributeError:
+            pass
+        self._nodes = set()
+        return self._nodes
+
+    @property
+    def edges(self):
+        try:
+            return self._edges
+        except AttributeError:
+            pass
+        self._edges = set()
+        return self._edges
 
     def __len__(self):
+        '''
+        The number of nodes in the graph, integer.
+        '''
         return len(self.nodes)
 
     def __str__(self):
@@ -108,39 +114,18 @@ class Graph(object):
         return '\n'.join(s)
 
     def __repr__(self):
-        fmt = '<%s(nodes=[%d nodes],edges=[%d edges])>'
-        return fmt % ( self.__class__.__name__,len(self.nodes),len(self.edges))
+        fmt = '%s(nodes=%s,edges=%s)>'
+        return fmt % (self.__class__.__name__,str(self.nodes),str(self.edges))
 
-    @property
-    def sorted(self):
-        try:
-            return self._sorted
-        except AttributeError:
-            pass
-        self._sorted = False
-        return self._sorted
-
-    @sorted.setter
-    def sorted(self,newValue):
-        self._sorted = newValue
-
-    def sortNodes(self,func=None):
+    def sortedNodes(self,func=None):
+        '''
+        '''
         if func is None:
             func = lambda x:x.distanceSquared(self.cg)
-        self.nodes.sort(key=func)
-        self.sorted = True
 
-    def addNode(self,node,skipSorting=False):
-        '''
-        '''
-        if isinstance(node,Point):
-            node = Node(node)
-        # assert type(node) == type(Node)
-        if node in self.nodes:
-            raise ValueError('duplicate node %s' % (node))
-        
-        self.nodes.append(node)
-        self.sorted = False
+        nodes = list(self.nodes)
+        nodes.sort(key=func)
+        return nodes
         
     @property
     def cg(self):
@@ -167,6 +152,12 @@ class Graph(object):
         if issubtype(otherType,Node):
             for node in self.nodes:
                 if node == other:
+                    return True
+            return False
+
+        if issubtype(otherType,Edge):
+            for edge in self.edges:
+                if edge == other:
                     return True
             return False
 
