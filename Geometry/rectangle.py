@@ -13,7 +13,16 @@ from .exceptions import *
 
 
 class Rectangle(object):
+    '''
+    Implements a Rectangle object in the XY plane defined by
+    an origin point and scalars length and width.
 
+    All other properties are derived.
+
+    Note: Origin may have a non-zero z coordinate.
+    '''
+
+    @classmethod
     def randomSizeAndLocation(cls,radius,widthLimits,heightLimits,origin=None):
         '''
         :param: radius       - float
@@ -51,26 +60,19 @@ class Rectangle(object):
         :param: height - float
         :param: origin - optional Point subclass
         :return: Rectangle
-
         '''
-        
-        rOrigin = Point.randomLocation(radius,origin)
-        
-        return cls(width,height,rOrigin)
+        return cls(width,
+                   height,
+                   Point.randomLocation(radius,origin))
 
 
-    def __init__(self,width,height,origin=None):
+    def __init__(self,origin=None,width=1,height=1):
         '''
         :param: width  - float X distance from origin.x
         :param: height - float Y distance from origin.y
         :param: origin - Point subclass
         :return: Rectangle
-        
-        Returns a Rectangle object in the XY plane defined by
-        origin, length and width.  All other properties are derived.
-
-        Note: Origin may have a non-zero Z coordinate to facilitate
-              Z-ordering.
+        Returns a unit square anchored at the origin by default.
         '''
         
         try:
