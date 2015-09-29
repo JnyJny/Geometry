@@ -7,6 +7,30 @@ from .line import Segment
 from .exceptions import *
 
 class Triangle(object):
+    '''a pythonic Triangle
+
+    Implements a Triangle object in the XY plane having three
+    non-coincident vertices and three intersecting edges.
+
+    Vertices are labeled 'A', 'B' and 'C'.
+    Edges are labeled 'AB', 'BC' and 'AC'.
+
+    The length of each edge is labeled 'ab', 'bc' and 'ac'.
+
+    Angles in radians are labeled:
+      'alpha' for CAB
+      'beta'  for ABC
+      'gamma' for BCA
+
+    Usage:
+
+    >>> a = Triangle()
+    >>> b = Triangle(A,B,C)
+    >>> c = Triangle([p,q,r])
+    >>> d = Triangle([x,y,z],[x,y,z],[x,y,z])
+    >>> e = Triangle(A=p0,B=p1,C=p2)
+    '''
+    
     vertexNames = 'ABC'
     vertexNameA = 'A'
     vertexNameB = 'B'
@@ -35,35 +59,7 @@ class Triangle(object):
         return cls(pts)
 
     def __init__(self,*args,**kwds):
-        '''
-        :param: empty  or
-                three Point subclass object
-                list of three Point subclasses  or
-                list of three suitable Point subclass initializers or
-                keyword initializers
         
-        	a = Triangle()
-        	b = Triangle(A,B,C)
-        	c = Triangle([p,q,r])
-        	d = Triangle([x,y,z],[x,y,z],[x,y,z])
-        	e = Triangle(A=p0,B=p1,C=p2)
-        :return: Triangle
-        
-        Returns a Triangle object in the XY plane having three non-coincident
-        vertices and three edges. 
-
-        Vertices are labeled 'A', 'B' and 'C'.
-
-        Edges are labeled 'AB', 'BC' and 'AC'.
-
-        The length of each edge is labeled 'ab', 'bc' and 'ac'.
-
-        Angles in radians are labeled:
-           'alpha' for CAB
-           'beta'  for ABC
-           'gamma' for BCA
-        '''
-
         if len(args) == 0 and len(kwds) == 0:
             return
 
@@ -72,7 +68,7 @@ class Triangle(object):
         else:
             self.ABC = args
 
-        for name in ['A','B','C']:
+        for name in self.vertexNames:
             try:
                 setattr(self,name,kwds[name])
             except:
@@ -92,7 +88,7 @@ class Triangle(object):
 
     @A.setter
     def A(self,newValue):
-        self._A = newValue
+        self._A.xyz = newValue
 
     @property
     def B(self):
@@ -108,7 +104,7 @@ class Triangle(object):
     
     @B.setter
     def B(self,newValue):
-        self._B = newValue
+        self._B.xyz = newValue
         
     @property
     def C(self):
@@ -124,7 +120,7 @@ class Triangle(object):
 
     @C.setter
     def C(self,newValue):
-        self._C = newValue
+        self._C.xyz = newValue
         
     @property
     def ABC(self):
@@ -135,7 +131,6 @@ class Triangle(object):
     
     @ABC.setter
     def ABC(self,iterable):
-
         self.A,self.B,self.C = iterable
         
     @property
@@ -240,6 +235,17 @@ class Triangle(object):
         Area of the triangle, float.
         '''
         return abs(self.ccw) / 2
+
+    def height(self,side='AB'):
+        '''
+        :param: side - optional string
+        :return: float
+
+        The distance from the specified side to the opposite point.
+
+        '''
+        raise NotImplemented('height')
+        
         
     def flip(self,side='AB'):
         '''
@@ -250,7 +256,9 @@ class Triangle(object):
         AB, BC, or AC. 
 
         Changes the order of the triangle's points, swapping the
-        specified points. Doing so will change the results of isCCW and ccw.
+        specified points. Doing so will change the results of isCCW
+        and ccw.
+
         '''
         
         if side == 'AB':
