@@ -28,7 +28,6 @@ class Triangle(object):
             pt = Point.randomLocation(radius,origin)
             if pt not in pts:
                 pts.append(pt)
-        print(pts)
         return cls(pts)
 
     def __init__(self,*args,**kwds):
@@ -53,7 +52,7 @@ class Triangle(object):
 
         Edges are labeled 'AB', 'BC' and 'AC'.
 
-        The length of each edge are labeled 'ab', 'bc' and 'ac'.
+        The length of each edge is labeled 'ab', 'bc' and 'ac'.
 
         Angles in radians are labeled:
            'alpha' for CAB
@@ -66,7 +65,6 @@ class Triangle(object):
 
         if len(args) == 1:
             self.ABC = args[0]
-
         else:
             self.ABC = args
 
@@ -156,7 +154,6 @@ class Triangle(object):
         Line segment with endpoints B and C, Segment subclass.
         '''
         return Segment(self.B,self.C)
-
 
     @property
     def vertices(self):
