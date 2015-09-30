@@ -7,11 +7,15 @@ from .point import Point
 from .exceptions import *
 
 class Line(object):
+    vertexNames = 'AB'
+    vertexNameA = vertexNames[0]
+    vertexNameB = vertexNames[1]
+    
     '''
     A line with infinite length defined by two points; A and B.
 
     Usage:
-    >>> a = Line() # ha! a trick, this will fail with TypeError 
+    >>> a = Line() 
     ...
     >>> b = Line((0,0),(1,1))
     >>> c = Line(Point(),{'y':1,'x':1])
@@ -41,10 +45,13 @@ class Line(object):
         return cls(ray.A,ray.B)
 
 
-    def __init__(self,A,B):
+    def __init__(self,A=None,B=None):
         '''
         '''
         self.A = A
+
+        if B is None:
+            B = [1,1]
         self.B = B
 
     @property
@@ -98,13 +105,18 @@ class Line(object):
         Slope parameter, Point(B - A).
         '''
         return self.B - self.A
+
+    @property
+    def mapping(self):
+        return {self.vertexNameA:self.A.__class__(self.A),
+                self.vertexNameB:self.B.__class__(self.B)}
     
-    def point(self,t):
+    def pointAt(self,t):
         '''
         :param: t - float
-        :return: Point along the line at parameter 't'
+        :return: Point subclass
 
-        Varying t will produce a new point along the line.
+        Varying 't' will produce a new point along this line.
 
         t = 0 -> point A
         t = 1 -> point B
@@ -112,12 +124,16 @@ class Line(object):
         # <xyz> = <x0y0z0> + t<mxmymz>
         return self.A + (t * self.m)
 
+    def __str__(self):
+        return 'A=({A}), B=({B})'.format(**self.mapping)
+
     def __repr__(self):
         '''
         Returns a representation string of this instance.
         '''
-        fmt = '%s(A=%s,B=%s)'
-        return fmt % (self.__class__.__name__,self.A,self.B)
+
+        return '{klass}({args})'.format(klass=self.__class__.__name__,
+                                        args=str(self))
     
     def __len__(self):
         '''
