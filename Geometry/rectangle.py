@@ -21,6 +21,12 @@ class Rectangle(object):
 
     Note: Origin may have a non-zero z coordinate.
     '''
+    vertexNames = 'ABCD'
+    vertexNameA = vertexNames[0]
+    vertexNameB = vertexNames[1]
+    vertexNameC = vertexNames[2]
+    vertexNameD = vertexNames[3]
+        
 
     @classmethod
     def randomSizeAndLocation(cls,radius,widthLimits,heightLimits,origin=None):
@@ -446,9 +452,26 @@ class Rectangle(object):
         '''
         return self.A.ccw(self.B,self.C)
 
+    @property
+    def mapping(self):
+        '''
+        A mapping of rectangle attribute names to attribute values, dict.
+        '''
+        return { 'origin':self.origin,
+                 'width':self.width,
+                 'height':self.height }
+
+    def __str__(self):
+        '''
+        '''
+        output = 'origin={origin},width={width},height={height}'
+        return output.format(**self.mapping)
+
     def __repr__(self):
-        fmt = '%s(width=%.2f,height=%.2f,origin=%s)'
-        return fmt % (self.__class__.__name__,self.w,self.h,self.origin)
+        '''
+        '''
+        return '{klass}({args})'.format(klass=self.__class__.__name__,
+                                        args=str(self))
 
     def __eq__(self,other):
         '''
