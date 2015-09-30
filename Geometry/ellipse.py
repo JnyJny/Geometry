@@ -26,8 +26,9 @@ class Ellipse(object):
     >>> e.x_radius *= 2
     >>> e.isCircle,e.isEllipse
     (False,True)
-    '''
+
     
+    '''
     
     def __init__(self,center=None,x_radius=1,y_radius=1):
         '''
@@ -37,6 +38,9 @@ class Ellipse(object):
         Defaults to a unit ellipse centered on the origin.
 
         '''
+        # XXX implement radius with a Point instead of scalar
+        #     get a z radius
+        #     simplifies circle subclass
         self.x_radius = x_radius
         self.y_radius = y_radius
         self.center   = center
@@ -52,7 +56,7 @@ class Ellipse(object):
             return self._x_radius
         except AttributeError:
             pass
-        self._x_radius = 1
+        self._x_radius = 1.0
         return self._x_radius
 
     @x_radius.setter
@@ -70,7 +74,7 @@ class Ellipse(object):
             return self._y_radius
         except AttributeError:
             pass
-        self._y_radius = 1
+        self._y_radius = 1.0
         return self._y_radius
 
     @y_radius.setter
@@ -107,11 +111,26 @@ class Ellipse(object):
     def C(self,newCenter):
         self.center.xyz = newCenter
 
+    @property
+    def mapping(self):
+        '''
+        A mapping of ellipse attribute names to attribute values, dict.
+        '''
+        return { 'x_radius':self.x_radius,
+                 'y_radius':self.y_radius,
+                 'center':self.center}
+
+    def __str__(self):
+        '''
+        '''
+        output = 'center={center}, x_radius={x_radius}, y_radius={y_radius}'
+        return output.format(**self.mapping) 
+
     def __repr__(self):
-        return '%s(%s,x_radius=%s,y_radius=%s)'% (self.__class__.__name__,
-                                                  self.center,
-                                                  self.x_radius,
-                                                  self.y_radius)
+        '''
+        '''
+        return '{klass}({args})'.format(klass=self.__class__.__name__,
+                                        args =str(self))
     
     def __hash__(self):
         '''
@@ -374,11 +393,32 @@ class Ellipse(object):
 
         return True
 
+    
+
 
 class Circle(Ellipse):
     '''
     Implements a circle in the XY plane with the supplied
     center point and radius.
+
+    Example usage:
+    >>> from Geometry import Circle,Point
+    >>> u = Circle()
+    >>> u
+    Circle((0.0,0.0,0.0),1.00)
+    >>> import math
+    >>> u.area == math.pi
+    True
+    >>> u.circumfrence == 2 * math.pi
+    True
+    >>> p = Point.gaussian()
+    >>> p in u
+    False
+    >>> p.xyz = None
+    >>> p in u
+    True
+    >>> p
+    Point(0.0,0.0,0.0)
     
     '''
 
@@ -487,22 +527,22 @@ class Circle(Ellipse):
         '''
         return point.distance(self.center) <= self.radius
 
-    def __repr__(self):
-        '''
-        Representative string for a circle instance.
-        '''
-        return '%s(%s,%.2f)' % (self.__class__.__name__,
-                                str(self.center),
-                                self.radius)
+    @property
+    def mapping(self):
+        return { 'center':self.center,'radius':self.radius }
 
+    def __str__(self):
+        '''
+        '''
+        return 'center={center}, radius={radius}'.format(**self.mapping)
 
     def __add__(self,other):
         '''
         x + y => Circle(x.radius+y.radius,x.center.midpoint(y.center))
         
         Returns a new Circle object.
-        '''
 
+        '''
         try:
             return Circle(self.radius+other.radius,
                           self.center.midpoint(other.center))
@@ -701,7 +741,7 @@ class Circle(Ellipse):
 
         Returns True iff:
           self.center.distance(other.center) <= self.radius+other.radius
-
         '''
+        
         return self.center.distance(other.center) <= (self.radius+other.radius)
         
