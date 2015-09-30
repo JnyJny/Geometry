@@ -32,13 +32,15 @@ class Triangle(object):
     '''
     
     vertexNames = 'ABC'
-    vertexNameA = 'A'
-    vertexNameB = 'B'
-    vertexNameC = 'C'
-    edgeNames = ['AB','BC','AC']
-    edgeNameAB = 'AB'
-    edgeNameBC = 'BC'
-    edgeNameAC = 'AC'
+    vertexNameA = vertexNames[0]
+    vertexNameB = vertexNames[1]
+    vertexNameC = vertexNames[2]
+    edgeNames = [vertexNameA+vertexNameB,
+                 vertexNameB+vertexNameC,
+                 vertexNameA+vertexNameC]
+    edgeNameAB = edgeNames[0]
+    edgeNameBC = edgeNames[1]
+    edgeNameAC = edgeNames[2]
     
     @classmethod
     def randomTriangle(cls,radius,origin=None):
@@ -235,6 +237,23 @@ class Triangle(object):
         Area of the triangle, float.
         '''
         return abs(self.ccw) / 2
+
+    @property
+    def mapping(self):
+        '''
+        Mapping of vertex names to vertices, dict.
+        '''
+        return { self.vertexNameA:self.A,
+                 self.vertexNameB:self.B,
+                 self.vertexNameC:self.C }
+
+
+    def __str__(self):
+        return 'A={A}, B={B}, C={C}'.format(**self.mapping)
+
+    def __repr__(self):
+        return '{klass}({args})'.format(klass=self.__class__.__name__,
+                                        args=str(self))
 
     def height(self,side='AB'):
         '''
