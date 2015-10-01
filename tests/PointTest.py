@@ -3,7 +3,6 @@
 import unittest
 import sys
 sys.path.append('..')
-
 from Geometry import *
 
 class TestObject(object):
@@ -711,6 +710,21 @@ class PointClassmethodsTestCase(unittest.TestCase):
         self.assertListEqual(i.xyz,[1,0,0])
         self.assertListEqual(j.xyz,[0,1,0])
         self.assertListEqual(k.xyz,[0,0,1])
+
+    def testPointClassmethodUnitize(self):
+
+        a,b = Point.gaussian(), Point.gaussian()
+
+        c = Point.unitize(a,b)
+
+        self.assertIsInstance(c,Point)
+        self.assertAlmostEqual(c.distance(),1.0,delta=sys.float_info.epsilon)
+
+        for u in Point.units():
+            r = Point.unitize(Point(),u)
+            self.assertListEqual(u.xyz,r.xyz,
+                                 'unitize(O,{u}) => {r} != {u}'.format(u=u,r=r))
+
     
 if __name__ == '__main__':
     unittest.main()

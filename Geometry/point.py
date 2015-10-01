@@ -122,6 +122,19 @@ class Point(object):
     ordinateNamesYZ = ordinateNameY+ordinateNameZ
     ordinateNamesXZ = ordinateNameX+ordinateNameZ
 
+    @classmethod
+    def unitize(cls,A,B):
+        '''
+        :param: A - Point subclass
+        :param: B - Point subclass
+        :return: Point subclass
+        
+        Given a vector described by two points (A and B)
+        translate the vector AB to the origin and scale by AB's length.
+
+        '''
+        return (B - A) / A.distance(B)
+
 
     @classmethod
     def gaussian(cls,mu=0,sigma=1):
@@ -1140,7 +1153,7 @@ class Point(object):
             return (bsuba.y * csuba.z) - (bsuba.z * csuba.y)
 
         raise ValueError("axis '%s' not recognized." % (axis))
-                
 
 
 
+    
