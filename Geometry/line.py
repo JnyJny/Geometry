@@ -3,8 +3,10 @@
 It's awesome.
 '''
 
+import math
 from .point import Point
 from .exceptions import *
+from .constants import *
 
 class Line(object):
     vertexNames = 'AB'
@@ -278,6 +280,49 @@ class Line(object):
         Returns True if this line is perpendicular to the other line.
         '''
         raise NotImplemented('isNormal')
+
+    
+    def radiansBetween(self,other):
+        '''
+        :param: other - Line subclass
+        :return: float
+
+        Returns the angle between two lines in radians [0, 2 * math.pi], float.
+
+        '''
+        # a.dot.b = mag(a) * mag(b) * cos(theta)
+        # a.dot.b / mag(a) * mag(b) = cos(theta)
+        # cos-1(a.dot.b / mag(a)*mag(b) = theta
+
+        # translate each line so that it passes through the origin and
+        # produce a new point whose distance (magnitude) from the
+        # origin is 1.
+        #
+
+        A = Point.unitize(self.A,self.B)
+        B = Point.unitize(other.A,other.B)
+
+        # XXX who cares? if it fails then our assumption that
+        #     mag(A) * mag(B) < 1 by some unknown amount.
+        #
+        a = A.distance()
+        b = B.distance()
+        if abs(a - b) > epsilon:
+            raise ExceededEpsilonError(a,b,epsilon)
+        
+        return math.acos(A.dot(B))
+
+    def degreesBetween(self,other):
+        '''
+        :param: other - Line subclass
+        :return: float
+
+        Returns the angle between two lines in degrees [0,), float.
+        '''
+        
+        return math.degrees(self.radiansBetween(other))
+
+        
     
     
 class Segment(Line):
