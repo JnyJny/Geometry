@@ -718,7 +718,7 @@ class Point(object):
         except ZeroDivisionError:
             pass
         
-        raise ZeroDivisionError('zero present in %s' %(iterable))
+        raise ZeroDivisionError('zero present in %s' %(other))
 
     def __ifloordiv__(self,iterable):
         '''
