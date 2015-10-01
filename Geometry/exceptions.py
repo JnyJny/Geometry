@@ -25,5 +25,14 @@ class UngrokkableObject(Exception):
         self.obj = obj
 
     def __str__(self):
-        fmt = "object '%s' is ungrokkable: %s"
-        return fmt % (self.obj.__class__.__name__,repr(self.obj))
+        fmt = "object {klass} is ungrokkable: {rep}"
+        return fmt.format(klass=self.obj.__class__.__name__,rep=repr(self.obj))
+
+class ExceededEpsilonError(Exception):
+    def __init(self,x,y,epsilon):
+        self.x,self.y,self.epsilon = x,y,epsilon
+        
+    def __str__(self):
+        fmt = 'x={x} - y={y} {delta} > epsilon {epsilon}'
+        return fmt.format(x=self.x,y=self.y,
+                          delta=self.x-self.y,epsilon=self.epsilon)
