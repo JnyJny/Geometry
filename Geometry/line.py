@@ -352,8 +352,8 @@ class Segment(Line):
     
 class Ray(Line):
     '''
-    Rays have an origin vertex and infinite length in the direction of
-    the second vertex 'B'.
+    Rays have head and tail vertices with an infinite length in the
+    direction of the head vertex.
     '''
 
     @classmethod
@@ -377,26 +377,27 @@ class Ray(Line):
         return cls(segment.A,segment.B)
     
     @property
-    def origin(self):
+    def tail(self):
         '''
         The start of the ray, Point subclass.
         '''
         return self.A
 
-    @origin.setter
-    def origin(self,newValue):
+    @tail.setter
+    def tail(self,newValue):
         self.A = newValue
 
     @property
-    def O(self):
+    def head(self):
         '''
-        Shorthand notation for origin, Point subclass.
+        A in the infinite direction of the ray, Point subclass.
         '''
-        return self.A
+        return self.B
 
-    @O.setter
-    def O(self,newValue):
-        self.A = newValue
+    @head.setter
+    def head(self,newValue):
+        self.B = newValue
+
 
     def __contains__(self,point):
         '''
