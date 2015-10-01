@@ -375,28 +375,31 @@ class Ray(Line):
         Returns a coincident Ray object.
         '''        
         return cls(segment.A,segment.B)
-    
-    @property
-    def tail(self):
-        '''
-        The start of the ray, Point subclass.
-        '''
-        return self.A
 
-    @tail.setter
-    def tail(self,newValue):
-        self.A = newValue
 
     @property
     def head(self):
         '''
-        A in the infinite direction of the ray, Point subclass.
+        The start (endpoint) of the ray, Point subclass.
         '''
-        return self.B
+        return self.A
 
     @head.setter
     def head(self,newValue):
+        self.A = newValue    
+    
+    @property
+    def tail(self):
+        '''
+        A point in the infinite direction of the ray, Point subclass.
+        '''
+        return self.B
+
+    @tail.setter
+    def tail(self,newValue):
         self.B = newValue
+
+
 
 
     def __contains__(self,point):
