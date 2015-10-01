@@ -156,10 +156,10 @@ class Point(object):
         
         origin = cls(origin)   # handles conversion of point initializers
 
-        x = random.randint(O.x,origin.x+width)
-        y = random.randint(O.y,origin.y+height)
+        x = random.randint(origin.x,origin.x+width)
+        y = random.randint(origin.y,origin.y+height)
             
-        return cls(x,y,O.z)
+        return cls(x,y,origin.z)
     
     @classmethod
     def randomLocation(cls,origin=None,radius=1):
