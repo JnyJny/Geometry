@@ -135,7 +135,7 @@ class Ellipse(object):
     def __hash__(self):
         '''
         '''
-        # this will cause circles to hash to points
+        # this will cause circles/ellipses to hash to points
         return hash(self.center)
     
     @property
@@ -392,6 +392,21 @@ class Ellipse(object):
             return False
 
         return True
+
+    def __contains__(self,point):
+        '''
+        x in y 
+
+        Is true iff x is a point on or inside the ellipse y.
+
+        '''
+        f0,f1 = self.foci   # getting the foci is expensive, cache them
+
+        d = point.distance(f0) + point.distance(f1)
+        
+        return d == f0.distance(f1)
+        
+        
 
     
 
