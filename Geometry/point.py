@@ -229,7 +229,6 @@ class Point(object):
             if newValue is None:
                 self._x = float(0)
                 return
-        
         try:
             self._x = float(newValue[0])
             return
@@ -292,6 +291,7 @@ class Point(object):
             return
         except AttributeError:
             pass
+        
         raise UngrokkableObject(newValue)
 
 
@@ -1020,7 +1020,7 @@ class Point(object):
         '''
         minZ,maxZ = min(a.z,b.z),max(a.z,b.z)
         
-        return (self.z >= a.z) and (self.z <= b.z)
+        return (self.z >= minZ) and (self.z <= maxZ)
 
     def isBetween(self,a,b):
         '''
