@@ -1,61 +1,137 @@
-#!/usr/bin/env python3
 
 import unittest
 import sys
-sys.path.append('..')
-from Geometry import *
 
-class TestObject(object):
-    def __init__(self,x=None,y=None,z=None):
-        if x is not None:
-            self.x = x
-        if y is not None:
-            self.y = y
-        if z is not None:            
-            self.z = z
+from Geometry import Point
+from Geometry.exceptions import *
 
-class Ungrokkable(object):
-    pass
+class NumberFactory(object):
+    @classmethod
+    def List(cls,n=3,v=0):
+        if n == 0:
+            return []
+        return [v]*n
 
-ZerosList   = [0]*3
-OnesList    = [1]*3
+    @classmethod
+    def Dict(cls,keys='xyz',v=0):
+        if len(keys) == 0:
+            return {}
+        return dict(zip(keys,[v]*len(keys)))
 
-ZerosDict   = {'x':0,'y':0,'z':0}
-OnesDict    = {'x':1,'y':1,'z':1}
+    @classmethod
+    def Tuple(cls,n=3,v=0):
+        if n == 0:
+            return ()
+        return tuple([v]*n)
 
-ZerosObject = TestObject(0,0,0)
-OnesObject  = TestObject(1,1,1)
+    @classmethod
+    def Object(cls,keys='xyz',v=0):
+        class TestObject(object):
+            def __init__(self,x=None,y=None,z=None):
+                if x is not None:
+                    self.x = x
+                if y is not None:
+                    self.y = y
+                if z is not None:            
+                    self.z = z
+                    
+        if len(keys) == 0:
+            return TestObject()
+                    
+        mapping = cls.Dict(keys,v)
+        return TestObject(**mapping)
 
-ZerosPoint  = Point()
-OnesPoint   = Point(1,1,1)
+    @classmethod
+    def Point(cls,keys='xyz',v=0):
+        return Point(cls.Dict(keys,v))
+
+    @classmethod
+    def Herd(cls,keys='xyz',v=0):
+        n = len(keys)
+
+        return [cls.List(n,v), cls.Dict(keys,v),
+                cls.Tuple(n,v), cls.Object(keys,v),
+                cls.Point(keys,v)]
+
+    @classmethod
+    def KeyMutator(cls,keys='xyz'):
+        '''
+        Kinda broke string mutator.
+        '''
+
+        s = set()
+        s.add(keys)
+        kks = []
+        for k in keys:
+            s.add(k)
+            kks.extend([a+b for a,b in zip(keys,[k]*len(keys)) if a != b])
+
+        kks.sort()
+        for kk in kks:
+            if kk in s or kk[::-1] in s:
+                continue
+            s.add(kk)
+                
+        l = list(s)
+        l.sort()
+        return l
+
+        
 
 class PointInitializationTestCase(unittest.TestCase):
     
-    def testPointOriginCreation(self):
-        self.assertListEqual(Point().xyz,ZerosList)
-        self.assertListEqual(Point(None).xyz,ZerosList)
-        self.assertListEqual(Point(()).xyz,ZerosList)
-        self.assertListEqual(Point([]).xyz,ZerosList)
-        self.assertListEqual(Point({}).xyz,ZerosList)
-        self.assertListEqual(Point(Point()).xyz,ZerosList)
-        self.assertListEqual(Point(ZerosList).xyz,ZerosList)
-        self.assertListEqual(Point(ZerosDict).xyz,ZerosList)
-        self.assertListEqual(Point(ZerosObject).xyz,ZerosList)
+    def testPointCreationWithNoArgumentsOrKeywords(self):
+        self.assertListEqual(Point().xyz,NumberFactory.List())
+        
+    def testPointCreationFromNone(self):        
+        self.assertListEqual(Point(None).xyz,NumberFactory.List())
+        
+    def testPointCreationFromEmptyTuple(self):        
+        self.assertListEqual(Point(()).xyz,NumberFactory.List())
+        
+    def testPointCreationFromEmptyList(self):        
+        self.assertListEqual(Point(NumberFactory.List(n=0)).xyz,
+                             NumberFactory.List())
+        
+    def testPointCreationFromEmptyDict(self):
+        self.assertListEqual(Point(NumberFactory.Dict(keys='')).xyz,
+                             NumberFactory.List())
 
-    def testPointWOrdinate(self):
+    def testPointCreationFromEmptyObject(self):
+        with self.assertRaises(UngrokkableObject):
+            Point(NumberFactory.Object(keys=''))
+        
+    def testPointCreationFromAnotherDefaultPoint(self):
+        self.assertListEqual(Point(Point()).xyz,NumberFactory.List())
+        
+    def testPointCreationFromAnotherInitializedPoint(self):
+        self.assertListEqual(Point(Point(NumberFactory.List(v=1))).xyz,
+                             NumberFactory.List(v=1))
+        
+    def testPointCreationFromDictionary(self):
+        self.assertListEqual(Point(NumberFactory.Dict(v=1)).xyz,
+                             NumberFactory.List(v=1))
+        
+    def testPointCreationFromConformingObject(self):
+        self.assertListEqual(Point(NumberFactory.Object(v=1)).xyz,
+                             NumberFactory.List(v=1))
+
+    def testPointOrdinateW(self):
         self.assertListEqual(Point().xyzw,[0,0,0,1])
+        self.assertIsInstance(Point().w,float)
         self.assertEqual(Point().w,1)
-
         with self.assertRaises(AttributeError):
             p = Point()
             p.w = 2
 
     def testCreatePointWithRegularArguments(self):
+        
         self.assertListEqual(Point(1).xyz,[1,0,0])
         self.assertListEqual(Point(1,1).xyz,[1,1,0])
         self.assertListEqual(Point(1,1,1).xyz,[1,1,1])
         
-    def testCreatePointWithKeywords(self):
+    def testCreatePointWithOnlyKeywords(self):
+
         self.assertListEqual(Point(x=1).xyz,[1,0,0])
         self.assertListEqual(Point(y=1).xyz,[0,1,0])
         self.assertListEqual(Point(z=1).xyz,[0,0,1])
@@ -88,58 +164,82 @@ class PointInitializationTestCase(unittest.TestCase):
         
 
     def testCreatePointWithObjects(self):
-        for n in range(1,3):
-            l = [1]*n
-            r = [1]*n + [0]*(3-n)
-            self.assertListEqual(Point(l).xyz,r)
 
-        self.assertListEqual(Point(**OnesDict).xyz,OnesList)
-        self.assertListEqual(Point(OnesPoint).xyz,OnesList)
-        self.assertListEqual(Point(OnesObject).xyz,OnesList)
+        self.assertListEqual(Point(NumberFactory.List(v=1)).xyz,
+                             NumberFactory.List(v=1))
+        
+        self.assertListEqual(Point(NumberFactory.Dict(v=1)).xyz,
+                             NumberFactory.List(v=1))
+
+        self.assertListEqual(Point(NumberFactory.Tuple(v=1)).xyz,
+                             NumberFactory.List(v=1))
+                                                      
+        self.assertListEqual(Point(NumberFactory.Point(v=1)).xyz,
+                             NumberFactory.List(v=1))
+                                                      
+        self.assertListEqual(Point(NumberFactory.Object(v=1)).xyz,
+                             NumberFactory.List(v=1))
 
         with self.assertRaises(UngrokkableObject):
-            Point(Ungrokkable())
+            Point(NumberFactory.Object(keys=''))
 
 class PointAttributeSettersTestCase(unittest.TestCase):
     
     def testXYZSetter(self):
+        
         p = Point(1,1,1)
-        self.assertListEqual(p.xyz,[1]*3)
+        self.assertListEqual(p.xyz,NumberFactory.List(v=1))
                              
         p.xyz = None
-        self.assertListEqual(p.xyz,[0]*3,'p.xyz = None')
+        self.assertListEqual(p.xyz,NumberFactory.List(),'p.xyz = None')
         
-        for thing in [ OnesList, OnesDict, OnesPoint, OnesObject ]:
+        for thing in NumberFactory.Herd():
             msg = 'p.xyz = {t}({o})'.format(o=thing,t=thing.__class__.__name__)
             p = Point()
             p.xyz = thing
-            self.assertListEqual(p.xyz,[1]*3,msg)
+            self.assertListEqual(p.xyz,NumberFactory.List(),msg)
 
         with self.assertRaises(UngrokkableObject):
             p = Point()
-            p.xyz = Ungrokkable()
+            p.xyz = NumberFactory.Object(keys='')
 
+        # scalars
         for value,result in [(1,[1,0,0]),((1,2),[1,2,0]),((1,2,3),[1,2,3])]:
             p = Point()
             p.xyz = value
             self.assertListEqual(p.xyz,result,'p.xyz = {v}'.format(v=value))
 
-        for key in 'xyz':
+        # permuted list
+        for n in range(0,4):
             p = Point()
-            d = {key:1}
-            p.xyz = d
+            src = NumberFactory.List(n=n,v=1)
+            p.xyz = src
+            src.extend([0]*3)
+            self.assertListEqual(p.xyz,src[:3])
+
+        # permuted list
+        for key in Point.ordinateNamesXYZ:
+            p = Point()
+            p.xyz = NumberFactory.Dict(key,v=1)
             self.assertEqual(getattr(p,key),1,
                              "p.{k} = dict('{k}':1)".format(k=key))
-
-    def testXYSetter(self):
+            
+        # permuted object
+        for key in 'xyz':
+            p = Point()
+            p.xyz = NumberFactory.Object(key,v=1)
+            self.assertEqual(getattr(p,key),1,
+                             'p.{k} = Object.{k} => 1'.format(k=key))
+                
+    def testXYSetterWithNone(self):
 
         p = Point(1,1,1)
-        self.assertListEqual(p.xyz,[1]*3)
-                             
         p.xy = None
         self.assertListEqual(p.xyz,[0,0,1],'p.xy = None')
-        
-        for thing in [ OnesList, OnesDict, OnesPoint, OnesObject]:
+
+    def testXYSetterFullyQualifiedObjects(self):
+
+        for thing in NumberFactory.Herd(v=1):
             msg = 'p.xy = {t}({o})'.format(o=thing,t=thing.__class__.__name__)
             p = Point()
             p.xy = thing
@@ -147,59 +247,113 @@ class PointAttributeSettersTestCase(unittest.TestCase):
 
         with self.assertRaises(UngrokkableObject):
             p = Point()
-            p.xy = Ungrokkable()
+            p.xy = NumberFactory.Object(keys='')
+            
+    def testXYSetterWithScalar(self):
 
+        p = Point()
+        p.xy = 1
+        self.assertListEqual(p.xyz,[1,0,0])
+
+    def testXYSetterWithPermutedList(self):        
+
+        # permuted list
+        for value,result in [([1],[1,0,0]),([1,2],[1,2,0])]:
+            p = Point()
+            p.xy = value
+            self.assertListEqual(p.xyz,result,'p.xy = {v}'.format(v=value))
+
+    def testXYSetterWithPermutedTuple(self):        
+        # permuted tuple
         for value,result in [(1,[1,0,0]),((1,2),[1,2,0])]:
             p = Point()
             p.xy = value
-            self.assertListEqual(p.xyz,result,'p.xyz = {v}'.format(v=value))
+            self.assertListEqual(p.xyz,result,'p.xy = {v}'.format(v=value))
 
-        for key in 'xyz':
+    def testXYSetterWithPermutedDict(self):        
+        # permuted dict
+        for key in Point.ordinateNamesXYZ:
             p = Point()
-            p.xy = {key:1}
+            p.xy = NumberFactory.Dict(key,1)
             value = getattr(p,key)
             expected = int(key != 'z')
             self.assertEqual(value,expected,"p.{k} = dict('{k}':1)".format(k=key))
+            
+    def testXYSetterWithPermutedObject(self):        
+        # permuted object
+        for key in Point.ordinateNamesXYZ:
+            p = Point()
+            expected = int(key != 'z')
+            if expected:
+                p.xy = NumberFactory.Object(key,1)
+                value = getattr(p,key)            
+                self.assertEqual(value,expected,
+                                 "p.{k} = obj('{k}':1)".format(k=key))
+            else:
+                with self.assertRaises(UngrokkableObject):
+                    p.xy = NumberFactory.Object(key,1)
+        
 
-    def testYZSetter(self):
+    def testYZSetterWithNone(self):
 
         p = Point(1,1,1)
-        self.assertListEqual(p.xyz,[1,1,1])
-                             
         p.yz = None
         self.assertListEqual(p.xyz,[1,0,0],'p.yz = None')
-        
-        for thing in [ OnesList, OnesDict, OnesPoint, OnesObject]:
+
+    def testYZSetterWithFullyQualifiedObjects(self):        
+        for thing in NumberFactory.Herd(v=1):
             msg = 'p.yz = {t}({o})'.format(o=thing,t=thing.__class__.__name__)
             p = Point()
             p.yz = thing
             self.assertListEqual(p.xyz,[0,1,1],msg)
+            
+        with self.assertRaises(UngrokkableObject):
+            p = Point()
+            p.yz = NumberFactory.Object(keys='')
 
+    def testYZSetterWithScalar(self):
+        p = Point()
+        p.yz = 1
+        self.assertListEqual(p.xyz,[0,1,0])
+
+    def testYZSetterWithPermutedTuple(self):        
         for value,result in [(1,[0,1,0]),((1,2),[0,1,2])]:
             p = Point()
             p.yz = value
             self.assertListEqual(p.xyz,result,'p.xyz = {v}'.format(v=value))
 
-        with self.assertRaises(UngrokkableObject):
+        
+    def testYZSetterWithPermutedDict(self):
+        
+        for key in Point.ordinateNamesXYZ:
             p = Point()
-            p.yz = Ungrokkable()
-
-        for key in 'xyz':
-            p = Point()
-            p.yz = {key:1}
-            value = getattr(p,key)
             expected = int(key != 'x')
-            self.assertEqual(value,expected,"p.{k} = dict('{k}':1)".format(k=key))
+            p.yz = NumberFactory.Dict(key,1)
+            value = getattr(p,key)
+            self.assertEqual(value,expected,
+                             "p.{k} = dict('{k}':1)".format(k=key))
 
-    def testXZSetter(self):
+    def testYZSetterWithPermutedObject(self):            
 
+        for key in Point.ordinateNamesXYZ:
+            p = Point()
+            expected = int(key != 'x')
+            if expected:
+                p.yz = NumberFactory.Object(key,1)
+                self.assertEqual(getattr(p,key),expected,
+                                 "p.{k} = obj('{k}'):1)".format(k=key))
+            else:
+                with self.assertRaises(UngrokkableObject):
+                    p.yz = NumberFactory.Object(key,1)
+    
+    def testXZSetterWithNone(self):
         p = Point(1,1,1)
-        self.assertListEqual(p.xyz,[1,1,1])
-                             
         p.xz = None
         self.assertListEqual(p.xyz,[0,1,0],'p.xz = None')
+
+    def testXZSetterWithFullyQualifiedObjects(self):
         
-        for thing in [ OnesList, OnesDict, OnesPoint, OnesObject]:
+        for thing in NumberFactory.Herd(v=1,keys='xz'):
             msg = 'p.xz = {t}({o})'.format(o=thing,t=thing.__class__.__name__)
             p = Point()
             p.xz = thing
@@ -207,19 +361,41 @@ class PointAttributeSettersTestCase(unittest.TestCase):
 
         with self.assertRaises(UngrokkableObject):
             p = Point()
-            p.xz = Ungrokkable()            
+            p.xz = NumberFactory.Object(keys='')
 
+    def testXZSetterWithScalar(self):
+        p = Point()
+        p.xz = 1
+        self.assertListEqual(p.xyz,[1,0,0])
+
+    def testXZSetterWithPermutedTuple(self):            
         for value,result in [(1,[1,0,0]),((1,2),[1,0,2])]:
             p = Point()
             p.xz = value
             self.assertListEqual(p.xyz,result,'p.xyz = {v}'.format(v=value))
 
-        for key in 'xyz':
+    def testXZSetterWithPermutedDict(self):            
+        for key in Point.ordinateNamesXYZ:
             p = Point()
-            p.xz = {key:1}
-            value = getattr(p,key)
+            p.xz = NumberFactory.Dict(key,1)
             expected = int(key != 'y')
-            self.assertEqual(value,expected,"p.{k} = dict('{k}':1)".format(k=key))
+            self.assertEqual(getattr(p,key),expected,
+                             "p.{k} = dict('{k}':1)".format(k=key))
+
+    def testXZSetterWithPermutedObject(self):            
+        for key in Point.ordinateNamesXYZ:
+            p = Point()
+            expected = int(key != 'y')
+
+            if expected:
+                p.xz = NumberFactory.Object(key,1)
+                self.assertEqual(getattr(p,key),expected,
+                                 "p.{k} = dict('{k}':1)".format(k=key))
+            else:
+                with self.assertRaises(UngrokkableObject):
+                    p.xz = NumberFactory.Object(key,1)
+        
+        
 
 class PointAttributeTypesTestCase(unittest.TestCase):
     
@@ -229,25 +405,14 @@ class PointAttributeTypesTestCase(unittest.TestCase):
         self.assertIsInstance(p.y,float)
         self.assertIsInstance(p.z,float)
 
-        p.xyz = None
-        self.assertIsInstance(p.x,float)
-        self.assertIsInstance(p.y,float)
-        self.assertIsInstance(p.z,float)
+        for thing in NumberFactory.Herd():
+            p = Point()
+            p.xyz = thing
+            self.assertIsInstance(p.x,float)
+            self.assertIsInstance(p.y,float)
+            self.assertIsInstance(p.z,float)
 
-        p.xyz = ZerosList
-        self.assertIsInstance(p.x,float)
-        self.assertIsInstance(p.y,float)
-        self.assertIsInstance(p.z,float)
 
-        p.xyz = ZerosObject
-        self.assertIsInstance(p.x,float)
-        self.assertIsInstance(p.y,float)
-        self.assertIsInstance(p.z,float)
-
-        p.xyz = ZerosPoint
-        self.assertIsInstance(p.x,float)
-        self.assertIsInstance(p.y,float)
-        self.assertIsInstance(p.z,float)
         
         
 class PointOperationsTestCase(unittest.TestCase):
@@ -272,6 +437,10 @@ class PointOperationsTestCase(unittest.TestCase):
         r += 1
         self.assertListEqual(r.xyz,[3]*3)
 
+        r += q
+        self.assertListEqual(r.xyz,[4]*3)
+        
+
     def testPointSubtraction(self):
         
         p = Point()
@@ -287,8 +456,11 @@ class PointOperationsTestCase(unittest.TestCase):
         self.assertListEqual(r.xyz,[0]*3)
 
         r -= 1
-        
         self.assertListEqual(r.xyz,[-1]*3)
+
+        r -= q
+        self.assertListEqual(r.xyz,[-2]*3)
+        
 
     def testPointMultiplication(self):
 
@@ -310,11 +482,16 @@ class PointOperationsTestCase(unittest.TestCase):
         r = q * 1
         self.assertListEqual(r.xyz,[1]*3)
 
+        r *= q
+        self.assertListEqual(r.xyz,[1]*3)
+
         r *= 1
         self.assertListEqual(r.xyz,[1]*3)
 
         r *= 0
-        self.assertListEqual(r.xyz,[0]*3)        
+        self.assertListEqual(r.xyz,[0]*3)
+
+        
         
 
     def testPointTrueDivision(self):
@@ -334,7 +511,7 @@ class PointOperationsTestCase(unittest.TestCase):
         r = p / q
         self.assertListEqual(r.xyz,[n/m]*3)
 
-        r = p / OnesObject
+        r = p / NumberFactory.Object(v=1)
         self.assertListEqual(r.xyz,[n]*3)
 
         r = p / 2
@@ -360,16 +537,14 @@ class PointOperationsTestCase(unittest.TestCase):
 
         with self.assertRaises(ZeroDivisionError):
             p = Point(1,1,1)
-            r = q / ZerosObject            
+            r = q / NumberFactory.Object(v=0) 
 
         with self.assertRaises(ZeroDivisionError):
             p = Point(1,1,1)
-            q = Point()
-            p /= q
+            p /= Point()
 
         with self.assertRaises(ZeroDivisionError):
             p = Point(1,1,1)
-            q = Point()
             p /= 0            
 
     def testPointFloorDivision(self):
@@ -389,7 +564,7 @@ class PointOperationsTestCase(unittest.TestCase):
         r = p // q
         self.assertListEqual(r.xyz,[n//m]*3)
 
-        r = p // OnesObject
+        r = p // NumberFactory.Object(v=1)
         self.assertListEqual(r.xyz,[n//1]*3)
 
         r = p // n
@@ -402,10 +577,14 @@ class PointOperationsTestCase(unittest.TestCase):
         self.assertListEqual(r.xyz,[1]*3)
 
         with self.assertRaises(ZeroDivisionError):
-            r = p // ZerosPoint
+            r = p // NumberFactory.Point()
 
         with self.assertRaises(ZeroDivisionError):
             r = p // 0
+
+        with self.assertRaises(ZeroDivisionError):
+            p = Point(1,1,1)
+            p //= Point()            
 
         with self.assertRaises(ZeroDivisionError):
             p = Point(1,1,1)
@@ -430,14 +609,18 @@ class PointOperationsTestCase(unittest.TestCase):
             r = p % z
 
         with self.assertRaises(ZeroDivisionError):
-            r = p % ZerosObject
+            r = p % NumberFactory.Object()
 
         with self.assertRaises(ZeroDivisionError):
             r = p % 0
 
         with self.assertRaises(ZeroDivisionError):
             p = Point(1,1,1)
-            p %= 0     
+            p %= 0
+
+        with self.assertRaises(ZeroDivisionError):
+            p = Point(1,1,1)
+            p %= Point()                 
 
         r = q % 3
         self.assertListEqual(r.xyz,[1]*3)
@@ -477,6 +660,9 @@ class PointOperationsTestCase(unittest.TestCase):
 
         r **= 2
         self.assertListEqual(r.xyz,[4]*3)
+
+        r **= Point([2]*3)
+        self.assertListEqual(r.xyz,[16]*3)
 
     def testPointMiscOps(self):
 
@@ -678,10 +864,8 @@ class PointInstanceMethodsTestCase(unittest.TestCase):
 class PointClassmethodsTestCase(unittest.TestCase):
     
     def testPointClassmethodGaussian(self):
-        
         p = Point.gaussian()
         self.assertIsInstance(p,Point)
-        # uh. yup. 
 
     def testPointClassmethodRandomLocation(self):        
         p = Point.randomLocation()
