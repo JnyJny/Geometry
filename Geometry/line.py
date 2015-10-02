@@ -118,6 +118,25 @@ class Line(object):
     def mapping(self):
         return {self.vertexNameA:self.A.__class__(self.A),
                 self.vertexNameB:self.B.__class__(self.B)}
+
+    @property
+    def length(self):
+        '''
+        Raises InfiniteLength exception.
+        '''
+        raise InfiniteLength()
+
+    @property
+    def normal(self):
+        '''
+        :return: Line
+    
+        Returns a line normal (perpendicular) to this line.
+        '''
+        
+        d = self.B - self.A
+
+        return Line([-d.y,d.x],[d.y,-d.x])    
     
     def pointAt(self,t):
         '''
@@ -154,13 +173,17 @@ class Line(object):
         line[0] retrieves A
         line[1] retrieves B
         '''
-        key = int(key)
-        if key == 0:
-            return self.A
-        if key == 1:
-            return self.B
-        raise IndexError('index %d out of range %s only have two items' %(key))
-
+        try:
+            key = int(key)
+            try:
+                return self.AB[key]
+            except IndexError:
+                pass
+            raise IndexError("index '{k}' out of range".format(k=key))
+        except ValueError:
+            pass
+        raise ValueError("index '{k}' is not an integer".format(k=key))
+        
     def __setitem__(self,key,value):
         '''
         line[0] == line.A
@@ -183,12 +206,6 @@ class Line(object):
         '''
         return self.A.isCollinear(point,self.B)
 
-    @property
-    def length(self):
-        '''
-        Raises InfiniteLength exception.
-        '''
-        raise InfiniteLength()
 
     def flip(self):
         '''
@@ -233,8 +250,8 @@ class Line(object):
         if self == other:
             return False
 
-        d0 = self.a - self.b
-        d1 = other.a - other.b
+        d0 = self.A - self.B
+        d1 = other.A - other.B
         
         denominator = (d0.x * d1.y) - (d0.y * d1.x)
         
@@ -242,8 +259,8 @@ class Line(object):
             msg = '%s and %s are parallel or coincident'
             raise Parallel(msg % (self,other))
 
-        cp0 = self.a.cross(self.b)
-        cp1 = other.a.cross(other.b)
+        cp0 = self.A.cross(self.B)
+        cp1 = other.A.cross(other.B)
         
         x_num = (cp0 * d1.x) - (d0.x * cp1)
         y_num = (cp0 * d1.y) - (d0.y * cp1)
@@ -264,19 +281,8 @@ class Line(object):
         '''
         d = self.B - self.A
         n = (d.y*point.x) - (d.x*point.y) + self.A.cross(self.B)
-        return n / self.length
+        return abs(n / self.A.distance(self.B))
 
-    @property
-    def normal(self):
-        '''
-        :return: Line
-    
-        Returns a line normal (perpendicular) to this line.
-        '''
-        
-        d = self.B - self.A
-
-        return Line([-d.y,d.x],[d.y,-d.x])
 
     def isNormal(self,other):
         '''
@@ -296,25 +302,27 @@ class Line(object):
         Returns the angle between two lines in radians [0, 2 * math.pi], float.
 
         '''
-        # a.dot.b = mag(a) * mag(b) * cos(theta)
-        # a.dot.b / mag(a) * mag(b) = cos(theta)
-        # cos-1(a.dot.b / mag(a)*mag(b) = theta
+        # a.dot.b = |a||b| * cos(theta)
+        # a.dot.b / |a||b| = cos(theta)
+        # cos-1(a.dot.b / |a||b|) = theta
 
         # translate each line so that it passes through the origin and
         # produce a new point whose distance (magnitude) from the
         # origin is 1.
         #
-
+        
         A = Point.unitize(self.A,self.B)
         B = Point.unitize(other.A,other.B)
 
-        # XXX who cares? if it fails then our assumption that
-        #     mag(A) * mag(B) < 1 by some unknown amount.
+        # in a perfect world, after unitize: |A| = |B| = 1
+        # which is a noop when dividing the dot product of A,B
+        # but sometimes they aren't but who cares?
+        # let's just assume things are perfect.
         #
-        a = A.distance()
-        b = B.distance()
-        if abs(a - b) > epsilon:
-            raise ExceededEpsilonError(a,b,epsilon)
+        #a = A.distance()
+        #b = B.distance()
+        #if abs(a - b) > epsilon:
+        #    raise ExceededEpsilonError(a,b,epsilon)
         
         return math.acos(A.dot(B))
 
@@ -325,7 +333,6 @@ class Line(object):
 
         Returns the angle between two lines in degrees [0,), float.
         '''
-        
         return math.degrees(self.radiansBetween(other))
 
         
