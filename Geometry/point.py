@@ -206,6 +206,7 @@ class Point(object):
     @classmethod
     def units(cls):
         '''
+        XXX missing doc string
         '''
         return [cls(1,0,0),cls(0,1,0),cls(0,0,1)]
     
