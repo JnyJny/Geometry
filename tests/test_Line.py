@@ -2,6 +2,8 @@
 
 import unittest
 import sys
+import math
+
 sys.path.append('..')
 
 from Geometry import Line, Segment, Ray, Point
@@ -115,6 +117,19 @@ class LineClassmethodTestCase(unittest.TestCase):
         self.assertListEqual(l.A.xyz,r.A.xyz)
         self.assertListEqual(l.B.xyz,r.B.xyz)
 
+    def testLineClassmethodUnits(self):
+        I,J,K = Line.units()
+
+        self.assertIsType(I,Line)
+        self.assertEqual(I.A.distance(I.B),1)
+        
+        self.assertIsType(J,Line)
+        self.assertEqual(J.A.distance(J.B),1)
+        
+        self.assertIsType(K,Line)
+        self.assertEqual(K.A.distance(K.B),1)
+        
+
 class LinePropertiesTestCase(unittest.TestCase):
 
     def testLinePropertySlopeParameterM(self):
@@ -135,7 +150,7 @@ class LinePropertiesTestCase(unittest.TestCase):
 
     def testLinePropertyNormal(self):
         i,j,_ = Point.units()
-        l = Line(B=i)
+        l,_,_ = Line.units()
         self.assertListEqual(l.normal.A.xyz,j.xyz)
 
 
@@ -192,9 +207,8 @@ class LineInstanceMethodsTestCase(unittest.TestCase):
         self.assertListEqual(l.B.xyz,[0,0,0])
 
     def testLineInstanceMethodDoesIntersect(self):
-        i,j,_ = Point.units()
-        l = Line(B=i)
-        m = Line(B=j)
+        l,m,_ = Line.units()
+
         o = Line([0,1,0],[1,1,0])
 
         self.assertTrue(l.doesIntersect(l))
@@ -202,22 +216,36 @@ class LineInstanceMethodsTestCase(unittest.TestCase):
         self.assertFalse(l.doesIntersect(o))
         
     def testLineInstanceMethodIntersection(self):
-        i,j,_ = Point.units()
-        l = Line(B=j)
-        m = Line(B=k)
+        l,m,_ = line.units()
         self.assertListEqual(l.intersection(m).xyz,[0,0,0])
 
     def testLineInstanceMethodDistanceFromPoint(self):
-        raise NotImplementedError()
+        i,j,_ = Point.units()
+        l,_,_ = Line.units()
+
+        self.assertEqual(l.distanceFromPoint(i),0)
+        self.assertEqual(l.distanceFromPoint(j),1)
 
     def testLineInstanceMethodIsNormal(self):
-        raise NotImplementedError()
+        l,m,_ = Line.units()
+        self.assertTrue(l.isNormal(m))
+
 
     def testLineInstanceMethodRadiansBetween(self):
-        raise NotImplementedError()
+        l,m,_ = Line.units()
+        self.assertEqual(l.radiansBetween(m),math.pi/2)
+        self.assertEqual(l.radiansBetween(l),0)
+        
 
     def testLineInstanceMethodDegreesBetween(self):
-        raise NotImplementedError()
+        l,m,_ = Line.units()
+
+        l = Line(B=i)
+        m = Line(B=j)
+
+        self.assertEqual(l.degreesBetween(m),90)
+        self.assertEqual(l.degreesBetween(l),0)
+    
 
         
 if __name__ == '__main__':
