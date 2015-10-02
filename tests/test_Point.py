@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 
 import unittest
 import sys
-
+sys.path.append('..')
 from Geometry import Point
 from Geometry.exceptions import *
 
@@ -412,6 +413,8 @@ class PointAttributeTypesTestCase(unittest.TestCase):
             self.assertIsInstance(p.y,float)
             self.assertIsInstance(p.z,float)
 
+            
+
 
         
         
@@ -723,6 +726,13 @@ class PointOperationsTestCase(unittest.TestCase):
         self.assertIsInstance(p.bytes,bytes)
         self.assertEqual(p.bytes,bytes(repr(p),'utf-8'))
 
+    def testPointPropertyMapping(self):
+        p = Point()
+        m = p.mapping
+        self.assertEqual(len(m),4)
+        for key in Point.ordinateNamesAll:
+            self.assertEqual(getattr(p,key),m[key])        
+
         
 class PointInstanceMethodsTestCase(unittest.TestCase):
     
@@ -860,6 +870,7 @@ class PointInstanceMethodsTestCase(unittest.TestCase):
         self.assertFalse(a.isBetweenZ(j,k))
         self.assertFalse(a.isBetweenZ(i,j))
         self.assertFalse(a.isBetweenZ(j,i))
+
 
 class PointClassmethodsTestCase(unittest.TestCase):
     
