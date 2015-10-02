@@ -51,9 +51,6 @@ class Line(object):
         '''
         '''
         self.A = A
-
-        if B is None:
-            B = [1,1]
         self.B = B
 
     @property
@@ -96,10 +93,19 @@ class Line(object):
     
     @AB.setter
     def AB(self,iterable):
+        
         try:
             self.A,self.B = iterable
+            return
+        except TypeError:
+            if iterable is None:
+                self.A = None
+                self.B = None
+                return
         except ValueError:
-            self.A, = iterable
+            pass
+            
+        self.A = iterable
     
     @property
     def m(self):
