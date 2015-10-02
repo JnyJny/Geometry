@@ -46,6 +46,14 @@ class Line(object):
         '''
         return cls(ray.A,ray.B)
 
+    @classmethod
+    def units(cls):
+        '''
+        XXX missing doc string
+        '''
+        i,j,k = Point.units()
+        return [cls(B=i),cls(B=j),cls(B=k)]
+
 
     def __init__(self,A=None,B=None):
         '''
@@ -236,6 +244,17 @@ class Line(object):
 
         return True
 
+    def isParallel(self,other):
+        '''
+        :param: other - Line subclass
+        :return: boolean
+
+        Returns true if the two lines do not intersect.
+
+        '''
+        return not self.doesIntersect(other)
+        
+
     def intersection(self,other):
         '''
         :param: other - Line subclass
@@ -291,7 +310,7 @@ class Line(object):
 
         Returns True if this line is perpendicular to the other line.
         '''
-        raise NotImplemented('isNormal')
+        raise NotImplementedError('isNormal')
 
     
     def radiansBetween(self,other):
@@ -457,14 +476,11 @@ class Ray(Line):
     def tail(self,newValue):
         self.B = newValue
 
-
-
-
     def __contains__(self,point):
         '''
         point in Ray
         '''
-        raise NotImplemented('__contains__')
+        raise NotImplementedError('__contains__')
 
         # probably ccw magic that will tell us the answer
         
@@ -473,7 +489,7 @@ class Ray(Line):
         '''
         Angle in radians relative to the X axis.
         '''
-        raise NotImplemented('alpha')
+        raise NotImplementedError('alpha')
 
 
     @property
@@ -481,14 +497,14 @@ class Ray(Line):
         '''
         Angle in radians relative to the Y axis.
         '''
-        raise NotImplemented('beta')
+        raise NotImplementedError('beta')
 
     @property
     def gamma(self):
         '''
         Angle in radians relative to the Z axis.
         '''
-        raise NotImplemented('gamma')
+        raise NotImplementedError('gamma')
 
     @property
     def normal(self):
