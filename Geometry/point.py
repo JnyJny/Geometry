@@ -190,13 +190,13 @@ class Point(object):
         
         origin = cls(origin)
         
-        t = 2.0 * math.pi * random.random()
+        t = (2.0 * math.pi) * random.random()
         r = random.random() * random.random()
         if r > 1:
             r = 2 - r
             
-        x = int(radius * r * math.cos(t) + origin.x)
-        y = int(radius * r * math.sin(t) + origin.y)
+        x = int(((radius * r) * math.cos(t)) + origin.x)
+        y = int(((radius * r) * math.sin(t)) + origin.y)
         
         return cls(x,y)
     
