@@ -24,7 +24,8 @@ class Point(object):
 
      +,  -,  *,  /,  //,  %, ** +=, -=, *=, /=, //=, %=, **==, ==, !=
 
-    Operands can be other Point subclasses or scalar numbers.
+    Operands can be other Point subclasses, arrays, tuples, dicts,
+    or any object with x, y or z properties.
     
     Methods
     -------
@@ -48,6 +49,8 @@ class Point(object):
                      gaussian: Random point with gaussian distribution
                randomLocation: Random point within a circular bound
     randomLocationInRectangle: Random point within a rectangular bound
+                      unitize: Turns two points into a unit "vector"
+                        units: Returns the i, j and k unit "vectors"
     
 
     Random Usage Examples
