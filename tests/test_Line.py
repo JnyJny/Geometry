@@ -4,7 +4,8 @@ import unittest
 import sys
 sys.path.append('..')
 
-from Geometry import *
+from Geometry import Line, Segment, Ray, Point
+from Geometry.exceptions import *
 
 class LineInitializationTestCase(unittest.TestCase):
 
@@ -45,31 +46,16 @@ class LineInitializationTestCase(unittest.TestCase):
 
     def testLineAGetter(self):
         l = Line(A=[1,2,3])
-
         self.assertListEqual(l.A.xyz,[1,2,3])
-        self.assertListEqual(l[0].xyz,[1,2,3])
-
-    def testLineASeter(self):
-        l = Line()
-        l.A = Point(1,1,1)
-        self.assertListEqual(l.A.xyz,[1]*3)
-
-
-    def testLineAGetter(self):
-        l = Line(A=[1,2,3])
-        self.assertListEqual(l.A.xyz,[1,2,3])
-        self.assertListEqual(l[0].xyz,[1,2,3])
 
     def testLineASetter(self):
         l = Line()
         l.A = Point(1,1,1)
         self.assertListEqual(l.A.xyz,[1]*3)
 
-
     def testLineBGetter(self):
         l = Line(B=[1,2,3])
         self.assertListEqual(l.B.xyz,[1,2,3])
-        self.assertListEqual(l[1].xyz,[1,2,3])
 
     def testLineBSetter(self):
         l = Line()
@@ -87,13 +73,7 @@ class LineInitializationTestCase(unittest.TestCase):
     def testLineABSetter(self):        
         
         l = Line()
-        
-        l.A = [4,5,6]
-        l.B = [1,2,3]
-        self.assertListEqual(l.A.xyz,[4,5,6])
-        self.assertListEqual(l.B.xyz,[1,2,3])
 
-        l = Line()
         l.AB = [1,2,3],[4,5,6]
         self.assertListEqual(l.A.xyz,[1,2,3])
         self.assertListEqual(l.B.xyz,[4,5,6])
@@ -105,7 +85,140 @@ class LineInitializationTestCase(unittest.TestCase):
         l.AB = [1,1,1]
         self.assertListEqual(l.A.xyz,[1,1,1])
         self.assertListEqual(l.B.xyz,[0,0,0])
-        
 
+
+class LineClassmethodTestCase(unittest.TestCase):
+
+    def testLineConversionFromSegmentWithMissingArgument(self):
+        with self.assertRaises(TypeError):
+            l = Line.fromSegment()
+
+    def testLineConversionFromSegmentWithGoodSegment(self):
+        s = Segment([1,2,3],[4,5,6])
+        l = Line.fromSegment(s)
+        self.assertFalse(s is l)
+        self.assertIsInstance(s,Segment)
+        self.assertIsInstance(l,Line)
+        self.assertListEqual(l.A.xyz,s.A.xyz)
+        self.assertListEqual(l.B.xyz,s.B.xyz)
+
+    def testLineConversionFromRayWithMissingArgument(self):
+        with self.assertRaises(TypeError):
+            l = Line.fromRay()
+
+    def testLineConversionFromSegmentWithGoodSegment(self):
+        r = Ray([1,2,3],[4,5,6])
+        l = Line.fromRay(r)
+        self.assertFalse(r is l)
+        self.assertIsInstance(r,Ray)
+        self.assertIsInstance(l,Line)
+        self.assertListEqual(l.A.xyz,r.A.xyz)
+        self.assertListEqual(l.B.xyz,r.B.xyz)
+
+class LinePropertiesTestCase(unittest.TestCase):
+
+    def testLinePropertySlopeParameterM(self):
+        l = Line(Point(),Point(1,1,1))
+        self.assertListEqual(l.m.xyz,[1,1,1])
+
+    def testLinePropertyMapping(self):
+        l = Line()
+        m = l.mapping
+        self.assertIsInstance(m,dict)
+        for key in Line.vertexNames:
+            self.assertEqual(getattr(l,key),m[key])
+
+    def testLinePropertyLength(self):
+        l = Line()
+        with self.assertRaises(InfiniteLength):
+            l.length
+
+    def testLinePropertyNormal(self):
+        i,j,_ = Point.units()
+        l = Line(B=i)
+        self.assertListEqual(l.normal.A.xyz,j.xyz)
+
+
+class LineInstanceMethodsTestCase(unittest.TestCase):
+
+    def testLineInstanceMethodPointAt(self):
+        l = Line(B=[1,0,0])
+        self.assertListEqual(l.pointAt(0).xyz,l.A.xyz)
+        self.assertListEqual(l.pointAt(1).xyz,l.B.xyz)
+        self.assertListEqual(l.pointAt(0.5).xyz,[0.5,0,0])
+
+    def testLineStringMethods(self):
+
+        l = Line(Point.gaussian(),Point.gaussian())
+
+        s = str(l)
+        self.assertEqual(s.count('A='),1)
+        self.assertEqual(s.count('B='),1)
+        self.assertEqual(s.count('x='),2)
+        self.assertEqual(s.count('y='),2)
+        self.assertEqual(s.count('z='),2)        
+        
+        r = repr(l)
+        self.assertTrue(r.startswith(Line.__name__))
+        self.assertEqual(s.count('A='),1)
+        self.assertEqual(s.count('B='),1)
+        self.assertEqual(s.count('x='),2)
+        self.assertEqual(s.count('y='),2)
+        self.assertEqual(s.count('z='),2)
+
+    def testLineIteratorMethods(self):
+        l = Line([1,2,3],[4,5,6])
+        self.assertEqual(len(l),2)
+        self.assertListEqual(l[0].xyz,[1,2,3])
+        self.assertListEqual(l[1].xyz,[4,5,6])
+        self.assertListEqual(l[-2].xyz,[1,2,3])
+        self.assertListEqual(l[-1].xyz,[4,5,6])
+        with self.assertRaises(IndexError):
+            l[2]
+        with self.assertRaises(IndexError):
+            l[-3]
+
+    def testLineInstaceMethodContains(self):
+        l = Line(B=[1,0,0])
+        p = Point(.5)
+        q = Point(y=.5)
+        self.assertTrue(p in l)
+        self.assertFalse(q in l)
+
+    def testLineInstanceMethodFlip(self):
+        l = Line(B=[1,1,1])
+        l.flip()
+        self.assertListEqual(l.A.xyz,[1,1,1])
+        self.assertListEqual(l.B.xyz,[0,0,0])
+
+    def testLineInstanceMethodDoesIntersect(self):
+        i,j,_ = Point.units()
+        l = Line(B=i)
+        m = Line(B=j)
+        o = Line([0,1,0],[1,1,0])
+
+        self.assertTrue(l.doesIntersect(l))
+        self.assertTrue(l.doesIntersect(m))
+        self.assertFalse(l.doesIntersect(o))
+        
+    def testLineInstanceMethodIntersection(self):
+        i,j,_ = Point.units()
+        l = Line(B=j)
+        m = Line(B=k)
+        self.assertListEqual(l.intersection(m).xyz,[0,0,0])
+
+    def testLineInstanceMethodDistanceFromPoint(self):
+        raise NotImplementedError()
+
+    def testLineInstanceMethodIsNormal(self):
+        raise NotImplementedError()
+
+    def testLineInstanceMethodRadiansBetween(self):
+        raise NotImplementedError()
+
+    def testLineInstanceMethodDegreesBetween(self):
+        raise NotImplementedError()
+
+        
 if __name__ == '__main__':
     unittest.main()
