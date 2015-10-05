@@ -155,7 +155,7 @@ class Point(object):
                    random.gauss(mu,sigma))
         
     @classmethod
-    def randomLocationInRectangle(cls,origin=None,width=1,height=1):
+    def randomInRectangle(cls,origin=None,width=1,height=1):
         '''
         :param: origin - optional Point subclass or Point initializer
         :param: width  - optional integer
@@ -170,38 +170,52 @@ class Point(object):
 
         '''
         
-        origin = cls(origin)   # handles conversion of point initializers
+        origin = cls(origin)
 
-        x = random.randint(origin.x,origin.x+width)
-        y = random.randint(origin.y,origin.y+height)
+        x = random.uniform(origin.x,origin.x+width)
+        y = random.uniform(origin.y,origin.y+height)
             
         return cls(x,y,origin.z)
+
+    @classmethod
+    def randomXYZ(cls,origin=None,radius=1):
+
+        #x = r cos(v) cos(u)
+        #y = r cos(v) sin(u)     u = [0, 2*Pi)
+        #z = r sin(v)            v = [-Pi/2, Pi/2]
+
+        origin = cls(origin)
+
+        u = random.uniform(0,two_pi)
+        v = random.uniform(-pi_half,pi_half)
+
+        cosv = math.cos(v)
+
+        x = radius * cosv * math.cos(u)
+        y = radius * cosv * math.sin(u) 
+        z = radius * math.sin(v)
+        
+        return origin + [x,y,z]    
     
     @classmethod
-    def randomLocation(cls,origin=None,radius=1):
+    def randomXY(cls,origin=None,radius=1):
         '''
         :param: origin - optional Point subclass or Point initializer
         :param: radius - float
         :return: Point sublcass
 
-        Returns a Point with random x,y coordinates bounded by the
-        circle defined by (origin,radius).
+        Returns a Point with random x,y,z coordinates bounded by the
+        sphere defined by (origin,radius).
 
-        If a circle is not supplied, a unit circle at the origin is used
+        If a sphere is not supplied, a unit sphere at the origin is used
         by default.
+
         '''
-        
         origin = cls(origin)
+        p = cls.randomXYZ(origin,radius)
+        p.z = origin.z
+        return p
         
-        t = (2.0 * math.pi) * random.random()
-        r = random.random() * random.random()
-        if r > 1:
-            r = 2 - r
-            
-        x = int(((radius * r) * math.cos(t)) + origin.x)
-        y = int(((radius * r) * math.sin(t)) + origin.y)
-        
-        return cls(x,y)
     
     @classmethod
     def units(cls):
