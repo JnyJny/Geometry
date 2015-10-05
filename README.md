@@ -9,7 +9,7 @@ working with graphs.
 It's also a personal exercise in learning how to provide a high
 quality python package:
 
-- robuts and complete operator implementation 
+- robust and complete operator implementation 
 - rich setters and getters
 - appropriate use of exceptions and exception handling
 - designing useful base classes which are easy to subclass
