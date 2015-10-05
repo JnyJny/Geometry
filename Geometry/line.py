@@ -469,23 +469,39 @@ class Ray(Line):
 
     def __contains__(self,point):
         '''
-        point in Ray
+        Returns true if point can be found in Ray.
         '''
 
         if not self.A.isCollinear(point,self.B):
             return False
 
-        
+        if self.A.isBetween(point,self.B):
+            return False
 
-        # probably ccw magic that will tell us the answer
-        
+        # point.isBetween(self.A,self.B) or self.B.isBetween(self.A,point):
+        return True
+
+    # intersection is tricky need to override
+    
+    def doesIntersect(self,other):
+        raise NotImplementedError('doesIntersect')
+
+    def isParallel(self,other):
+        raise NotImplementedError('isParallel')
+
+    def isCollinear(self,other):
+        raise NotImplementedError('isCollinear')
+
+    def intersection(self,other):
+        raise NotImplementedError('intersection')
+
+
     @property
     def alpha(self):
         '''
         Angle in radians relative to the X axis.
         '''
         raise NotImplementedError('alpha')
-
 
     @property
     def beta(self):
