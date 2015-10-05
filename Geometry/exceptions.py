@@ -11,11 +11,15 @@ class InfiniteSlope(Exception):
 class CollinearPoints(Exception):
     pass
 
+class CollinearLines(CollinearPoints):
+    pass
+
+class ParallelLines(Exception):
+    pass
+
 class InfiniteLength(Exception):
     pass
 
-class Parallel(Exception):
-    pass
 
 class UngrokkableObject(Exception):
     def __init__(self,obj):
@@ -27,7 +31,7 @@ class UngrokkableObject(Exception):
     def __str__(self):
         fmt = "object {klass} is ungrokkable: {rep}"
         return fmt.format(klass=self.obj.__class__.__name__,rep=repr(self.obj))
-
+    
 class ExceededEpsilonError(Exception):
     def __init(self,x,y,epsilon):
         self.x,self.y,self.epsilon = x,y,epsilon
