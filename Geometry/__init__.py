@@ -27,7 +27,8 @@ __all__ =  [ 'Point',
              'Triangle','Rectangle',
              'Graph','Node','Edge',
              'ZeroSlope','InfiniteSlope','CollinearPoints',
-             'InfiniteLength','Parallel','UngrokkableObject',
+             'InfiniteLength','ParallelLines','CollinearLines',
+             'UngrokkableObject',
              '__author__','__github__' ]
              
 
