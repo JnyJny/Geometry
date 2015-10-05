@@ -60,10 +60,10 @@ class Line(object):
     @classmethod
     def units(cls):
         '''
-        XXX missing doc string
+        Returns a list of three 'unit' lines whose first point is the origin
+        and second points are (1,0,0), (0,1,0 and (0,0,1).
         '''
-        i,j,k = Point.units()
-        return [cls(B=i),cls(B=j),cls(B=k)]
+        return [cls(B=p) for p in Point.units()]
 
 
     def __init__(self,A=None,B=None):
@@ -271,12 +271,21 @@ class Line(object):
         :param: other - Line subclass
         :return: boolean
 
-        Returns true if the two lines do not intersect.
+        Returns true if the two lines do not intersect and are not collinear.
 
         '''
         return not self.doesIntersect(other)
-        
 
+    def isCollinear(self,other):
+        '''
+        :param: other - Line subclass
+        :return: boolean
+
+        Returns true if the two lines are collinear.
+        '''
+
+        return self.A.isCollinear(other.A,other.B) and self.B.isCollinear(other.A,other.B)
+        
     def intersection(self,other):
         '''
         :param: other - Line subclass
@@ -285,11 +294,12 @@ class Line(object):
         Returns a Point object with the coordinates of the intersection
         between the current line and the other line. 
 
-        Will raise Parallel() if the two lines are parallel or coincident.
+        Will raise Parallel() if the two lines are parallel.
+        Will raise Colinnear() if the two lines are collinear.
         '''
 
-        if self == other:
-            return False
+        if self.isCollinear(other):
+            raise CollinearLines('{s} and {o} are collinear'.format(s=self,o=other))
 
         d0 = self.A - self.B
         d1 = other.A - other.B
@@ -297,9 +307,8 @@ class Line(object):
         denominator = (d0.x * d1.y) - (d0.y * d1.x)
         
         if denominator == 0:
-            raise Parallel('{s} and {o} are parallel/coincident'.format(s=self,
-                                                                        o=other))
-
+            raise ParallelLines('{s} and {o} are parallel'.format(s=self,o=other))
+                                                                  
         cp0 = self.A.cross(self.B)
         cp1 = other.A.cross(other.B)
         
@@ -462,7 +471,11 @@ class Ray(Line):
         '''
         point in Ray
         '''
-        raise NotImplementedError('__contains__')
+
+        if not self.A.isCollinear(point,self.B):
+            return False
+
+        
 
         # probably ccw magic that will tell us the answer
         
