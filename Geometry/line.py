@@ -30,21 +30,32 @@ class Line(object):
     def fromSegment(cls,segment):
         '''
         :param: segment - Segment subclass
-        :return: Line
+        :return: Line subclass
 
         Returns a coincident Line object.
         '''
+        
         return cls(segment.A,segment.B)
 
     @classmethod
     def fromRay(cls,ray):
         '''
         :param: ray - Ray subclass
-        :return: Line
+        :return: Line subclass
 
         Returns a coincident Line object.
         '''
         return cls(ray.A,ray.B)
+
+    @classmethod
+    def fromLine(cls,line):
+        '''
+        :param: line - Line subclass
+        :return: Line subclass
+
+        Returns a new coincident Line object.
+        '''
+        return cls(line.A,line.B)
 
     @classmethod
     def units(cls):
@@ -199,21 +210,32 @@ class Line(object):
 
         '''
         key = int(key)
-        if key == 0:
-            self.A = value
-        if key == 1:
-            self.B = value
-        raise IndexError('index %d out of range %s only have two items' %(key))
 
-    def __contains__(self,point):
+        try:
+            return [self.A,self.B][key]
+        except IndexError:
+            pass
+        raise IndexError('index {i} out of range'.format(i=key))
+
+    def __contains__(self,other):
         '''
         p in l
 
-        Returns True iff p is collinear with l.A and l.B.
+        Returns True iff p is a point and is collinear with l.A and l.B.
+
+        Returns True iff p is a line and p.A is collinear with l.A and l.B.
 
         '''
-        return self.A.isCollinear(point,self.B)
 
+        otherType = type(other)
+        
+        if issubclass(otherType,Point):
+            return self.A.isCollinear(other,self.B)
+
+        if issubclass(otherType,Line):
+            return self.A.isCollinear(other.A,self.B)
+
+        raise TypeError('unknown type {t}'.format(t=otherTYpe))
 
     def flip(self):
         '''
@@ -275,8 +297,8 @@ class Line(object):
         denominator = (d0.x * d1.y) - (d0.y * d1.x)
         
         if denominator == 0:
-            msg = '%s and %s are parallel or coincident'
-            raise Parallel(msg % (self,other))
+            raise Parallel('{s} and {o} are parallel/coincident'.format(s=self,
+                                                                        o=other))
 
         cp0 = self.A.cross(self.B)
         cp1 = other.A.cross(other.B)
@@ -289,7 +311,7 @@ class Line(object):
         if p in self and p in other:
             return p
         
-        raise Parallel("Didn't I already check this?") # XXX bug?
+        raise Parallel("found point {p} but not in {a} and {b}".format(p=p,a=self,b=other))
     
     def distanceFromPoint(self,point):
         '''
@@ -310,7 +332,8 @@ class Line(object):
 
         Returns True if this line is perpendicular to the other line.
         '''
-        raise NotImplementedError('isNormal')
+
+        return abs(self.degreesBetween(other)) == 90.0
 
     
     def radiansBetween(self,other):
@@ -362,26 +385,6 @@ class Segment(Line):
     A Line subclass with finite length.
     '''
 
-    @classmethod
-    def fromLine(cls,line):
-        '''
-        :param: line - Line subclass
-        :return: Segment
-
-        Returns a coincident Segment object.
-        '''
-        return cls(line.A,line.B)
-
-    @classmethod
-    def fromRay(cls,ray):
-        '''
-        :param: ray - Ray subclass
-        :return: Segment
-
-        Returns a coincident Segment object.
-        '''
-        return cls(ray.A,ray.B)
-
     @property
     def length(self):
         '''
@@ -432,27 +435,6 @@ class Ray(Line):
     Rays have head and tail vertices with an infinite length in the
     direction of the head vertex.
     '''
-
-    @classmethod
-    def fromLine(cls,line):
-        '''
-        :param: line - Line subclass
-        :return: Ray
-
-        Returns a coincident Ray object.
-        '''
-        return cls(line.A,line.B)
-
-    @classmethod
-    def fromSegment(cls,segment):
-        '''
-        :param: segment - Segment subclass
-        :return: Ray
-
-        Returns a coincident Ray object.
-        '''        
-        return cls(segment.A,segment.B)
-
 
     @property
     def head(self):
