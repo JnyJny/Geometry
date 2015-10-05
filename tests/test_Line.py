@@ -91,6 +91,24 @@ class LineInitializationTestCase(unittest.TestCase):
 
 class LineClassmethodTestCase(unittest.TestCase):
 
+    def testLineFromLineWithMissingArgument(self):
+        with self.assertRaises(TypeError):
+            l = Line.fromLine()
+
+    def testLineFromLineWithGoodLine(self):
+        I,_,_ = Line.units()
+
+        l = Line.fromLine(I)
+        self.assertFalse(l is I)
+        self.assertIsInstance(l,Line)
+        self.assertIsInstance(I,Line)
+        self.assertListEqual(l.A.xyz,I.A.xyz)
+        self.assertListEqual(l.B.xyz,I.B.xyz)
+
+    def testLineFromLineWithBadLine(self):
+        with self.assertRaises(AttributeError):
+            l = Line.fromLine(object())
+
     def testLineConversionFromSegmentWithMissingArgument(self):
         with self.assertRaises(TypeError):
             l = Line.fromSegment()
@@ -104,11 +122,15 @@ class LineClassmethodTestCase(unittest.TestCase):
         self.assertListEqual(l.A.xyz,s.A.xyz)
         self.assertListEqual(l.B.xyz,s.B.xyz)
 
+    def testLineConversionFromSegmentWithBadSegment(self):
+        with self.assertRaises(AttributeError):
+            l = Line.fromSegment(object())
+
     def testLineConversionFromRayWithMissingArgument(self):
         with self.assertRaises(TypeError):
             l = Line.fromRay()
 
-    def testLineConversionFromSegmentWithGoodSegment(self):
+    def testLineConversionFromRayWithGoodRay(self):
         r = Ray([1,2,3],[4,5,6])
         l = Line.fromRay(r)
         self.assertFalse(r is l)
@@ -117,16 +139,20 @@ class LineClassmethodTestCase(unittest.TestCase):
         self.assertListEqual(l.A.xyz,r.A.xyz)
         self.assertListEqual(l.B.xyz,r.B.xyz)
 
+    def testLineConversionFromRayWithBadRay(self):
+        with self.assertRaises(AttributeError):
+            l = Line.fromRay(object())
+
     def testLineClassmethodUnits(self):
         I,J,K = Line.units()
 
-        self.assertIsType(I,Line)
+        self.assertIsInstance(I,Line)
         self.assertEqual(I.A.distance(I.B),1)
         
-        self.assertIsType(J,Line)
+        self.assertIsInstance(J,Line)
         self.assertEqual(J.A.distance(J.B),1)
         
-        self.assertIsType(K,Line)
+        self.assertIsInstance(K,Line)
         self.assertEqual(K.A.distance(K.B),1)
         
 
@@ -216,7 +242,7 @@ class LineInstanceMethodsTestCase(unittest.TestCase):
         self.assertFalse(l.doesIntersect(o))
         
     def testLineInstanceMethodIntersection(self):
-        l,m,_ = line.units()
+        l,m,_ = Line.units()
         self.assertListEqual(l.intersection(m).xyz,[0,0,0])
 
     def testLineInstanceMethodDistanceFromPoint(self):
@@ -239,9 +265,6 @@ class LineInstanceMethodsTestCase(unittest.TestCase):
 
     def testLineInstanceMethodDegreesBetween(self):
         l,m,_ = Line.units()
-
-        l = Line(B=i)
-        m = Line(B=j)
 
         self.assertEqual(l.degreesBetween(m),90)
         self.assertEqual(l.degreesBetween(l),0)
