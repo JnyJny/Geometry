@@ -467,6 +467,14 @@ class Ray(Line):
     def tail(self,newValue):
         self.B = newValue
 
+    def __eq__(self,other):
+        '''
+        x == y
+
+        Returns true if x.head == y.head and y.tail.isCollinear(x.head,x.tail)
+        '''
+        return (self.head == other.head) and other.tail.isCollinear(self.head,self.tail)
+
     def __contains__(self,point):
         '''
         Returns true if point can be found in Ray.
