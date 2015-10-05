@@ -175,9 +175,9 @@ class LinePropertiesTestCase(unittest.TestCase):
             l.length
 
     def testLinePropertyNormal(self):
-        i,j,_ = Point.units()
-        l,_,_ = Line.units()
-        self.assertListEqual(l.normal.A.xyz,j.xyz)
+        _,j,_ = Point.units()
+        I,_,_ = Line.units()
+        self.assertListEqual(I.normal.A.xyz,j.xyz)
 
 
 class LineInstanceMethodsTestCase(unittest.TestCase):
@@ -243,7 +243,14 @@ class LineInstanceMethodsTestCase(unittest.TestCase):
         
     def testLineInstanceMethodIntersection(self):
         l,m,_ = Line.units()
+        
         self.assertListEqual(l.intersection(m).xyz,[0,0,0])
+
+        with self.assertRaises(CollinearLines):
+            p = l.intersection(l)
+
+        with self.assertRaises(ParallelLines):
+            p = l.intersection(Line((0,1),(1,1)))
 
     def testLineInstanceMethodDistanceFromPoint(self):
         i,j,_ = Point.units()
