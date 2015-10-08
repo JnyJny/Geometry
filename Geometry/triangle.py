@@ -2,6 +2,7 @@
 
 Tastes like chicken!
 '''
+import math
 from .point import Point
 from .line import Segment
 from .exceptions import *
@@ -43,7 +44,7 @@ class Triangle(object):
     edgeNameAC = edgeNames[2]
     
     @classmethod
-    def randomTriangle(cls,radius,origin=None):
+    def randomXY(cls,origin=None,radius=1):
         '''
         :param: radius - float
         :param: origin - optional Point subclass
@@ -53,13 +54,21 @@ class Triangle(object):
         described by (origin,radius).  If origin is unspecified, (0,0)
         is assumed.
         '''
-        pts = []
+        
+        pts = set()
         while len(pts) < 3:
-            pt = Point.randomLocation(radius,origin)
-            if pt not in pts:
-                pts.append(pt)
+            pts.add(Point.randomXY(origin,radius))
+            print(pts)
+            
         return cls(pts)
 
+    @classmethod
+    def unit(cls):
+        '''
+        XXX missing doc string
+        '''
+        return cls(Point.units())
+        
     def __init__(self,*args,**kwds):
         
         if len(args) == 0 and len(kwds) == 0:
@@ -90,7 +99,7 @@ class Triangle(object):
 
     @A.setter
     def A(self,newValue):
-        self._A.xyz = newValue
+        self.A.xyz = newValue
 
     @property
     def B(self):
@@ -106,7 +115,7 @@ class Triangle(object):
     
     @B.setter
     def B(self,newValue):
-        self._B.xyz = newValue
+        self.B.xyz = newValue
         
     @property
     def C(self):
@@ -122,7 +131,7 @@ class Triangle(object):
 
     @C.setter
     def C(self,newValue):
-        self._C.xyz = newValue
+        self.C.xyz = newValue
         
     @property
     def ABC(self):
@@ -172,7 +181,7 @@ class Triangle(object):
         '''
         The longest side of the triangle.
         '''
-        self.sides.sort(key=lambda pair:pair[0].distance(pair[1]))
+        self.sides.sort(key=lambda x: x.length)
         return self.sides[-1]
 
     @property
@@ -239,6 +248,23 @@ class Triangle(object):
         return abs(self.ccw) / 2
 
     @property
+    def semiperimeter(self):
+        '''
+        semiperimeter = (|AB|+|AC|+|BC|) / 2
+        '''
+
+        return sum([x.length for x in self.sides])/2.
+
+
+    @property
+    def isEquilateral(self):
+        '''
+        Returns true if all sides are the same length.
+        '''
+        return (self.ab == self.bc) and (self.bc == self.ac)
+    
+
+    @property
     def mapping(self):
         '''
         Mapping of vertex names to vertices, dict.
@@ -255,15 +281,55 @@ class Triangle(object):
         return '{klass}({args})'.format(klass=self.__class__.__name__,
                                         args=str(self))
 
-    def height(self,side='AB'):
+    def __eq__(self,other):
+        '''
+        x == y
+        
+        Iff len(set(x.vertices).difference(set(y.vertices))) == 0
+
+        '''
+        a = set(self.vertices)
+        b = set(other.vertices)
+        return len(a.difference(b)) == 0
+
+
+    def __contains__(self,point):
+        '''
+        :param: point - Point subclass
+        :return: boolean
+
+        Returns True if point is inside the triangle or
+        lies on any of it's sides.
+        '''
+        try:
+            r = [self.A.ccw(self.B,point),
+                 self.B.ccw(self.C,point),
+                 self.C.ccw(self.A,point)]
+        except CollinearPoints:
+            # point is on the lines AB, BC, or CA and that counts.
+            return True
+        
+        return not (any([x>0 for x in r]) and any([x<0 for x in r]))
+
+    def altitude(self,side='AB'):
         '''
         :param: side - optional string
         :return: float
 
-        The distance from the specified side to the opposite point.
+        The shortest distance from the specified side to the opposite point.
 
         '''
-        raise NotImplemented('height')
+        s = self.semiperimeter
+
+        nu = 2 * math.sqrt(s*(s-self.ab)*(s-self.bc)*(s-self.ac))
+
+        try:
+            div = {'AB':self.ab,'AC':self.ac,'BC':self.bc}[side]
+            return nu / div
+        except IndexError:
+            pass
+        
+        raise ValueError("Unknown side named '{side}'".format(side=side))
         
         
     def flip(self,side='AB'):
@@ -297,26 +363,8 @@ class Triangle(object):
             self.A = self.C
             self.C = tmp
             return
-        
-        raise ValueError("Unknown side '%s' requested." % (side))
+        raise ValueError("Unknown side named '{side}'".format(side=side))
     
-    def __contains__(self,point):
-        '''
-        :param: point - Point subclass
-        :return: boolean
-
-        Returns True if point is inside the triangle or
-        lies on any of it's sides.
-        '''
-        try:
-            results = [self.A.ccw(self.B,point),
-                       self.B.ccw(self.C,point),
-                       self.C.ccw(self.A,point)]
-        except CollinearPoints:
-            # point is on the lines AB, BC, or CA and that counts.
-            return True
-        
-        return not (any([x>0 for x in results]) and any([x<0 for x in results]))
 
     def doesIntersect(self,other):
         '''
@@ -324,14 +372,26 @@ class Triangle(object):
         :return: boolean
 
         Returns True iff:
-            Any of other's vertices are contained within self or
-            Any of self's vertices are contained within other.
+           Any side in self intersects any side in other.
+           
         '''
 
-        if any([v in self for v in other.vertices]):
-            return True
+        otherType=  type(other)
+        if issubclass(otherType,Triangle):
+            for s in self.sides:
+                for q in other.sides:
+                    if s.doesIntersect(q):
+                        return True
+            return False
 
-        return any([v in other for v in self.vertices])
-            
+        if issubclass(otherType,Line):
+            for s in self.sides:
+                if s.doesIntersect(other):
+                    return True
+            return False
+
+        msg = 'expecting Point or Triangle, got "{type}"'
+        
+        raise TypeError(msg.format(type=otherType))
         
             
