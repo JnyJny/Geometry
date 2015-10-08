@@ -878,24 +878,33 @@ class PointClassmethodsTestCase(unittest.TestCase):
         p = Point.gaussian()
         self.assertIsInstance(p,Point)
 
-    def testPointClassmethodRandomLocation(self):        
-        p = Point.randomLocation()
+    def testPointClassmethodRandomXY(self):
+        p = Point.randomXY()
         self.assertIsInstance(p,Point)
         self.assertLessEqual(p.distance(),1)
         
-        p = Point.randomLocation(Point(5,5,0),2)
+        p = Point.randomXY(Point(5,5,0),2)
         self.assertIsInstance(p,Point)
         self.assertLessEqual(p.distance(Point(5,5,0)),2)
 
+    def testPointClassmethodRandomXYZ(self):
+        p = Point.randomXYZ()
+        self.assertIsInstance(p,Point)
+        self.assertLessEqual(p.distance(),1)
+        
+        p = Point.randomXYZ(Point(5,5,0),2)
+        self.assertIsInstance(p,Point)
+        self.assertLessEqual(p.distance(Point(5,5,0)),2)        
+
     def testPointClassmethodRandomLocationInRectangle(self):
         i,j,_ = Point.units()
-        p = Point.randomLocationInRectangle()
+        p = Point.randomInRectangle()
         self.assertIsInstance(p,Point)
         self.assertTrue(p.isBetweenX(i,j))
         self.assertTrue(p.isBetweenY(i,j))
 
         o = Point(2,2)
-        p = Point.randomLocationInRectangle(o,2,2)
+        p = Point.randomInRectangle(o,2,2)
         self.assertIsInstance(p,Point)
         self.assertTrue(p.isBetweenX(o,o+2))
         self.assertTrue(p.isBetweenY(o,o+2))
