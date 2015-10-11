@@ -56,8 +56,8 @@ class Triangle(object):
         
         pts = set()
         while len(pts) < 3:
-            pts.add(Point.randomXY(origin,radius))
-            print(pts)
+            p = Point.randomXY(origin,radius)
+            pts.add(p)
             
         return cls(pts)
 
@@ -207,7 +207,8 @@ class Triangle(object):
         The angle described by ABC in radians, float.
 
         '''
-        return self.AB.radiansBetween(self.BC)
+        BA = Segment(self.B,self.A)
+        return BA.radiansBetween(self.BC)
 
     @property
     def betaDegrees(self):
@@ -219,7 +220,8 @@ class Triangle(object):
         The angle described by BCA in radians, float.
 
         '''
-        return self.BC.radiansBetween(self.AC)
+        CB = Segment(self.C,self.B)
+        return CB.radiansBetween(Segment(self.C,self.A))
 
     @property
     def gammaDegrees(self):
@@ -228,10 +230,14 @@ class Triangle(object):
         return math.degrees(self.gammaRadians)
 
     @property
-    def angles(self):
+    def anglesRadians(self):
         '''
         '''
-        return [self.alphaRadians, self.betaRadians,self.gammaRadians]
+        return [self.alphaRadians, self.betaRadians, self.gammaRadians]
+
+    @property
+    def anglesDegrees(self):
+        return [self.alphaDegrees, self.betaDegrees, self.gammaDegrees]
 
     @property
     def ab(self):
@@ -332,12 +338,11 @@ class Triangle(object):
         rad) angle.
         '''
         half_pi = math.pi / 2
-        for a in self.angles:
+        for a in self.anglesRadians:
             if a == half_pi:    # epsilon check?
                 return True
         return False
 
-        
 
     @property
     def isObtuse(self):
@@ -348,7 +353,7 @@ class Triangle(object):
         '''
         half_pi = math.pi / 2
 
-        for a in self.angles:
+        for a in self.anglesRadians:
             if a > half_pi:    # epsilon check?
                 return True
         return False
@@ -360,7 +365,7 @@ class Triangle(object):
         '''
 
         half_pi = math.pi / 2
-        for a in self.angles:
+        for a in self.anglesRadians:
             if a >= half_pi:    # epsilon check?
                 return False
         return True
@@ -392,7 +397,6 @@ class Triangle(object):
         a = set(self.vertices)
         b = set(other.vertices)
         return len(a.difference(b)) == 0
-
 
     def __contains__(self,point):
         '''
