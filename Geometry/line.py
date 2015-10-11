@@ -1,12 +1,12 @@
 '''a pythonic Line
-
-It's awesome.
 '''
 
 import math
 from .point import Point
 from .exceptions import *
 from .constants import *
+
+# 
 
 class Line(object):
     vertexNames = 'AB'
@@ -125,6 +125,28 @@ class Line(object):
             pass
             
         self.A = iterable
+
+    @property
+    def isVertical(self):
+        '''
+        XXX missing doc string
+        '''
+        return (self.A.x == self.B.x)
+
+    @property
+    def isHorizontal(self):
+        '''
+        XXX missing doc string
+        '''
+        return (self.A.y == self.B.y)
+    
+    @property
+    def isCoplanar(self):
+        # XXX what is the property of A.z == B.z called?
+        '''
+        XXX missing doc string
+        '''
+        return (self.A.z == self.B.z)
     
     @property
     def m(self):
@@ -141,7 +163,7 @@ class Line(object):
     @property
     def length(self):
         '''
-        Raises InfiniteLength exception.
+        Lines have an infinite length, raises InfiniteLength() exception.
         '''
         raise InfiniteLength()
 
@@ -167,17 +189,49 @@ class Line(object):
         t = 0 -> point A
         t = 1 -> point B
         '''
-        # <xyz> = <x0y0z0> + t<mxmymz>
+        # p<xyz> = A<xyz> + t *( B<xyz> - A<xyz> )
+        
         return self.A + (t * self.m)
 
+
+    def t(self,point):
+        '''
+        :param: point - Point subclass
+        :return: float
+
+        If point is collinear, determine the 't' coefficient of
+        the parametric equation:
+
+        xyz = A<xyz> + t ( B<xyz> - A<xyz> )
+
+        if t < 0, point is less than A and B on the line
+        if t >= 0 and <= 1, point is between A and B
+        if t > 1 point is greater than B
+
+        XXX could use for an ordering on points?
+        '''
+
+        if point not in self:
+            msg = "'{point}' is not collinear with '{line}'"
+            raise CollinearPoints(msg.format(point=point,line=self))
+        
+        # p = A + t ( B - A)
+        # p - A = t ( B - A)
+        # p - A / (B -A) = t
+        
+        return (point-self.A) / self.m
+
     def __str__(self):
+        '''
+
+        '''
         return 'A=({A}), B=({B})'.format(**self.mapping)
 
     def __repr__(self):
         '''
         Returns a representation string of this instance.
-        '''
 
+        '''
         return '{klass}({args})'.format(klass=self.__class__.__name__,
                                         args=str(self))
     
@@ -189,8 +243,8 @@ class Line(object):
 
     def __getitem__(self,key):
         '''
-        line[0] retrieves A
-        line[1] retrieves B
+        index zero is equivalent to property A
+        index one is equivalent to property B
         '''
         try:
             key = int(key)
@@ -205,9 +259,8 @@ class Line(object):
         
     def __setitem__(self,key,value):
         '''
-        line[0] == line.A
-        line[1] == line.B
-
+        index zero is equivalent to property A
+        index one is equivalent to property B
         '''
         key = int(key)
 
@@ -283,8 +336,7 @@ class Line(object):
 
         Returns true if the two lines are collinear.
         '''
-
-        return self.A.isCollinear(other.A,other.B) and self.B.isCollinear(other.A,other.B)
+        return other in self
         
     def intersection(self,other):
         '''
@@ -295,11 +347,12 @@ class Line(object):
         between the current line and the other line. 
 
         Will raise Parallel() if the two lines are parallel.
-        Will raise Colinnear() if the two lines are collinear.
+        Will raise Collinear() if the two lines are collinear.
         '''
 
         if self.isCollinear(other):
-            raise CollinearLines('{s} and {o} are collinear'.format(s=self,o=other))
+            msg = '{s} and {o} are collinear'
+            raise CollinearLines(msg.format(s=self,o=other))
 
         d0 = self.A - self.B
         d1 = other.A - other.B
@@ -307,7 +360,8 @@ class Line(object):
         denominator = (d0.x * d1.y) - (d0.y * d1.x)
         
         if denominator == 0:
-            raise ParallelLines('{s} and {o} are parallel'.format(s=self,o=other))
+            msg = '{s} and {o} are parallel'
+            raise ParallelLines(msg.format(s=self,o=other))
                                                                   
         cp0 = self.A.cross(self.B)
         cp1 = other.A.cross(other.B)
@@ -319,8 +373,13 @@ class Line(object):
 
         if p in self and p in other:
             return p
-        
-        raise Parallel("found point {p} but not in {a} and {b}".format(p=p,a=self,b=other))
+
+        # XXX thought this was accounted for in the denominator
+        #     comparison to zero? I guess it can't hurt but I'm
+        #     not sure how we would get here. Maybe a precision
+        #     error?
+        msg = "found point {p} but not in {a} and {b}"
+        raise Parallel(msg.format(p=p,a=self,b=other))
     
     def distanceFromPoint(self,point):
         '''
@@ -329,7 +388,8 @@ class Line(object):
 
         Distance from the line to the given point.
         '''
-        d = self.B - self.A
+        # XXX planar distance, doesn't take into account z ?
+        d = self.m
         n = (d.y*point.x) - (d.x*point.y) + self.A.cross(self.B)
         return abs(n / self.A.distance(self.B))
 
