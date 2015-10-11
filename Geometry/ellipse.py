@@ -439,20 +439,54 @@ class Circle(Ellipse):
 
     @classmethod
     def inscribedInRectangle(cls,rectangle):
-        raise NotImplemented('inscribedInRectangle')
+        raise NotImplementedError('inscribedInRectangle')
 
     @classmethod
     def inscribedInTriangle(cls,triangle):
-        raise NotImplemented('inscribedInTriangle')
+        raise NotImplementedError('inscribedInTriangle')
         pass
 
     @classmethod
     def circumscribingRectangle(cls,rectangle):
-        raise NotImplemented('circumscribingRectangle')
+        raise NotImplementedError('circumscribingRectangle')
 
     @classmethod
     def circumscribingTriangle(cls,triangle):
-        raise NotImplemented('circumscribingTriangle')
+        raise NotImplementedError('circumscribingTriangle')
+
+    @classmethod
+    def circumcircleForTriangle(cls,triangle):
+        '''
+        :param: triangle - Triangle subclass
+        :return: Circle subclass
+
+        Returns the circle where every vertex in the input triangle is
+        on the radius of that circle.
+
+        '''
+        
+        if triangle.isRight:
+            # circumcircle origin is the midpoint of the hypotenues
+            o = t.hypotenuse.midpoint
+            r = o.distance(t.A)
+            return cls(o,r)
+
+        # otherwise
+        # 1. find the normals to two sides
+        # 2. translate them to the midpoints of those two sides
+        # 3. intersect those lines for center of circumcircle
+        # 4. radius is distance from center to any vertex in the triangle
+
+        abn  = t.AB.normal
+        abn += t.AB.midpoint
+
+        acn  = t.AC.normal
+        acn += t.AC.midpoint
+
+        o = abn.intersection(acn)
+        r = o.distance(t.A)
+        return cls(o,r)
+        
 
 
     @classmethod
@@ -462,7 +496,7 @@ class Circle(Ellipse):
         :return: Circle
 
         '''
-        raise NotImplemented('circumscribingPoints')
+        raise NotImplementedError('circumscribingPoints')
     
 
     def __init__(self,center=None,radius=1.0):
@@ -597,7 +631,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''
-        raise NotImplemented('__sub__')
+        raise NotImplementedError('__sub__')
 
     def __rsub__(self,other):
         '''
@@ -605,7 +639,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''
-        raise NotImplemented('__rsub__')
+        raise NotImplementedError('__rsub__')
 
     def __isub__(self,other):
         '''
@@ -613,7 +647,7 @@ class Circle(Ellipse):
 
         Updates the current object.
         '''
-        raise NotImplemented('__isub__')
+        raise NotImplementedError('__isub__')
 
     def __mul__(self,other):
         '''
@@ -621,7 +655,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''
-        raise NotImplemented('__mul__')
+        raise NotImplementedError('__mul__')
 
     def __rmul__(self,other):
         '''
@@ -629,7 +663,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''
-        raise NotImplemented('__rmul__')
+        raise NotImplementedError('__rmul__')
 
     def __imul__(self,other):
         '''
@@ -638,7 +672,7 @@ class Circle(Ellipse):
         Returns a new Circle object
         Updates the current object..
         '''
-        raise NotImplemented('__imul__')
+        raise NotImplementedError('__imul__')
 
     def __floordiv__(self,other):
         '''
@@ -646,7 +680,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''
-        raise NotImplemented('__floordiv__')
+        raise NotImplementedError('__floordiv__')
     
     def __rfloordiv__(self,other):
         '''
@@ -654,7 +688,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''  
-        raise NotImplemented('__rfloordiv__')
+        raise NotImplementedError('__rfloordiv__')
     
     def __ifloordiv__(self,other):
         '''
@@ -662,7 +696,7 @@ class Circle(Ellipse):
 
         Updates the current object.
         '''
-        raise NotImplemented('__rfloordiv__')
+        raise NotImplementedError('__rfloordiv__')
 
     def __truediv__(self,other):
         '''
@@ -670,7 +704,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''
-        raise NotImplemented('__truediv__')
+        raise NotImplementedError('__truediv__')
     
     def __rtruediv__(self,other):
         '''
@@ -678,7 +712,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object.
         '''  
-        raise NotImplemented('__rtruediv__')
+        raise NotImplementedError('__rtruediv__')
     
     def __itruediv__(self,other):
         '''
@@ -686,7 +720,7 @@ class Circle(Ellipse):
 
         Updates the current object.
         '''
-        raise NotImplemented('__rtruediv__')
+        raise NotImplementedError('__rtruediv__')
 
     def __mod__(self,other):
         '''
@@ -694,7 +728,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object
         '''
-        raise NotImplemented('__mod__')
+        raise NotImplementedError('__mod__')
     
     def __rmod__(self,other):
         '''
@@ -702,7 +736,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object
         '''
-        raise NotImplemented('__rmod__')
+        raise NotImplementedError('__rmod__')
 
     def __imod__(self,other):
         '''
@@ -710,7 +744,7 @@ class Circle(Ellipse):
 
         Updates the current object.
         '''
-        raise NotImplemented('__imod__')
+        raise NotImplementedError('__imod__')
 
     def __pow__(self,other):
         '''
@@ -718,7 +752,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object
         '''
-        raise NotImplemented('__pow__')
+        raise NotImplementedError('__pow__')
     
     def __rpow__(self,other):
         '''
@@ -726,7 +760,7 @@ class Circle(Ellipse):
 
         Returns a new Circle object
         '''
-        raise NotImplemented('__rpow__')
+        raise NotImplementedError('__rpow__')
 
     def __ipow__(self,other):
         '''
@@ -734,21 +768,21 @@ class Circle(Ellipse):
 
         Updates the current object.
         '''
-        raise NotImplemented('__ipow__')
+        raise NotImplementedError('__ipow__')
 
     def __neg__(self):
         '''
         -x
 
         '''
-        raise NotImplemented('__neg__')
+        raise NotImplementedError('__neg__')
 
     def __pos__(self):
         '''
         +x
 
         '''
-        raise NotImplemented('__pos__')    
+        raise NotImplementedError('__pos__')    
 
     def doesIntersect(self,other):
         '''
