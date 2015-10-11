@@ -1,7 +1,6 @@
 ''' a pythonic Triangle
-
-Tastes like chicken!
 '''
+
 import math
 from .point import Point
 from .line import Segment
@@ -167,12 +166,16 @@ class Triangle(object):
 
     @property
     def vertices(self):
+        '''
+        Alias for property "ABC", list.
+        '''
         return self.ABC
     
     @property
     def sides(self):
         '''
-        List of line segments.
+        List of line segments, list.
+
         '''
         return [self.AB,self.BC,self.AC]
 
@@ -180,35 +183,61 @@ class Triangle(object):
     def hypotenuse(self):
         '''
         The longest side of the triangle.
+
         '''
-        self.sides.sort(key=lambda x: x.length)
-        return self.sides[-1]
+        s = self.sides
+        s.sort(key=lambda x:x.length)
+        return s[-1]
 
     @property
-    def alpha(self):
+    def alphaRadians(self):
         '''
         The angle described by CAB in radians, float.
+
         '''
-        raise NotImplemented('alpha')
+        return self.AB.radiansBetween(self.AC)
 
     @property
-    def beta(self):
+    def alphaDegrees(self):
+        return math.degrees(self.alphaRadians)
+
+    @property
+    def betaRadians(self):
         '''
         The angle described by ABC in radians, float.
+
         '''
-        raise NotImplemented('beta')
+        return self.AB.radiansBetween(self.BC)
 
     @property
-    def gamma(self):
+    def betaDegrees(self):
+        return math.degrees(self.betaRadians)
+
+    @property
+    def gammaRadians(self):
         '''
         The angle described by BCA in radians, float.
+
         '''
-        raise NotImplemented('gamma')
+        return self.BC.radiansBetween(self.AC)
+
+    @property
+    def gammaDegrees(self):
+        '''
+        '''
+        return math.degrees(self.gammaRadians)
+
+    @property
+    def angles(self):
+        '''
+        '''
+        return [self.alphaRadians, self.betaRadians,self.gammaRadians]
 
     @property
     def ab(self):
         '''
         The length of line segment AB, float.
+
         '''
         return self.A.distance(self.B)
 
@@ -216,6 +245,7 @@ class Triangle(object):
     def bc(self):
         '''
         The length of line segment BC, float.
+
         '''
         return self.B.distance(self.C)
             
@@ -223,6 +253,7 @@ class Triangle(object):
     def ac(self):
         '''
         The length of line segment AC, float.
+
         '''
         return self.A.distance(self.C)
 
@@ -230,6 +261,7 @@ class Triangle(object):
     def isCCW(self):
         '''
         Returns True if ABC has a counter-clockwise rotation, boolean.
+
         '''
         return self.A.isCCW(self.B,self.C)
 
@@ -237,6 +269,7 @@ class Triangle(object):
     def ccw(self):
         '''
         Result of ccw(A,B,C), float.
+
         '''
         return self.A.ccw(self.B,self.C)
     
@@ -244,6 +277,7 @@ class Triangle(object):
     def area(self):
         '''
         Area of the triangle, float.
+
         '''
         return abs(self.ccw) / 2
 
@@ -251,18 +285,86 @@ class Triangle(object):
     def semiperimeter(self):
         '''
         semiperimeter = (|AB|+|AC|+|BC|) / 2
+
         '''
-
         return sum([x.length for x in self.sides])/2.
-
 
     @property
     def isEquilateral(self):
         '''
         Returns true if all sides are the same length.
         '''
-        return (self.ab == self.bc) and (self.bc == self.ac)
+
+        ab,bc,ac = self.ab,self.bc,self.ac
+        
+        return (ab == bc) and (bc == ac)
+
+    @property
+    def isIsosceles(self):
+        '''
+        Returns true if two sides are the same length.
+        '''
+        ab,bc,ac = self.ab,self.bc,self.ac
+        
+        if ab == bc:
+            return True
+
+        if ab == ac:
+            return True
+
+        return bc == ac
     
+
+    @property
+    def isScalene(self):
+        '''
+        Returns true if all sides are unequal in length.
+        '''
+
+        ab,bc,ac = self.ab,self.bc,self.ac
+
+        return (ab!=bc) and (ab!=ac) and (bc!=ac)
+
+    @property
+    def isRight(self):
+        '''
+        Returns true if one angle in the triangle is a 90 degree (Pi/2
+        rad) angle.
+        '''
+        half_pi = math.pi / 2
+        for a in self.angles:
+            if a == half_pi:    # epsilon check?
+                return True
+        return False
+
+        
+
+    @property
+    def isObtuse(self):
+        '''
+        Returns true if one angle in the triangle is greater than 90
+        degrees (Pi/2 radians).
+
+        '''
+        half_pi = math.pi / 2
+
+        for a in self.angles:
+            if a > half_pi:    # epsilon check?
+                return True
+        return False
+
+    @property
+    def isAcute(self):
+        '''
+        Returns true if all angles are less than 90 degrees ( Pi/2 radians).
+        '''
+
+        half_pi = math.pi / 2
+        for a in self.angles:
+            if a >= half_pi:    # epsilon check?
+                return False
+        return True
+
 
     @property
     def mapping(self):
@@ -272,7 +374,6 @@ class Triangle(object):
         return { self.vertexNameA:self.A,
                  self.vertexNameB:self.B,
                  self.vertexNameC:self.C }
-
 
     def __str__(self):
         return 'A={A}, B={B}, C={C}'.format(**self.mapping)
@@ -321,15 +422,17 @@ class Triangle(object):
         '''
         s = self.semiperimeter
 
-        nu = 2 * math.sqrt(s*(s-self.ab)*(s-self.bc)*(s-self.ac))
+        num = 2 * math.sqrt(s*(s-self.ab)*(s-self.bc)*(s-self.ac))
 
         try:
             div = {'AB':self.ab,'AC':self.ac,'BC':self.bc}[side]
-            return nu / div
+            return num / div
         except IndexError:
             pass
+
+        msg = "expecting 'AB', 'BC' or 'AC', got '{side}'"
         
-        raise ValueError("Unknown side named '{side}'".format(side=side))
+        raise ValueError(msg.format(side=side))
         
         
     def flip(self,side='AB'):
@@ -363,7 +466,10 @@ class Triangle(object):
             self.A = self.C
             self.C = tmp
             return
-        raise ValueError("Unknown side named '{side}'".format(side=side))
+        
+        msg = "expecting 'AB', 'BC' or 'AC', got '{side}'"
+        
+        raise ValueError(msg.format(side=side))
     
 
     def doesIntersect(self,other):
@@ -390,7 +496,7 @@ class Triangle(object):
                     return True
             return False
 
-        msg = 'expecting Point or Triangle, got "{type}"'
+        msg = "expecting Line or Triangle subclasses, got '{type}'"
         
         raise TypeError(msg.format(type=otherType))
         
