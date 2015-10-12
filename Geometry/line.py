@@ -286,7 +286,9 @@ class Line(object):
             return self.A.isCollinear(other,self.B)
 
         if issubclass(otherType,Line):
-            return self.A.isCollinear(other.A,self.B)
+            if not self.A.isCollinear(other.A,self.B):
+                return False
+            return self.A.isCollinear(other.B,self.B)
 
         raise TypeError('unknown type {t}'.format(t=otherTYpe))
 
