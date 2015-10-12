@@ -271,7 +271,7 @@ class Ellipse(object):
         else:
             b.y += self.minorRadius
         return b
-
+    
 
     @property
     def b_neg(self):
@@ -405,10 +405,6 @@ class Ellipse(object):
         d = point.distance(f0) + point.distance(f1)
         
         return d == f0.distance(f1)
-        
-        
-
-    
 
 
 class Circle(Ellipse):
@@ -436,6 +432,8 @@ class Circle(Ellipse):
     Point(0.0,0.0,0.0)
     
     '''
+
+    
 
     @classmethod
     def inscribedInRectangle(cls,rectangle):
@@ -486,17 +484,6 @@ class Circle(Ellipse):
         o = abn.intersection(acn)
         r = o.distance(t.A)
         return cls(o,r)
-        
-
-
-    @classmethod
-    def circumscribingPoints(cls,points):
-        '''
-        :param: points - list of at least two Point subclasses
-        :return: Circle
-
-        '''
-        raise NotImplementedError('circumscribingPoints')
     
 
     def __init__(self,center=None,radius=1.0):
