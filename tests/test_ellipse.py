@@ -31,14 +31,14 @@ class EllipseInitializationTestCase(unittest.TestCase):
         self.assertEqual(e.x_radius,1)
         self.assertEqual(e.y_radius,1)
 
-    def testEllipseCreationWithOnlyXRadiusKeywords(self):
+    def testEllipseCreationWithOnlyXRadiusKeyword(self):
         e = Ellipse(x_radius=2)
         self.assertIsInstance(e,Ellipse)
         self.assertListEqual(e.center.xyz,[0]*3)
         self.assertEqual(e.x_radius,2)
         self.assertEqual(e.y_radius,1)
 
-    def testEllipseCreationWithOnlyYRadiusKeywords(self):
+    def testEllipseCreationWithOnlyYRadiusKeyword(self):
         e = Ellipse(y_radius=2)
         self.assertIsInstance(e,Ellipse)
         self.assertListEqual(e.center.xyz,[0]*3)
