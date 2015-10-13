@@ -7,7 +7,8 @@ import math
 from .point import Point
 from .rectangle import Rectangle
 from .triangle import Triangle
-from .line import Line
+from .line import Line, Segment
+from .constants import epsilon
 
 
 class Ellipse(object):
@@ -41,9 +42,10 @@ class Ellipse(object):
         # XXX implement radius with a Point instead of scalar
         #     get a z radius
         #     simplifies circle subclass
+        self.center   = center
         self.x_radius = x_radius
         self.y_radius = y_radius
-        self.center   = center
+        
 
     @property
     def x_radius(self):
@@ -99,17 +101,6 @@ class Ellipse(object):
     def center(self,newCenter):
         self.center.xyz = newCenter
 
-    @property
-    def C(self):
-        '''
-        Shorthand notation for Center, Point subclass.
-
-        '''
-        return self.center
-
-    @C.setter
-    def C(self,newCenter):
-        self.center.xyz = newCenter
 
     @property
     def mapping(self):
@@ -123,7 +114,7 @@ class Ellipse(object):
     def __str__(self):
         '''
         '''
-        output = 'center={center}, x_radius={x_radius}, y_radius={y_radius}'
+        output = 'center=({center}), x_radius={x_radius}, y_radius={y_radius}'
         return output.format(**self.mapping) 
 
     def __repr__(self):
@@ -146,7 +137,6 @@ class Ellipse(object):
         '''
         return max(self.x_radius,self.y_radius)
 
-
     @property
     def minorRadius(self):
         '''
@@ -160,28 +150,28 @@ class Ellipse(object):
         '''
         Returns True if the major axis is parallel to the X axis, boolean.
         '''
-        return self.majorAxis == self.x_radius
+        return max(self.x_radius,self.y_radius) == self.x_radius
 
     @property
     def xAxisIsMinor(self):
         '''
         Returns True if the minor axis is parallel to the X axis, boolean.
         '''
-        return self.minorAxis == self.x_radius
+        return min(self.x_radius,self.y_radius) == self.x_radius
 
     @property
     def yAxisIsMajor(self):
         '''
         Returns True if the major axis is parallel to the Y axis, boolean.
         '''
-        return self.majorAxis == self.y_radius
+        return max(self.x_radius,self.y_radius) == self.y_radius
 
     @property
     def yAxisIsMinor(self):
         '''
         Returns True if the minor axis is parallel to the Y axis, boolean.
         '''
-        return self.minorAxis == self.y_radius
+        return min(self.x_radius,self.y_radius) == self.y_radius
 
     @property
     def eccentricity(self):
@@ -215,9 +205,7 @@ class Ellipse(object):
         Distance between the center of the ellipse and a focus, float.
 
         '''
-        a = (self.majorRadius*2)**2
-        b = (self.minorRadius*2)**2
-        return math.sqrt(a - b)
+        return math.sqrt((self.majorRadius**2) - (self.minorRadius**2))
 
     @property
     def f(self):
@@ -240,7 +228,6 @@ class Ellipse(object):
             a.x += self.majorRadius
         else:
             a.y += self.majorRadius
-        
         return a
 
 
@@ -281,16 +268,18 @@ class Ellipse(object):
         nb = Point(self.center)
 
         if self.xAxisIsMinor:
-            b.x -= self.minorRadius
+            nb.x -= self.minorRadius
         else:
-            b.y -= self.minorRadius
+            nb.y -= self.minorRadius
+        return nb
 
     @property
     def vertices(self):
         '''
-        A list of four points where the axes intersect the ellipse, list.
+        A dictionary of four points where the axes intersect the ellipse, dict.
         '''
-        return [self.a,self.b,self.a_neg,self.b_neg]
+        return { 'a':self.a, 'a_neg':self.a_neg,
+                 'b':self.b, 'b_neg':self.b_neg }
 
     @property
     def focus0(self):
@@ -400,12 +389,20 @@ class Ellipse(object):
         Is true iff x is a point on or inside the ellipse y.
 
         '''
-        f0,f1 = self.foci   # getting the foci is expensive, cache them
 
-        d = point.distance(f0) + point.distance(f1)
+        d = sum([point.distance(f) for f in self.foci])
+
+        majA,minA = self.majorAxis,self.minorAxis
+
+        # d < majorAxis.length interior points
+        # d == majorAxis.length on perimeter of ellipse
+        # d > majorAxis.length exterior points
+
+        return d <= majA.length
+
+
+
         
-        return d == f0.distance(f1)
-
 
 class Circle(Ellipse):
     '''
@@ -432,8 +429,6 @@ class Circle(Ellipse):
     Point(0.0,0.0,0.0)
     
     '''
-
-    
 
     @classmethod
     def inscribedInRectangle(cls,rectangle):
