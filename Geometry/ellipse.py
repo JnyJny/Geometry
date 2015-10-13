@@ -382,7 +382,7 @@ class Ellipse(object):
 
         return True
 
-    def __contains__(self,point):
+    def __contains__(self,other):
         '''
         x in y 
 
@@ -390,19 +390,26 @@ class Ellipse(object):
 
         '''
 
-        d = sum([point.distance(f) for f in self.foci])
+        otherType = type(other)
 
-        majA,minA = self.majorAxis,self.minorAxis
+        if issubclass(otherType,Point):
+            d = sum([other.distance(f) for f in self.foci])
+            # d < majorAxis.length interior point
+            # d == majorAxis.length on perimeter of ellipse
+            # d > majorAxis.length exterior point
+            return d <= self.majorAxis.length
 
-        # d < majorAxis.length interior points
-        # d == majorAxis.length on perimeter of ellipse
-        # d > majorAxis.length exterior points
+        if issubclass(otherType,Segment):
+            return (other.A in self) and (other.B in self)        
 
-        return d <= majA.length
+        if issubclass(otherType,Ellipse):
+            return (other.majorAxis in self) and (other.minorAxis in self)
 
-
-
+        raise TypeError("unknown type '{t}'".format(t=otherType))
         
+            
+    
+
 
 class Circle(Ellipse):
     '''
