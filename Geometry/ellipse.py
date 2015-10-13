@@ -100,8 +100,7 @@ class Ellipse(object):
     @center.setter
     def center(self,newCenter):
         self.center.xyz = newCenter
-
-
+        
     @property
     def mapping(self):
         '''
@@ -548,22 +547,34 @@ class Circle(Ellipse):
         '''
         return  math.pi * (self.radius**2)
 
-    @property
-    def volume(self):
-        '''
-        The spherical volume bounded by this circle, float.
-        '''
-        return (4./3.) * math.pi * (self.radius**3)
+# class Sphere(Circle):
+#    @property
+#    def volume(self):
+#        '''
+#        The spherical volume bounded by this circle, float.
+#        '''
+#        return (4./3.) * math.pi * (self.radius**3)
         
-    def __contains__(self,point):
+    def __contains__(self,other):
         '''
-        :param: Point subclass
+        :param: Point | Segment | Ellipse subclass
         :return: boolean
 
         Returns True if the distance from the center to the point
         is less than or equal to the radius.
         '''
-        return point.distance(self.center) <= self.radius
+        otherType = type(other)
+
+        if issubclass(otherType,Point):
+            return other.distance(self.center) <= self.radius
+
+        if issubclass(otherType,Segment):
+            return (other.A in self) and (other.B in self)
+
+        if issubclass(otherType,Ellipse):
+            return (other.majorAxis in self) and (other.minorAxis in self)
+
+        raise TypeError("unknown type '{t}'".format(t=otherType))
 
     @property
     def mapping(self):
@@ -572,7 +583,7 @@ class Circle(Ellipse):
     def __str__(self):
         '''
         '''
-        return 'center={center}, radius={radius}'.format(**self.mapping)
+        return 'center=({center}), radius={radius}'.format(**self.mapping)
 
     def __add__(self,other):
         '''
@@ -780,6 +791,16 @@ class Circle(Ellipse):
         Returns True iff:
           self.center.distance(other.center) <= self.radius+other.radius
         '''
-        
-        return self.center.distance(other.center) <= (self.radius+other.radius)
+
+        otherType = type(other)
+
+        if issubclass(otherType,Ellipse):
+            distance = self.center.distance(other.center)
+            radiisum = self.radius + other.radius
+            return distance <= radiisum
+
+        if issubclass(otherType,Line):
+            raise NotImplementedError('doesIntersect,other is Line subclass')
+
+        raise TypeError("unknown type '{t}'".format(t=otherType))
         
