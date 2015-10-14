@@ -9,8 +9,11 @@ except:
     from pkgutil import extend_path
     __path__ = extend_path(__path__,__name__)
 
-__author__ = "Erik O'Shaughnessy - erik.oshaughnessy@gmail.com"
-__github__ = 'https://github.com/JnyJny/Geometry'
+__author__ = '\n'.join(["Erik O'Shaughnessy",
+                        'erik.oshaughnessy@gmail.com',
+                        'https://github.com/JnyJny/Geometry'])
+
+__version__ = "0.0.1"
 
 from .point import Point
 from .ellipse import Ellipse, Circle
@@ -29,7 +32,7 @@ __all__ =  [ 'Point',
              'ZeroSlope','InfiniteSlope','CollinearPoints',
              'InfiniteLength','ParallelLines','CollinearLines',
              'UngrokkableObject',
-             '__author__','__github__' ]
+             '__author__','__version__' ]
              
 
 
