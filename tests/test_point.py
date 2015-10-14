@@ -76,62 +76,71 @@ class NumberFactory(object):
         l.sort()
         return l
 
-        
+class PointTestCase(unittest.TestCase):
 
-class PointInitializationTestCase(unittest.TestCase):
+    def assertIsOrigin(self,p):
+        self.assertIsInstance(p,Point)
+        self.assertListEqual(p.xyz,[0]*3)
+
+    def assertPointsEqual(self,a,b):
+        self.assertIsInstance(a,Point)
+        self.assertIsInstance(b,Point)
+        self.assertFalse(a is b)
+        self.assertListEqual(a.xyz,b.xyz)
+
+class PointInitializationTestCase(PointTestCase):
     
     def testPointCreationWithNoArgumentsOrKeywords(self):
-        self.assertListEqual(Point().xyz,NumberFactory.List())
+        self.assertIsOrigin(Point())
         
-    def testPointCreationFromNone(self):        
-        self.assertListEqual(Point(None).xyz,NumberFactory.List())
+    def testPointCreationFromNone(self):
+        self.assertIsOrigin(Point(None))
         
-    def testPointCreationFromEmptyTuple(self):        
-        self.assertListEqual(Point(()).xyz,NumberFactory.List())
+    def testPointCreationFromEmptyTuple(self):
+        self.assertIsOrigin(Point(()))
         
-    def testPointCreationFromEmptyList(self):        
-        self.assertListEqual(Point(NumberFactory.List(n=0)).xyz,
-                             NumberFactory.List())
+    def testPointCreationFromEmptyList(self):
+        self.assertIsOrigin(Point([]))
         
     def testPointCreationFromEmptyDict(self):
-        self.assertListEqual(Point(NumberFactory.Dict(keys='')).xyz,
-                             NumberFactory.List())
+        self.assertIsOrigin(Point({}))
 
     def testPointCreationFromEmptyObject(self):
         with self.assertRaises(UngrokkableObject):
             Point(NumberFactory.Object(keys=''))
         
     def testPointCreationFromAnotherDefaultPoint(self):
-        self.assertListEqual(Point(Point()).xyz,NumberFactory.List())
+        a = Point()
+        self.assertPointsEqual(Point(a),a)
         
     def testPointCreationFromAnotherInitializedPoint(self):
-        self.assertListEqual(Point(Point(NumberFactory.List(v=1))).xyz,
-                             NumberFactory.List(v=1))
+        a = Point(1,1,1)
+        self.assertPointsEqual(Point(a),a)
         
     def testPointCreationFromDictionary(self):
-        self.assertListEqual(Point(NumberFactory.Dict(v=1)).xyz,
-                             NumberFactory.List(v=1))
+        d = {'x':1,'y':1,'z':1}
+        p = Point(d)
+        self.assertListEqual(p.xyz,[d['x'],d['y'],d['z']])
         
     def testPointCreationFromConformingObject(self):
-        self.assertListEqual(Point(NumberFactory.Object(v=1)).xyz,
-                             NumberFactory.List(v=1))
+        o = NumberFactory.Object(v=1)
+        p = Point(o)
+        self.assertListEqual(p.xyz,[o.x,o.y,o.z])
 
     def testPointOrdinateW(self):
-        self.assertListEqual(Point().xyzw,[0,0,0,1])
-        self.assertIsInstance(Point().w,float)
-        self.assertEqual(Point().w,1)
+        p = Point()
+        self.assertListEqual(p.xyzw,[0,0,0,1])
+        self.assertIsInstance(p.w,float)
+        self.assertEqual(p.w,1)
         with self.assertRaises(AttributeError):
-            p = Point()
             p.w = 2
 
     def testCreatePointWithRegularArguments(self):
-        
         self.assertListEqual(Point(1).xyz,[1,0,0])
         self.assertListEqual(Point(1,1).xyz,[1,1,0])
         self.assertListEqual(Point(1,1,1).xyz,[1,1,1])
         
     def testCreatePointWithOnlyKeywords(self):
-
         self.assertListEqual(Point(x=1).xyz,[1,0,0])
         self.assertListEqual(Point(y=1).xyz,[0,1,0])
         self.assertListEqual(Point(z=1).xyz,[0,0,1])
@@ -181,7 +190,7 @@ class PointInitializationTestCase(unittest.TestCase):
                              NumberFactory.List(v=1))
 
         with self.assertRaises(UngrokkableObject):
-            Point(NumberFactory.Object(keys=''))
+            Point(object())
 
 class PointAttributeSettersTestCase(unittest.TestCase):
     
@@ -895,10 +904,10 @@ class PointClassmethodsTestCase(unittest.TestCase):
         l = p.distance(o)
 
         # XXX horrible bandaid
-        if abs(l-r) <= sys.float_info.epsilon:
+        if abs(l-r)/r <= sys.float_info.epsilon:
             self.assertTrue(True)
         else:
-            self.assertLessEqual(l,2)
+            self.assertLessEqual(l,r)
 
     def testPointClassmethodRandomLocationInRectangle(self):
         i,j,_ = Point.units()
