@@ -10,6 +10,9 @@ PYSETUP= ${PYTHON} ${SETUP}
 PKG_ROOT= ${TARGET}
 PKG_INIT = ${PKG_ROOT}/__init__.py
 
+TMPFILES= VERSION dist build ${TARGET}.egg-info
+
+NOSETESTS= nosetests
 SED = sed
 RM = rm
 MV = mv
@@ -28,7 +31,9 @@ sdist:
 bdist:
 	${PYSETUP} build bdist_wheel
 
-
+test:
+	${NOSETESTS}
 
 clean:
-	@${RM} -rf VERSION
+	@${PYSETUP} clean
+	@${RM} -rf ${TMPFILES}
