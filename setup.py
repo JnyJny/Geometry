@@ -9,9 +9,12 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here,'README.md'), encoding='utf-8') as f:
     long_description = f.read()
-    
-with open(path.join(here,'VERSION'), encoding='utf-8') as f:
-    version = f.read()[:-1]
+
+try:    
+    with open(path.join(here,'VERSION'), encoding='utf-8') as f:
+        version = f.read()[:-1]
+except FileNotFoundError:
+    version = '0.0.0'
 
 setup(name='Geometry',
       version=version,
