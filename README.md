@@ -1,5 +1,7 @@
 # Geometry - Python Geometry Package
 
+Version: 0.0.1
+
 Geometry is a python package for performing computational
 geometry. Starting with the humble point, the package implements
 increasingly higher dimensional objects: ellipses, circles, lines,
@@ -17,4 +19,5 @@ quality python package:
 - unit tests to confirm promised functionality
 
 Mostly though, it was super fun to write.
+
 
