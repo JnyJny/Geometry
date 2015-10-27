@@ -22,14 +22,13 @@ Geometry is python3 package which implements a variety of geometric objects:
 
 Install with pip::
  
- $ pip3 install Geometry
+ $ sudo pip3 install Geometry
 
 Install from git repository::
  
  $ git clone https://github.com/JnyJny/Geometry.git
  $ cd Geometry
  $ sudo python3 setup.py install
-
 
 '''
 
