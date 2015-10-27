@@ -9,7 +9,28 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 long_description = '''
-XXX missing long description
+Geometry is python3 package which implements a variety of geometric objects:
+
+- point
+- ellipse
+- circle
+- line
+- segment
+- ray
+- triangle
+- rectangle
+
+Install with pip::
+ 
+ $ pip3 install Geometry
+
+Install from git repository::
+ 
+ $ git clone https://github.com/JnyJny/Geometry.git
+ $ cd Geometry
+ $ sudo python3 setup.py install
+
+
 '''
 
 try:    
@@ -18,11 +39,14 @@ try:
 except FileNotFoundError:
     version = '0.0.0'
 
+download_url = 'https://github.com/JnyJny/Geometry/archive/{}.tar.gz'
+
 setup(name='Geometry',
       version=version,
       description = 'Geometry the python way.',
       long_description = long_description,
       url = 'https://github.com/JnyJny/Geometry',
+      download_url = download_url.format(version),
       author="Erik O'Shaughnessy",
       author_email="erik.oshaughnessy@gmail.com",
       license='MIT',

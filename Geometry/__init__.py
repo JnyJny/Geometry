@@ -13,7 +13,7 @@ __author__ = '\n'.join(["Erik O'Shaughnessy",
                         'erik.oshaughnessy@gmail.com',
                         'https://github.com/JnyJny/Geometry'])
 
-__version__ = "0.0.20"
+__version__ = "0.0.22"
 
 from .point import Point
 from .ellipse import Ellipse, Circle
