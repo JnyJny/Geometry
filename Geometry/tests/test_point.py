@@ -1,9 +1,9 @@
 
 import unittest
 import sys
-sys.path.append('..')
-from Geometry import Point
-from Geometry.exceptions import *
+
+from .. import Point
+from ..exceptions import *
 
 class NumberFactory(object):
     @classmethod
@@ -88,8 +88,6 @@ class PointTestCase(unittest.TestCase):
         self.assertFalse(a is b)
         self.assertListEqual(a.xyz,b.xyz)
 
-class PointInitializationTestCase(PointTestCase):
-    
     def testPointCreationWithNoArgumentsOrKeywords(self):
         self.assertIsOrigin(Point())
         
@@ -192,8 +190,6 @@ class PointInitializationTestCase(PointTestCase):
         with self.assertRaises(UngrokkableObject):
             Point(object())
 
-class PointAttributeSettersTestCase(unittest.TestCase):
-    
     def testXYZSetter(self):
         
         p = Point(1,1,1)
@@ -404,10 +400,6 @@ class PointAttributeSettersTestCase(unittest.TestCase):
                 with self.assertRaises(UngrokkableObject):
                     p.xz = NumberFactory.Object(key,1)
         
-        
-
-class PointAttributeTypesTestCase(unittest.TestCase):
-    
     def testPointCoordinateTypesForFloat(self):
         p = Point()
         self.assertIsInstance(p.x,float)
@@ -421,9 +413,6 @@ class PointAttributeTypesTestCase(unittest.TestCase):
             self.assertIsInstance(p.y,float)
             self.assertIsInstance(p.z,float)
 
-        
-class PointOperationsTestCase(unittest.TestCase):
-    
     def testPointAddition(self):
 
         p = Point()
@@ -737,9 +726,6 @@ class PointOperationsTestCase(unittest.TestCase):
         for key in Point.ordinateNamesAll:
             self.assertEqual(getattr(p,key),m[key])        
 
-        
-class PointInstanceMethodsTestCase(unittest.TestCase):
-    
     def testPointCCW(self):
         
         a = Point()
@@ -875,9 +861,6 @@ class PointInstanceMethodsTestCase(unittest.TestCase):
         self.assertFalse(a.isBetweenZ(i,j))
         self.assertFalse(a.isBetweenZ(j,i))
 
-
-class PointClassmethodsTestCase(unittest.TestCase):
-    
     def testPointClassmethodGaussian(self):
         p = Point.gaussian()
         self.assertIsInstance(p,Point)
@@ -942,8 +925,3 @@ class PointClassmethodsTestCase(unittest.TestCase):
             msg = 'unitize(O,{u}) => {r} != {u}'
             self.assertListEqual(u.xyz,r.xyz,msg.format(u=u,r=r))
                                  
-
-    
-if __name__ == '__main__':
-    unittest.main()
-            

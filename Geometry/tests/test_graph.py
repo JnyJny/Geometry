@@ -1,9 +1,11 @@
 
 import unittest
-import sys
-sys.path.append('..')
 
-from Geometry import *
+from .. import Point, Triangle
+from ..exceptions import *
 
-if __name__ == '__main__':
-    unittest.main()
+class GraphTestCase(unittest.TestCase):
+    pass
+
+class NodeTestCase(unittest.TestCase):
+    pass

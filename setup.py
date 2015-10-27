@@ -7,8 +7,10 @@ from codecs import open
 from os import path
 
 here = path.abspath(path.dirname(__file__))
-with open(path.join(here,'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+
+long_description = '''
+XXX missing long description
+'''
 
 try:    
     with open(path.join(here,'VERSION'), encoding='utf-8') as f:
@@ -32,7 +34,8 @@ setup(name='Geometry',
                     'Programming Language :: Python :: 3',
                     'Programming Language :: Python :: 3.4'],
       keywords = 'geometry point circle line segment triangle rectangle graph',
-      packages = find_packages(exclude=['contrib','docs','tests']),
+      packages = find_packages(exclude=['contrib']),
+      test_suite = 'Geometry.tests',
       install_requires = [],
       extras_require = {},
       package_data = {},

@@ -1,12 +1,10 @@
 
 import unittest
-import sys
-sys.path.append('..')
 
-from Geometry import Point, Ellipse, Rectangle, Triangle, Segment
-from Geometry.exceptions import *
+from .. import Point, Ellipse, Rectangle, Triangle, Segment
+from ..exceptions import *
 
-class EllipseInitializationTestCase(unittest.TestCase):
+class EllipseTestCase(unittest.TestCase):
     
     def testEllipseCreationWithNoArgumentsOrKeywords(self):
         e = Ellipse()
@@ -76,8 +74,6 @@ class EllipseInitializationTestCase(unittest.TestCase):
         self.assertEqual(e.x_radius,2)
         self.assertEqual(e.y_radius,3)
 
-class EllipseAttributeSettersTestCase(unittest.TestCase):
-
     def testEllipseSettingCenterAttribute(self):
         
         for p in [Point(2,2,2), Point.gaussian()]:
@@ -132,8 +128,6 @@ class EllipseAttributeSettersTestCase(unittest.TestCase):
             with self.assertRaises(TypeError):
                 e = Ellipse()
                 e.y_radius = fail                
-
-class EllipseAttributeGettersTestCase(unittest.TestCase):
 
     def testEllipseCenterGetter(self):
         e = Ellipse()
@@ -332,16 +326,6 @@ class EllipseAttributeGettersTestCase(unittest.TestCase):
         e = Ellipse(x_radius=2)
         self.assertTrue(e.isEllipse)
 
-
-
-class EllipseClassmethodsTestCase(unittest.TestCase):
-    # XXX Ellipse has no class methods
-    pass
-
-
-
-class EllipseInstanceMethodsTestCase(unittest.TestCase):
-
     def testEllipseEqualityInstanceMethod(self):
         a = Ellipse()
         b = Ellipse()
@@ -409,7 +393,3 @@ class EllipseInstanceMethodsTestCase(unittest.TestCase):
             with self.assertRaises(TypeError):
                 fail in e
         
-
-if __name__ == '__main__':
-    unittest.main()
-

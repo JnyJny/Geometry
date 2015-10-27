@@ -1,14 +1,11 @@
 
 import unittest
-import sys
 import math
 
-sys.path.append('..')
+from .. import Line, Segment, Ray, Point
+from ..exceptions import *
 
-from Geometry import Line, Segment, Ray, Point
-from Geometry.exceptions import *
-
-class SegmentInitializationTestCase(unittest.TestCase):
+class SegmentTestCase(unittest.TestCase):
 
     def testSegmentInitializationWithNoArguments(self):
         s = Segment()
@@ -82,9 +79,6 @@ class SegmentInitializationTestCase(unittest.TestCase):
         self.assertListEqual(s.A.xyz,[1,1,1])
         self.assertListEqual(s.B.xyz,[0,0,0])
 
-
-class SegmentClassmethodTestCase(unittest.TestCase):
-
     def testSegmentConversionFromLineWithMissingArgument(self):
         with self.assertRaises(TypeError):
             s = Segment.fromSegment()
@@ -112,8 +106,6 @@ class SegmentClassmethodTestCase(unittest.TestCase):
         self.assertIsInstance(s,Segment)
         self.assertListEqual(s.A.xyz,r.A.xyz)
         self.assertListEqual(s.B.xyz,r.B.xyz)
-
-class SegmentPropertiesTestCase(unittest.TestCase):
 
     def testSegmentPropertySlopeParameterM(self):
         s = Segment(Point(),Point(1,1,1))
@@ -144,9 +136,6 @@ class SegmentPropertiesTestCase(unittest.TestCase):
         i,j,_ = Point.units()
         s = Segment(B=i)
         self.assertListEqual(s.normal.A.xyz,j.xyz)
-
-
-class SegmentInstanceMethodsTestCase(unittest.TestCase):
 
     def testSegmentInstanceMethodPointAt(self):
         s = Segment(B=[1,0,0])
