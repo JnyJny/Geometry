@@ -26,25 +26,29 @@ README = README.md
 
 TMPFILES= VERSION dist build ${TARGET}.egg-info
 
+NOSEFLAGS= --with-coverage --cover-tests --cover-html
+
 GIT = git
 SED = sed
 RM = rm
 MV = mv
+NOSE= nosetests
 
 all:
-	@echo "make sdist        - creates a source distribution"
-	@echo "make bdist        - creates a binary distribution"
-	@echo "make wheel        - creates a wheel distribution"
-	@echo "make test         - runs unit tests"
-	@echo "make upload       - uploads bdist_wheel to PYPI=${PYPI}"
-	@echo "make clean        - removes all derived files and directories"
-	@echo "make bump_major   - increment version major number MAJOR=${MAJOR}"
-	@echo "make bump_minor   - increment version minor number MINOR=${MINOR}"
-	@echo "make bump_point   - increment version point number POINT=${POINT}"
-	@echo "make update       - updates the version VERSION=${VERSION}"
-	@echo ""
-	@echo "make test-install - pip install from PYPI=${PYPI}"
-	@echo "make test-upgrade - pip upgrade from PYPI=${PYPI}"
+	@echo "make sdist         - creates a source distribution"
+	@echo "make bdist         - creates a binary distribution"
+	@echo "make wheel         - creates a wheel distribution"
+	@echo "make test          - runs unit tests"
+	@echo "make upload        - uploads bdist_wheel to PYPI=${PYPI}"
+	@echo "make clean         - removes all derived files and directories"
+	@echo "make bump_major    - increment version major number MAJOR=${MAJOR}"
+	@echo "make bump_minor    - increment version minor number MINOR=${MINOR}"
+	@echo "make bump_point    - increment version point number POINT=${POINT}"
+	@echo "make update        - updates the version VERSION=${VERSION}"
+	@echo ""		  
+	@echo "make test-install  - pip install from PYPI=${PYPI}"
+	@echo "make test-upgrade  - pip upgrade from PYPI=${PYPI}"
+	@echo "make test-coverage - run unittests with code coverage"
 	@echo ""
 	@echo "Update workflow:"
 	@echo "----------------"
@@ -96,6 +100,9 @@ bdist:
 
 test:
 	${PYSETUP} test -q
+
+test-coverage:
+	${NOSE} ${NOSEFLAGS}
 
 clean:
 	@${PYSETUP} clean
