@@ -1,12 +1,10 @@
 '''setup for Geometry
-
 '''
 
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-here = path.abspath(path.dirname(__file__))
 
 long_description = '''
 Geometry is python3 package which implements a variety of geometric objects:
@@ -32,12 +30,13 @@ Install from git repository::
 
 '''
 
-try:    
+try:
+    here = path.abspath(path.dirname(__file__))
     with open(path.join(here,'VERSION'), encoding='utf-8') as f:
         version = f.read()[:-1]
 except FileNotFoundError:
     version = '0.0.0'
-
+    
 download_url = 'https://github.com/JnyJny/Geometry/archive/{}.tar.gz'
 
 setup(name='Geometry',
