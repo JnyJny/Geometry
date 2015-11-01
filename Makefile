@@ -55,6 +55,7 @@ all:
 	@echo "make bump_"
 	@echo "make update"
 	@echo "make tag"
+	@echo "make commit"
 	@echo "make upload"
 	@echo ""
 
