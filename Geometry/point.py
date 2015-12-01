@@ -10,6 +10,7 @@ import hashlib
 from .constants import *
 from .exceptions import *
 
+
 class Point(object):
     '''
     A three dimensional Point initialized with x,y,z values
@@ -18,7 +19,7 @@ class Point(object):
     But wait! There's more.  This hashable point is designed to be
     flexible and easy to use with a comprehensive set of operators and
     functions:
-    
+
     Operations
     ----------
 
@@ -26,7 +27,7 @@ class Point(object):
 
     Operands can be other Point subclasses, arrays, tuples, dicts,
     or any object with x, y or z properties.
-    
+
     Methods
     -------
 
@@ -51,7 +52,7 @@ class Point(object):
     randomLocationInRectangle: Random point within a rectangular bound
                       unitize: Turns two points into a unit "vector"
                         units: Returns the i, j and k unit "vectors"
-    
+
 
     Random Usage Examples
     ---------------------
@@ -121,26 +122,25 @@ class Point(object):
     ordinateNameY = ordinateNamesAll[1]
     ordinateNameZ = ordinateNamesAll[2]
     ordinateNameW = ordinateNamesAll[3]
-    ordinateNamesXY = ordinateNameX+ordinateNameY
-    ordinateNamesYZ = ordinateNameY+ordinateNameZ
-    ordinateNamesXZ = ordinateNameX+ordinateNameZ
+    ordinateNamesXY = ordinateNameX + ordinateNameY
+    ordinateNamesYZ = ordinateNameY + ordinateNameZ
+    ordinateNamesXZ = ordinateNameX + ordinateNameZ
 
     @classmethod
-    def unitize(cls,A,B):
+    def unitize(cls, A, B):
         '''
         :param: A - Point subclass
         :param: B - Point subclass
         :return: Point subclass
-        
+
         Given a vector described by two points (A and B)
         translate the vector AB to the origin and scale by AB's length.
 
         '''
         return (B - A) / A.distance(B)
 
-
     @classmethod
-    def gaussian(cls,mu=0,sigma=1):
+    def gaussian(cls, mu=0, sigma=1):
         '''
         :param: mu    - mean
         :param: sigma - standard deviation
@@ -150,12 +150,12 @@ class Point(object):
         See random.gauss for further information on these parameters.
 
         '''
-        return cls(random.gauss(mu,sigma),
-                   random.gauss(mu,sigma),
-                   random.gauss(mu,sigma))
-        
+        return cls(random.gauss(mu, sigma),
+                   random.gauss(mu, sigma),
+                   random.gauss(mu, sigma))
+
     @classmethod
-    def randomInRectangle(cls,origin=None,width=1,height=1):
+    def randomInRectangle(cls, origin=None, width=1, height=1):
         '''
         :param: origin - optional Point subclass or Point initializer
         :param: width  - optional integer
@@ -163,42 +163,42 @@ class Point(object):
         :return: Point subclass
 
         Returns a Point with random x,y coordinates which are bounded
-        by the rectangle defined by (origin,width,height).  
+        by the rectangle defined by (origin,width,height).
 
         If a rectangle is not supplied, a unit square with vertex A
         on the origin is used by default.
 
         '''
-        
+
         origin = cls(origin)
 
-        x = random.uniform(origin.x,origin.x+width)
-        y = random.uniform(origin.y,origin.y+height)
-            
-        return cls(x,y,origin.z)
+        x = random.uniform(origin.x, origin.x + width)
+        y = random.uniform(origin.y, origin.y + height)
+
+        return cls(x, y, origin.z)
 
     @classmethod
-    def randomXYZ(cls,origin=None,radius=1):
+    def randomXYZ(cls, origin=None, radius=1):
 
-        #x = r cos(v) cos(u)
-        #y = r cos(v) sin(u)     u = [0, 2*Pi)
-        #z = r sin(v)            v = [-Pi/2, Pi/2]
+        # x = r cos(v) cos(u)
+        # y = r cos(v) sin(u)     u = [0, 2*Pi)
+        # z = r sin(v)            v = [-Pi/2, Pi/2]
 
         origin = cls(origin)
 
-        u = random.uniform(0,two_pi)
-        v = random.uniform(-pi_half,pi_half)
+        u = random.uniform(0, two_pi)
+        v = random.uniform(-pi_half, pi_half)
 
         cosv = math.cos(v)
 
         x = radius * cosv * math.cos(u)
-        y = radius * cosv * math.sin(u) 
+        y = radius * cosv * math.sin(u)
         z = radius * math.sin(v)
-        
-        return origin + [x,y,z]    
-    
+
+        return origin + [x, y, z]
+
     @classmethod
-    def randomXY(cls,origin=None,radius=1):
+    def randomXY(cls, origin=None, radius=1):
         '''
         :param: origin - optional Point subclass or Point initializer
         :param: radius - float
@@ -212,28 +212,27 @@ class Point(object):
 
         '''
         origin = cls(origin)
-        p = cls.randomXYZ(origin,radius)
+        p = cls.randomXYZ(origin, radius)
         p.z = origin.z
         return p
-        
-    
+
     @classmethod
     def units(cls):
         '''
         Returns a list of 'unit' points: (1,0,0), (0,1,0) and (0,0,1).
         '''
-        return [cls(1,0,0),cls(0,1,0),cls(0,0,1)]
-    
-    def __init__(self,*args,**kwds):
+        return [cls(1, 0, 0), cls(0, 1, 0), cls(0, 0, 1)]
+
+    def __init__(self, *args, **kwds):
 
         nargs = len(args)
-        
+
         if nargs == 0 and len(kwds) == 0:
             return
 
         if nargs == 1:
             self.xyz = args[0]
-            
+
         if nargs > 1:
             self.xyz = args
 
@@ -251,8 +250,8 @@ class Point(object):
         return self._x
 
     @x.setter
-    def x(self,newValue):
-        
+    def x(self, newValue):
+
         try:
             self._x = float(newValue)
             return
@@ -263,9 +262,9 @@ class Point(object):
         try:
             self._x = float(newValue[0])
             return
-        except (KeyError,TypeError):
+        except (KeyError, TypeError):
             pass
-        
+
         try:
             self._x = float(newValue[self.__class__.ordinateNameX])
             return
@@ -275,7 +274,7 @@ class Point(object):
             pass
 
         try:
-            self._x = float(getattr(newValue,self.__class__.ordinateNameX))
+            self._x = float(getattr(newValue, self.__class__.ordinateNameX))
             return
         except AttributeError:
             pass
@@ -294,7 +293,7 @@ class Point(object):
         return self._y
 
     @y.setter
-    def y(self,newValue):
+    def y(self, newValue):
 
         try:
             self._y = float(newValue)
@@ -302,11 +301,11 @@ class Point(object):
         except TypeError:
             if newValue is None:
                 self._y = float(0)
-                return 
+                return
         try:
             self._y = float(newValue[0])
             return
-        except (KeyError,TypeError):
+        except (KeyError, TypeError):
             pass
 
         try:
@@ -315,16 +314,15 @@ class Point(object):
         except KeyError:
             return
         except TypeError:
-            pass        
+            pass
 
         try:
-            self._y = float(getattr(newValue,self.__class__.ordinateNameY))
+            self._y = float(getattr(newValue, self.__class__.ordinateNameY))
             return
         except AttributeError:
             pass
-        
-        raise UngrokkableObject(newValue)
 
+        raise UngrokkableObject(newValue)
 
     @property
     def z(self):
@@ -338,8 +336,8 @@ class Point(object):
         return self._z
 
     @z.setter
-    def z(self,newValue):
-        
+    def z(self, newValue):
+
         try:
             self._z = float(newValue)
             return
@@ -351,7 +349,7 @@ class Point(object):
         try:
             self._z = float(newValue[0])
             return
-        except (KeyError,TypeError):
+        except (KeyError, TypeError):
             pass
 
         try:
@@ -360,16 +358,15 @@ class Point(object):
         except KeyError:
             return
         except TypeError:
-            pass        
+            pass
 
         try:
-            self._z = float(getattr(newValue,self.__class__.ordinateNameZ))
+            self._z = float(getattr(newValue, self.__class__.ordinateNameZ))
             return
         except AttributeError:
             pass
 
         raise UngrokkableObject(newValue)
-        
 
     @property
     def w(self):
@@ -390,22 +387,21 @@ class Point(object):
         4. a scalar float, only sets x.
         5. None, sets all coordinates to zero.
         '''
-        return [self.x,self.y,self.z]
+        return [self.x, self.y, self.z]
 
     @xyz.setter
-    def xyz(self,iterable):
-        
-        if self._complex_setter(iterable,self.__class__.ordinateNamesXYZ):
+    def xyz(self, iterable):
+
+        if self._complex_setter(iterable, self.__class__.ordinateNamesXYZ):
             return
 
         try:
-            self.x,self.y,self.z = iterable[:3]
+            self.x, self.y, self.z = iterable[:3]
             return
-        except (TypeError,ValueError):
+        except (TypeError, ValueError):
             pass
-        
-        self.xy = iterable
 
+        self.xy = iterable
 
     @property
     def xyzw(self):
@@ -414,10 +410,10 @@ class Point(object):
         Follows xyz setter rules for the values of x, y and z.
         Values for w are ignored.
         '''
-        return [self.x,self.y,self.z,self.w]
-    
+        return [self.x, self.y, self.z, self.w]
+
     @xyzw.setter
-    def xyzw(self,iterable):
+    def xyzw(self, iterable):
         self.xyz = iterable
 
     @property
@@ -425,20 +421,20 @@ class Point(object):
         '''
         Returns an array of [x,y]
         '''
-        return [self.x,self.y]
+        return [self.x, self.y]
 
     @xy.setter
-    def xy(self,iterable):
-        
-        if self._complex_setter(iterable,self.__class__.ordinateNamesXY):
+    def xy(self, iterable):
+
+        if self._complex_setter(iterable, self.__class__.ordinateNamesXY):
             return
 
         try:
-            self.x,self.y = iterable[:2]
+            self.x, self.y = iterable[:2]
             return
-        except (ValueError,TypeError):
+        except (ValueError, TypeError):
             pass
-        
+
         self.x = iterable
 
     @property
@@ -446,18 +442,18 @@ class Point(object):
         '''
         Returns an array of [y,z]
         '''
-        return [self.y,self.z]
+        return [self.y, self.z]
 
     @yz.setter
-    def yz(self,iterable):
-        
-        if self._complex_setter(iterable,self.__class__.ordinateNamesYZ):
+    def yz(self, iterable):
+
+        if self._complex_setter(iterable, self.__class__.ordinateNamesYZ):
             return
 
         try:
-            self.y,self.z = iterable[:2]
+            self.y, self.z = iterable[:2]
             return
-        except (ValueError,TypeError):
+        except (ValueError, TypeError):
             pass
 
         self.y = iterable
@@ -467,20 +463,20 @@ class Point(object):
         '''
         Returns an array of [x,z]
         '''
-        return [self.x,self.z]
+        return [self.x, self.z]
 
     @xz.setter
-    def xz(self,iterable):
+    def xz(self, iterable):
 
-        if self._complex_setter(iterable,self.__class__.ordinateNamesXZ):
+        if self._complex_setter(iterable, self.__class__.ordinateNamesXZ):
             return
-        
+
         try:
-            self.x,self.z = iterable[:2]
+            self.x, self.z = iterable[:2]
             return
-        except (ValueError,TypeError):
+        except (ValueError, TypeError):
             pass
-        
+
         self.x = iterable
 
     @property
@@ -488,23 +484,23 @@ class Point(object):
         '''
         A buffer encoded with utf-8 of the string 'repr(self)', bytes.
         '''
-        return bytes(repr(self),'utf-8')
+        return bytes(repr(self), 'utf-8')
 
     @property
     def mapping(self):
         '''
         The Point subclass encoded as a dict, dict.
         '''
-        return { self.ordinateNameX:self.x,
-                 self.ordinateNameY:self.y,
-                 self.ordinateNameZ:self.z,
-                 self.ordinateNameW:self.w }
-    
+        return {self.ordinateNameX: self.x,
+                self.ordinateNameY: self.y,
+                self.ordinateNameZ: self.z,
+                self.ordinateNameW: self.w}
+
     def __str__(self):
         '''
         '''
         return 'x={x},y={y},z={z}'.format(**self.mapping)
-    
+
     def __repr__(self):
         '''
         :return: string
@@ -520,31 +516,30 @@ class Point(object):
 
         Hash function is hashlib.sha1 and the text is the bytes property.
         '''
-        return int(hashlib.sha1(self.bytes).hexdigest(),16)
+        return int(hashlib.sha1(self.bytes).hexdigest(), 16)
 
-    
-    def _vfunc(self,iterable,func):
+    def _vfunc(self, iterable, func):
         '''
         :param: iterable - something that iterates
-        :param: func     - function that takes a list as an argument 
+        :param: func     - function that takes a list as an argument
         :return: list
 
         Zips self with iterable and applies func to each pair, returning
         a list of results for each func invocation.
         '''
-        return [func(v) for v in zip(self,iterable)]
+        return [func(v) for v in zip(self, iterable)]
 
-    def _ifunc(self,other,func):
+    def _ifunc(self, other, func):
         '''
-        :param: other - scalar or iterable or object 
+        :param: other - scalar or iterable or object
         :return: None
 
         Applies func to self to implement incremental operators.
         '''
-        for index,name in enumerate(self.__class__.ordinateNamesXYZ): 
-            current = getattr(self,name)
+        for index, name in enumerate(self.__class__.ordinateNamesXYZ):
+            current = getattr(self, name)
             try:
-                operand = getattr(other,name)
+                operand = getattr(other, name)
             except AttributeError:
                 try:
                     operand = other[index]
@@ -552,77 +547,81 @@ class Point(object):
                     operand = other
                 except IndexError:
                     return
-            setattr(self,name,func((current,operand)))    
+            setattr(self, name, func((current, operand)))
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         '''
         a.x == b.x and a.y == b.y and a.z == b.z
-        
+
         Returns boolean.
         '''
-        return all(self._vfunc(other,lambda p:p[0] == p[1]))
+        return all(self._vfunc(other, lambda p: p[0] == p[1]))
 
-    def __add__(self,other):
+    def __add__(self, other):
         '''
         a.x + b.x, a.y + b.y, a.z + b.z
 
         Returns a new object.
         '''
         try:
-            return self.__class__(self.x+other.x,self.y+other.y,self.z+other.z)
+            return self.__class__(
+                self.x + other.x, self.y + other.y, self.z + other.z)
         except AttributeError:
             return self.__radd__(other)
 
-    def __radd__(self,iterable):
+    def __radd__(self, iterable):
         '''
         a.x + b[0], a.y + b[1], a.z + b[2]
 
-        or 
+        or
 
         a.x + b, a.y + b, a.z + b  if b does not support iteration
 
         Returns a new object.
         '''
-        
-        try:
-            return self.__class__(self._vfunc(iterable,lambda p:p[0]+p[1]))
-        except TypeError:
-            return self.__class__(self.x+iterable,self.y+iterable,self.z+iterable)
 
-    def __iadd__(self,iterable):
+        try:
+            return self.__class__(self._vfunc(iterable, lambda p: p[0] + p[1]))
+        except TypeError:
+            return self.__class__(
+                self.x + iterable, self.y + iterable, self.z + iterable)
+
+    def __iadd__(self, iterable):
         '''
         a.x += b.x || a.x += b[0] || a.x += b
         a.y += b.y || a.y += b[1] || a.y += b
         a.z += b.z || a.z += b[2] || a.z += b
-        
+
         Updates self.
         '''
-        self._ifunc(iterable,lambda p:p[0]+p[1])
+        self._ifunc(iterable, lambda p: p[0] + p[1])
         return self
 
-    def __sub__(self,other):
+    def __sub__(self, other):
         '''
         a.x - b.x, a.y - b.y, a.z - b.z
 
         Returns a new object.
         '''
         try:
-            return self.__class__(self.x-other.x,self.y-other.y,self.z-other.z)
+            return self.__class__(
+                self.x - other.x, self.y - other.y, self.z - other.z)
         except AttributeError:
             return self.__rsub__(other)
 
-    def __rsub__(self,iterable):
+    def __rsub__(self, iterable):
         '''
         a.x - b, a.y - b, a.z - b
 
         Returns a new object.
         '''
         try:
-            return self.__class__(self._vfunc(iterable,lambda p:p[0]-p[1]))
+            return self.__class__(self._vfunc(iterable, lambda p: p[0] - p[1]))
         except TypeError:
-            return self.__class__(self.x-iterable,self.y-iterable,self.z-iterable)
+            return self.__class__(
+                self.x - iterable, self.y - iterable, self.z - iterable)
 
-    def __isub__(self,iterable):
+    def __isub__(self, iterable):
         '''
         a.x -= b.x || a.x -= b[0] || a.x -= b
         a.y -= b.y || a.y -= b[1] || a.y -= b
@@ -630,10 +629,10 @@ class Point(object):
 
         Updates self.
         '''
-        self._ifunc(iterable,lambda p:p[0]-p[1])
+        self._ifunc(iterable, lambda p: p[0] - p[1])
         return self
-    
-    def __mul__(self,other):
+
+    def __mul__(self, other):
         '''
         a.x * b.x, a.y * b.y, a.z * b.z
 
@@ -646,18 +645,19 @@ class Point(object):
         except AttributeError:
             return self.__rmul__(other)
 
-    def __rmul__(self,iterable):
+    def __rmul__(self, iterable):
         '''
         a.x * b, a.y * b, a.z * b
 
         Returns a new object.
         '''
         try:
-            return self.__class__(self._vfunc(iterable,lambda p:p[0]*p[1]))
+            return self.__class__(self._vfunc(iterable, lambda p: p[0] * p[1]))
         except TypeError:
-            return self.__class__(self.x*iterable,self.y*iterable,self.z*iterable)
+            return self.__class__(
+                self.x * iterable, self.y * iterable, self.z * iterable)
 
-    def __imul__(self,iterable):
+    def __imul__(self, iterable):
         '''
         a.x *= b.x || a.x *= b[0] || a.x *= b
         a.y *= b.y || a.y *= b[1] || a.y *= b
@@ -665,10 +665,10 @@ class Point(object):
 
         Updates self.
         '''
-        self._ifunc(iterable,lambda p:p[0] * p[1])
+        self._ifunc(iterable, lambda p: p[0] * p[1])
         return self
 
-    def __truediv__(self,other):
+    def __truediv__(self, other):
         '''
         a.x / b.x, a.y / b.y, a.z / b.z
 
@@ -681,26 +681,25 @@ class Point(object):
                                       self.z / other.z)
             except AttributeError:
                 return self.__rtruediv__(other)
-        except ZeroDivisionError as e:
+        except ZeroDivisionError:
             pass
-        
-        raise ZeroDivisionError('zero present in %s' %(other))
-                
 
-    def __rtruediv__(self,other):
+        raise ZeroDivisionError('zero present in %s' % (other))
+
+    def __rtruediv__(self, other):
         '''
         a.x / b, a.y / b, a.z / b
 
         Returns a new object.
         '''
         try:
-            return self.__class__(self._vfunc(other,lambda p:p[0]/p[1]))
+            return self.__class__(self._vfunc(other, lambda p: p[0] / p[1]))
         except TypeError:
             return self.__class__(self.x / other,
                                   self.y / other,
                                   self.z / other)
 
-    def __itruediv__(self,iterable):
+    def __itruediv__(self, iterable):
         '''
         a.x /= b.x || a.x /= b[0] || a.x /= b
         a.y /= b.y || a.y /= b[1] || a.y /= b
@@ -709,14 +708,14 @@ class Point(object):
         Updates self.
         '''
         try:
-            self._ifunc(iterable,lambda p:p[0] / p[1])
+            self._ifunc(iterable, lambda p: p[0] / p[1])
             return self
         except ZeroDivisionError:
             pass
 
-        raise ZeroDivisionError('zero present in %s' %(iterable))
+        raise ZeroDivisionError('zero present in %s' % (iterable))
 
-    def __floordiv__(self,other):
+    def __floordiv__(self, other):
         '''
         a.x // b.x, a.y // b.y, a.z // b.z
 
@@ -731,9 +730,9 @@ class Point(object):
                 return self.__rfloordiv__(other)
         except ZeroDivisionError:
             pass
-        raise ZeroDivisionError('zero present in %s' %(other))
+        raise ZeroDivisionError('zero present in %s' % (other))
 
-    def __rfloordiv__(self,other):
+    def __rfloordiv__(self, other):
         '''
         a.x // b, a.y // b, a.z // b
 
@@ -741,17 +740,18 @@ class Point(object):
         '''
         try:
             try:
-                return self.__class__(self._vfunc(other,lambda p:p[0]//p[1]))
+                return self.__class__(self._vfunc(
+                    other, lambda p: p[0] // p[1]))
             except TypeError:
                 return self.__class__(self.x // other,
                                       self.y // other,
                                       self.z // other)
         except ZeroDivisionError:
             pass
-        
-        raise ZeroDivisionError('zero present in %s' %(other))
 
-    def __ifloordiv__(self,iterable):
+        raise ZeroDivisionError('zero present in %s' % (other))
+
+    def __ifloordiv__(self, iterable):
         '''
         a.x //= b.x || a.x //= b[0] || a.x //= b
         a.y //= b.y || a.y //= b[1] || a.y //= b
@@ -762,13 +762,13 @@ class Point(object):
         Tip: p //= 1 is a quick way to floor all coordinates.
         '''
         try:
-            self._ifunc(iterable,lambda p:p[0] // p[1])
+            self._ifunc(iterable, lambda p: p[0] // p[1])
             return self
         except ZeroDivisionError:
             pass
-        raise ZeroDivisionError('zero present in %s' %(iterable))
-            
-    def __mod__(self,other):
+        raise ZeroDivisionError('zero present in %s' % (iterable))
+
+    def __mod__(self, other):
         '''
         a.x % b.x, a.y % b.y, a.z % b.z
 
@@ -786,20 +786,20 @@ class Point(object):
             pass
         raise ZeroDivisionError('zero present in %s' % (other))
 
-    def __rmod__(self,other):
+    def __rmod__(self, other):
         '''
         a.x % b, a.y % b, a.z % b
 
         Returns a new object.
         '''
         try:
-            return self.__class__(self._vfunc(other,lambda p:p[0]%p[1]))
+            return self.__class__(self._vfunc(other, lambda p: p[0] % p[1]))
         except TypeError:
             return self.__class__(self.x % other,
                                   self.y % other,
                                   self.z % other)
 
-    def __imod__(self,iterable):
+    def __imod__(self, iterable):
         '''
         a.x %= b.x || a.x %= b[] || a.x %= b
         a.y %= b.y || a.y %= b[] || a.y %= b
@@ -808,39 +808,39 @@ class Point(object):
         Updates self.
         '''
         try:
-            self._ifunc(iterable,lambda p:p[0] % p[1])
+            self._ifunc(iterable, lambda p: p[0] % p[1])
             return self
         except ZeroDivisionError:
             pass
         raise ZeroDivisionError('zero present in %s' % (iterable))
 
-    def __pow__(self,other):
+    def __pow__(self, other):
         '''
         a.x ** b.x, a.y ** b.y, a.z ** b.z
-        
+
         Returns a new object.
         '''
         try:
-            return self.__class__(self.x**other.x,
-                                  self.y**other.y,
-                                  self.z**other.z)
+            return self.__class__(self.x ** other.x,
+                                  self.y ** other.y,
+                                  self.z ** other.z)
         except AttributeError:
             return self.__rpow__(other)
 
-    def __rpow__(self,other):
+    def __rpow__(self, other):
         '''
         a.x ** b, a.y ** b, a.z ** b
-        
+
         Returns a new object.
         '''
         try:
-            return self.__class__(self._vfunc(other,lambda p:p[0] ** p[1]))
+            return self.__class__(self._vfunc(other, lambda p: p[0] ** p[1]))
         except TypeError:
-            return self.__class__(self.x**other,
-                                  self.y**other,
-                                  self.z**other)
+            return self.__class__(self.x ** other,
+                                  self.y ** other,
+                                  self.z ** other)
 
-    def __ipow__(self,iterable):
+    def __ipow__(self, iterable):
         '''
         a.x **= b.x || a.x **= b[0] || a.x **= b
         a.y **= b.y || a.y **= b[1] || a.y **= b
@@ -848,7 +848,7 @@ class Point(object):
 
         Updates self.
         '''
-        self._ifunc(iterable,lambda p:p[0] ** p[1])
+        self._ifunc(iterable, lambda p: p[0] ** p[1])
         return self
 
     def __neg__(self):
@@ -857,9 +857,9 @@ class Point(object):
 
         Returns a new object.
         '''
-        
+
         return self * -1
-    
+
     def __pos__(self):
         '''
         a.x * 1, a.y * 1, a.z * 1
@@ -874,62 +874,61 @@ class Point(object):
 
         Returns a new object.
         '''
-        
-        return self.__class__(abs(self.x),abs(self.y),abs(self.z))
-    
+
+        return self.__class__(abs(self.x), abs(self.y), abs(self.z))
+
     def __invert__(self):
         '''
         ~int(a.x),~int(a.y),~int(a.z)
 
         Returns a new object.
         '''
-        return self.__class__(~int(self.x),~int(self.y),~int(self.z))
+        return self.__class__(~int(self.x), ~int(self.y), ~int(self.z))
 
     def __len__(self):
         '''
         Returns the length of the Point if viewed as vector, excluding 'w'.
         '''
         return 3
-    
+
     def __iter__(self):
         '''
         Returns a list iterator over the values of 'x', 'y', and 'z'.
         '''
         return iter(self.xyz)
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         '''
         :param: key - integer
-        :return: float 
-        
+        :return: float
+
         p = Point()
         p[0,1,2,3] == p.[x,y,z,w]
 
         Treat the point like a one dimensional vector with four entries.
         '''
         try:
-            return getattr(self,self.__class__.ordinateNamesAll[key])
+            return getattr(self, self.__class__.ordinateNamesAll[key])
         except IndexError:
             pass
-        raise IndexError( 'index %s out of range' % (key))
+        raise IndexError('index %s out of range' % (key))
 
-    def __setitem__(self,key,value):
+    def __setitem__(self, key, value):
         '''
         Treat the point like a one dimensional vector with three entries.
 
         Attempts to set 'w' are ignored without raising an error.
         '''
         try:
-            setattr(self,self.__class__.ordinateNamesAll[key],value)
+            setattr(self, self.__class__.ordinateNamesAll[key], value)
         except IndexError:
             pass
         raise IndexError('index %s out of range' % (key))
 
-
-    def _complex_setter(self,obj,keys):
+    def _complex_setter(self, obj, keys):
         '''
         :param: obj  - object of unknown pedigree
-        :param: keys - list of strings 
+        :param: keys - list of strings
         :return: boolean
 
         This method attempts to find values of attributes named by 'keys'
@@ -942,7 +941,7 @@ class Point(object):
 
         if obj is None:
             for key in keys:
-                setattr(self,key,0.0)
+                setattr(self, key, 0.0)
             return True
 
         try:
@@ -952,7 +951,7 @@ class Point(object):
         except TypeError:
             # obj doesn't implement __len__, probably a scalar, maybe.
             pass
-        
+
         found = False
         for key in keys:
             try:
@@ -963,16 +962,15 @@ class Point(object):
             except TypeError:
                 # obj is not a dict, check for named attributes
                 try:
-                    val = getattr(obj,key)
+                    val = getattr(obj, key)
                 except AttributeError:
                     continue
-            setattr(self,key,val)
+            setattr(self, key, val)
             found = True
 
-        return found        
+        return found
 
-
-    def dot(self,other):
+    def dot(self, other):
         '''
         :param: other - Point subclass
         :return: float
@@ -983,7 +981,7 @@ class Point(object):
         '''
         return sum(self * other)
 
-    def cross(self,other):
+    def cross(self, other):
         '''
         :param: other - Point subclass
         :return: float
@@ -999,17 +997,17 @@ class Point(object):
         Returns s1 + s2 + s3
         '''
 
-        s0 = (self.y*other.z) - (self.z*other.y)
-        s1 = (self.z*other.x) - (self.x*other.z)
-        s2 = (self.x*other.y) - (self.y*other.x)
+        s0 = (self.y * other.z) - (self.z * other.y)
+        s1 = (self.z * other.x) - (self.x * other.z)
+        s2 = (self.x * other.y) - (self.y * other.x)
 
         return s0 + s1 + s2
 
-    def midpoint(self,other):
+    def midpoint(self, other):
         '''
         :param: other - Point subclass
         :return: Point subclass
-        
+
         Point midway between 'self' and 'other'.
 
         '''
@@ -1017,19 +1015,19 @@ class Point(object):
         m /= 2.           # scale it by half
         return m
 
-    def isBetweenX(self,a,b):
+    def isBetweenX(self, a, b):
         '''
         :param: a - Point subclass
         :param: b - Point subclass
         :return: boolean
-        
+
         Return True if self.x is >= min(a.x,b.x) and <= max(a.x,b.x)
         '''
-        minX,maxX = min(a.x,b.x),max(a.x,b.x)
-        
+        minX, maxX = min(a.x, b.x), max(a.x, b.x)
+
         return (self.x >= minX) and (self.x <= maxX)
 
-    def isBetweenY(self,a,b):
+    def isBetweenY(self, a, b):
         '''
         :param: a - Point subclass
         :param: b - Point subclass
@@ -1037,11 +1035,11 @@ class Point(object):
 
         Returns True if self.y is >= min(a.y,b.y) and <= max(a.y,b.y)
         '''
-        minY,maxY = min(a.y,b.y),max(a.y,b.y)
-        
+        minY, maxY = min(a.y, b.y), max(a.y, b.y)
+
         return (self.y >= minY) and (self.y <= maxY)
 
-    def isBetweenZ(self,a,b):
+    def isBetweenZ(self, a, b):
         '''
         :param: a - Point subclass
         :param: b - Point subclass
@@ -1049,11 +1047,11 @@ class Point(object):
 
         Return True if self.z is >= min(a.z,b.z) and <= max(a.z,b.z)
         '''
-        minZ,maxZ = min(a.z,b.z),max(a.z,b.z)
-        
+        minZ, maxZ = min(a.z, b.z), max(a.z, b.z)
+
         return (self.z >= minZ) and (self.z <= maxZ)
 
-    def isBetween(self,a,b):
+    def isBetween(self, a, b):
         '''
         :param: a - Point subclass
         :param: b - Point subclass
@@ -1065,39 +1063,39 @@ class Point(object):
         This is *NOT* a collinearity check.
 
         '''
-        
-        if not self.isBetweenX(a,b):
+
+        if not self.isBetweenX(a, b):
             return False
 
-        if not self.isBetweenY(a,b):
+        if not self.isBetweenY(a, b):
             return False
 
-        if not self.isBetweenZ(a,b):
+        if not self.isBetweenZ(a, b):
             return False
-        
+
         return True
-    
-    def distance(self,other=None):
+
+    def distance(self, other=None):
         '''
         :param: other - Point subclass
         :return: float
 
         Calculates the Euclidean distance from other.
-        
+
         If other is not specified, the origin is used.
         '''
 
         if other is None:
             other = self.__class__()
-            
+
         return math.sqrt(sum((other - self) ** 2))
 
-    def distanceSquared(self,other=None):
+    def distanceSquared(self, other=None):
         '''
         :param: other - Point subclass
-        :return: float 
+        :return: float
 
-        Calculates Euclidean distance squared from other. 
+        Calculates Euclidean distance squared from other.
 
         If other is not specified, the origin is used.
 
@@ -1107,10 +1105,10 @@ class Point(object):
 
         if other is None:
             other = self.__class__()
-            
-        return sum((other-self)**2)
 
-    def isCollinear(self,b,c,axis='z'):
+        return sum((other - self) ** 2)
+
+    def isCollinear(self, b, c, axis='z'):
         '''
         :param: b - Point subclass
         :param: c - Point subclass
@@ -1118,9 +1116,9 @@ class Point(object):
 
         Returns true if the three points (self, b and c) are collinear.
         '''
-        return self.ccw(b,c,axis) == 0
+        return self.ccw(b, c, axis) == 0
 
-    def isCCW(self,b,c,axis='z'):
+    def isCCW(self, b, c, axis='z'):
         '''
         :param: b - Point subclass
         :param: c - Point subclass
@@ -1133,15 +1131,15 @@ class Point(object):
         line.
 
         '''
-        
-        result = self.ccw(b,c,axis)
-        
+
+        result = self.ccw(b, c, axis)
+
         if result == 0:
-            raise CollinearPoints(self,b,c)
-        
+            raise CollinearPoints(self, b, c)
+
         return result > 0
 
-    def ccw(self,b,c,axis='z'):
+    def ccw(self, b, c, axis='z'):
         '''
         :param: b    - Point subclass
         :param: c    - Point subclass
@@ -1151,13 +1149,13 @@ class Point(object):
         Returns an integer signifying whether the angle described by
         the points self,b,c has a counter-clockwise rotation around
         the specified axis ( 'z' by default).
-        
+
         > 0 : counter-clockwise
-          0 : points are collinear 
+          0 : points are collinear
         < 0 : clockwise
 
         '''
-        
+
         bsuba = b - self
         csuba = c - self
 
@@ -1166,12 +1164,8 @@ class Point(object):
 
         if axis == 'y':
             return (bsuba.x * csuba.z) - (bsuba.z * csuba.x)
-                
+
         if axis == 'x':
             return (bsuba.y * csuba.z) - (bsuba.z * csuba.y)
 
         raise ValueError("axis '%s' not recognized." % (axis))
-
-
-
-    

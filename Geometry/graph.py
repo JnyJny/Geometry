@@ -16,6 +16,7 @@ class Node(Point):
     '''
     pass
 
+
 class Edge(Segment):
     '''
     XXX missing doc string
@@ -42,16 +43,16 @@ class Edge(Segment):
     def __hash__(self):
         # XOR is uh.. transitive? A^B == B^A
         # so edges AB and BA will hash to the same value.
-        return hash(self.A) ^ hash(self.B)    
+        return hash(self.A) ^ hash(self.B)
 
 
 class Graph(object):
     '''
     XXX missing doc string
     '''
-    
+
     @classmethod
-    def randomGraph(cls,radius,nodes,origin=None):
+    def randomGraph(cls, radius, nodes, origin=None):
         '''
         '''
         if origin is None:
@@ -61,13 +62,13 @@ class Graph(object):
 
         while len(graph) < nodes:
             try:
-                graph.addNode(Node.randomLocation(radius,origin))
+                graph.addNode(Node.randomLocation(radius, origin))
             except ValueError:
                 pass
 
         return graph
-    
-    def __init__(self,nodes=None,edges=None):
+
+    def __init__(self, nodes=None, edges=None):
         try:
             for node in nodes:
                 self.nodes.add(Node(node))
@@ -109,24 +110,25 @@ class Graph(object):
     def __str__(self):
         s = []
         s.append(repr(self))
-        s.extend(['\t'+repr(n) for n in self.nodes])
-        s.extend(['\t'+repr(e) for e in self.edges])
+        s.extend(['\t' + repr(n) for n in self.nodes])
+        s.extend(['\t' + repr(e) for e in self.edges])
         return '\n'.join(s)
 
     def __repr__(self):
         fmt = '%s(nodes=%s,edges=%s)>'
-        return fmt % (self.__class__.__name__,str(self.nodes),str(self.edges))
+        return fmt % (self.__class__.__name__,
+                      str(self.nodes), str(self.edges))
 
-    def sortedNodes(self,func=None):
+    def sortedNodes(self, func=None):
         '''
         '''
         if func is None:
-            func = lambda x:x.distanceSquared(self.cg)
+            func = lambda x: x.distanceSquared(self.cg)
 
         nodes = list(self.nodes)
         nodes.sort(key=func)
         return nodes
-        
+
     @property
     def cg(self):
         '''
@@ -134,34 +136,34 @@ class Graph(object):
         '''
         return Node(sum(self.nodes) // len(self.nodes))
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         '''
         x == y iff:
-          len(x) == len(y) 
+          len(x) == len(y)
           all nodes of x are in y
         '''
 
         if len(self) != len(other):
             return False
-        
+
         return self in other
 
-    def __contains__(self,other):
+    def __contains__(self, other):
         otherType = type(other)
-        
-        if issubtype(otherType,Node):
+
+        if issubtype(otherType, Node):
             for node in self.nodes:
                 if node == other:
                     return True
             return False
 
-        if issubtype(otherType,Edge):
+        if issubtype(otherType, Edge):
             for edge in self.edges:
                 if edge == other:
                     return True
             return False
 
-        if issubtype(otherType,Graph):
+        if issubtype(otherType, Graph):
             # graphs need to match nodes AND edges
 
             if len(self.edges) != len(other.edges):
@@ -170,40 +172,41 @@ class Graph(object):
             for node in self.nodes:
                 if node in other:
                     pass
-                
+
         return True
-    
+
     def disconnect(self):
         '''
         '''
         self.edges.clear()
-        
-    def connect(self,doDisconnect=True):
+
+    def connect(self, doDisconnect=True):
         '''
         '''
         if doDisconnect:
             self.disconnect()
-        
+
         self.sortNodes()
-        
+
         for A in self.nodes:
             for B in self.nodes:
                 if A is B:
                     continue
-                self.edges.append(Edge(A,B))
+                self.edges.append(Edge(A, B))
 
-    def drawNodes(self,surface,color):
+    def drawNodes(self, surface, color):
         for node in self.nodes:
-            node.draw(surface,color)
+            node.draw(surface, color)
 
-    def drawEdges(self,surface,color):
+    def drawEdges(self, surface, color):
         for edge in self.edges:
-            edge.draw(surface,color)
+            edge.draw(surface, color)
 
-    def draw(self,surface,nodeColor=(0,255,0),edgeColor=(0,0,255),cg=True):
+    def draw(self, surface, nodeColor=(0, 255, 0),
+             edgeColor=(0, 0, 255), cg=True):
 
-        self.drawEdges(surface,edgeColor)
-        self.drawNodes(surface,nodeColor)
+        self.drawEdges(surface, edgeColor)
+        self.drawNodes(surface, nodeColor)
 
         if cg:
-            self.cg.draw(surface,(255,0,0))
+            self.cg.draw(surface, (255, 0, 0))

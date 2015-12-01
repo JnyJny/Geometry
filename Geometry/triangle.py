@@ -6,6 +6,7 @@ from .point import Point
 from .line import Segment
 from .exceptions import *
 
+
 class Triangle(object):
     '''a pythonic Triangle
 
@@ -30,20 +31,20 @@ class Triangle(object):
     >>> d = Triangle([x,y,z],[x,y,z],[x,y,z])
     >>> e = Triangle(A=p0,B=p1,C=p2)
     '''
-    
+
     vertexNames = 'ABC'
     vertexNameA = vertexNames[0]
     vertexNameB = vertexNames[1]
     vertexNameC = vertexNames[2]
-    edgeNames = [vertexNameA+vertexNameB,
-                 vertexNameB+vertexNameC,
-                 vertexNameA+vertexNameC]
+    edgeNames = [vertexNameA + vertexNameB,
+                 vertexNameB + vertexNameC,
+                 vertexNameA + vertexNameC]
     edgeNameAB = edgeNames[0]
     edgeNameBC = edgeNames[1]
     edgeNameAC = edgeNames[2]
-    
+
     @classmethod
-    def randomXY(cls,origin=None,radius=1):
+    def randomXY(cls, origin=None, radius=1):
         '''
         :param: radius - float
         :param: origin - optional Point subclass
@@ -53,12 +54,12 @@ class Triangle(object):
         described by (origin,radius).  If origin is unspecified, (0,0)
         is assumed.
         '''
-        
+
         pts = set()
         while len(pts) < 3:
-            p = Point.randomXY(origin,radius)
+            p = Point.randomXY(origin, radius)
             pts.add(p)
-            
+
         return cls(pts)
 
     @classmethod
@@ -67,9 +68,9 @@ class Triangle(object):
         XXX missing doc string
         '''
         return cls(Point.units())
-        
-    def __init__(self,*args,**kwds):
-        
+
+    def __init__(self, *args, **kwds):
+
         if len(args) == 0 and len(kwds) == 0:
             return
 
@@ -80,10 +81,10 @@ class Triangle(object):
 
         for name in self.vertexNames:
             try:
-                setattr(self,name,kwds[name])
+                setattr(self, name, kwds[name])
             except:
                 pass
-            
+
     @property
     def A(self):
         '''
@@ -97,7 +98,7 @@ class Triangle(object):
         return self._A
 
     @A.setter
-    def A(self,newValue):
+    def A(self, newValue):
         self.A.xyz = newValue
 
     @property
@@ -109,13 +110,13 @@ class Triangle(object):
             return self._B
         except AttributeError:
             pass
-        self._B = Point(1,0)
+        self._B = Point(1, 0)
         return self._B
-    
+
     @B.setter
-    def B(self,newValue):
+    def B(self, newValue):
         self.B.xyz = newValue
-        
+
     @property
     def C(self):
         '''
@@ -125,44 +126,44 @@ class Triangle(object):
             return self._C
         except AttributeError:
             pass
-        self._C = Point(0,1)
+        self._C = Point(0, 1)
         return self._C
 
     @C.setter
-    def C(self,newValue):
+    def C(self, newValue):
         self.C.xyz = newValue
-        
+
     @property
     def ABC(self):
         '''
         A list of the triangle's vertices, list.
         '''
-        return [self.A,self.B,self.C]
-    
+        return [self.A, self.B, self.C]
+
     @ABC.setter
-    def ABC(self,iterable):
-        self.A,self.B,self.C = iterable
-        
+    def ABC(self, iterable):
+        self.A, self.B, self.C = iterable
+
     @property
     def AB(self):
         '''
         Line segment with endpoints A and B, Segment subclass.
         '''
-        return Segment(self.A,self.B)
+        return Segment(self.A, self.B)
 
     @property
     def AC(self):
         '''
         Line segment with endpoints A and C, Segment subclass.
         '''
-        return Segment(self.A,self.C)
+        return Segment(self.A, self.C)
 
     @property
     def BC(self):
         '''
         Line segment with endpoints B and C, Segment subclass.
         '''
-        return Segment(self.B,self.C)
+        return Segment(self.B, self.C)
 
     @property
     def vertices(self):
@@ -170,14 +171,14 @@ class Triangle(object):
         Alias for property "ABC", list.
         '''
         return self.ABC
-    
+
     @property
     def sides(self):
         '''
         List of line segments, list.
 
         '''
-        return [self.AB,self.BC,self.AC]
+        return [self.AB, self.BC, self.AC]
 
     @property
     def hypotenuse(self):
@@ -186,7 +187,7 @@ class Triangle(object):
 
         '''
         s = self.sides
-        s.sort(key=lambda x:x.length)
+        s.sort(key=lambda x: x.length)
         return s[-1]
 
     @property
@@ -207,7 +208,7 @@ class Triangle(object):
         The angle described by ABC in radians, float.
 
         '''
-        BA = Segment(self.B,self.A)
+        BA = Segment(self.B, self.A)
         return BA.radiansBetween(self.BC)
 
     @property
@@ -220,8 +221,8 @@ class Triangle(object):
         The angle described by BCA in radians, float.
 
         '''
-        CB = Segment(self.C,self.B)
-        return CB.radiansBetween(Segment(self.C,self.A))
+        CB = Segment(self.C, self.B)
+        return CB.radiansBetween(Segment(self.C, self.A))
 
     @property
     def gammaDegrees(self):
@@ -254,7 +255,7 @@ class Triangle(object):
 
         '''
         return self.B.distance(self.C)
-            
+
     @property
     def ac(self):
         '''
@@ -269,7 +270,7 @@ class Triangle(object):
         Returns True if ABC has a counter-clockwise rotation, boolean.
 
         '''
-        return self.A.isCCW(self.B,self.C)
+        return self.A.isCCW(self.B, self.C)
 
     @property
     def ccw(self):
@@ -277,8 +278,8 @@ class Triangle(object):
         Result of ccw(A,B,C), float.
 
         '''
-        return self.A.ccw(self.B,self.C)
-    
+        return self.A.ccw(self.B, self.C)
+
     @property
     def area(self):
         '''
@@ -293,7 +294,7 @@ class Triangle(object):
         semiperimeter = (|AB|+|AC|+|BC|) / 2
 
         '''
-        return sum([x.length for x in self.sides])/2.
+        return sum([x.length for x in self.sides]) / 2.
 
     @property
     def isEquilateral(self):
@@ -301,8 +302,8 @@ class Triangle(object):
         Returns true if all sides are the same length.
         '''
 
-        ab,bc,ac = self.ab,self.bc,self.ac
-        
+        ab, bc, ac = self.ab, self.bc, self.ac
+
         return (ab == bc) and (bc == ac)
 
     @property
@@ -310,8 +311,8 @@ class Triangle(object):
         '''
         Returns true if two sides are the same length.
         '''
-        ab,bc,ac = self.ab,self.bc,self.ac
-        
+        ab, bc, ac = self.ab, self.bc, self.ac
+
         if ab == bc:
             return True
 
@@ -319,7 +320,6 @@ class Triangle(object):
             return True
 
         return bc == ac
-    
 
     @property
     def isScalene(self):
@@ -327,9 +327,9 @@ class Triangle(object):
         Returns true if all sides are unequal in length.
         '''
 
-        ab,bc,ac = self.ab,self.bc,self.ac
+        ab, bc, ac = self.ab, self.bc, self.ac
 
-        return (ab!=bc) and (ab!=ac) and (bc!=ac)
+        return (ab != bc) and (ab != ac) and (bc != ac)
 
     @property
     def isRight(self):
@@ -342,7 +342,6 @@ class Triangle(object):
             if a == half_pi:    # epsilon check?
                 return True
         return False
-
 
     @property
     def isObtuse(self):
@@ -370,15 +369,14 @@ class Triangle(object):
                 return False
         return True
 
-
     @property
     def mapping(self):
         '''
         Mapping of vertex names to vertices, dict.
         '''
-        return { self.vertexNameA:self.A,
-                 self.vertexNameB:self.B,
-                 self.vertexNameC:self.C }
+        return {self.vertexNameA: self.A,
+                self.vertexNameB: self.B,
+                self.vertexNameC: self.C}
 
     def __str__(self):
         return 'A={A}, B={B}, C={C}'.format(**self.mapping)
@@ -387,10 +385,10 @@ class Triangle(object):
         return '{klass}({args})'.format(klass=self.__class__.__name__,
                                         args=str(self))
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         '''
         x == y
-        
+
         Iff len(set(x.vertices).difference(set(y.vertices))) == 0
 
         '''
@@ -398,7 +396,7 @@ class Triangle(object):
         b = set(other.vertices)
         return len(a.difference(b)) == 0
 
-    def __contains__(self,point):
+    def __contains__(self, point):
         '''
         :param: point - Point subclass
         :return: boolean
@@ -407,16 +405,16 @@ class Triangle(object):
         lies on any of it's sides.
         '''
         try:
-            r = [self.A.ccw(self.B,point),
-                 self.B.ccw(self.C,point),
-                 self.C.ccw(self.A,point)]
+            r = [self.A.ccw(self.B, point),
+                 self.B.ccw(self.C, point),
+                 self.C.ccw(self.A, point)]
         except CollinearPoints:
             # point is on the lines AB, BC, or CA and that counts.
             return True
-        
-        return not (any([x>0 for x in r]) and any([x<0 for x in r]))
 
-    def altitude(self,side='AB'):
+        return not (any([x > 0 for x in r]) and any([x < 0 for x in r]))
+
+    def altitude(self, side='AB'):
         '''
         :param: side - optional string
         :return: float
@@ -426,82 +424,78 @@ class Triangle(object):
         '''
         s = self.semiperimeter
 
-        num = 2 * math.sqrt(s*(s-self.ab)*(s-self.bc)*(s-self.ac))
+        num = 2 * math.sqrt(s * (s - self.ab) * (s - self.bc) * (s - self.ac))
 
         try:
-            div = {'AB':self.ab,'AC':self.ac,'BC':self.bc}[side]
+            div = {'AB': self.ab, 'AC': self.ac, 'BC': self.bc}[side]
             return num / div
         except IndexError:
             pass
 
         msg = "expecting 'AB', 'BC' or 'AC', got '{side}'"
-        
+
         raise ValueError(msg.format(side=side))
-        
-        
-    def flip(self,side='AB'):
+
+    def flip(self, side='AB'):
         '''
         :param: side - optional string
         :return: None
 
         The optional side paramater should have one of three values:
-        AB, BC, or AC. 
+        AB, BC, or AC.
 
         Changes the order of the triangle's points, swapping the
         specified points. Doing so will change the results of isCCW
         and ccw.
 
         '''
-        
+
         if side == 'AB':
             tmp = Point(self.A)
             self.A = self.B
             self.B = tmp
             return
-        
+
         if side == 'BC':
             tmp = Point(self.B)
             self.B = self.C
             self.C = tmp
             return
-        
+
         if side == 'AC':
             tmp = Point(self.A)
             self.A = self.C
             self.C = tmp
             return
-        
-        msg = "expecting 'AB', 'BC' or 'AC', got '{side}'"
-        
-        raise ValueError(msg.format(side=side))
-    
 
-    def doesIntersect(self,other):
+        msg = "expecting 'AB', 'BC' or 'AC', got '{side}'"
+
+        raise ValueError(msg.format(side=side))
+
+    def doesIntersect(self, other):
         '''
         :param: other - Triangle subclass
         :return: boolean
 
         Returns True iff:
            Any side in self intersects any side in other.
-           
+
         '''
 
-        otherType=  type(other)
-        if issubclass(otherType,Triangle):
+        otherType = type(other)
+        if issubclass(otherType, Triangle):
             for s in self.sides:
                 for q in other.sides:
                     if s.doesIntersect(q):
                         return True
             return False
 
-        if issubclass(otherType,Line):
+        if issubclass(otherType, Line):
             for s in self.sides:
                 if s.doesIntersect(other):
                     return True
             return False
 
         msg = "expecting Line or Triangle subclasses, got '{type}'"
-        
+
         raise TypeError(msg.format(type=otherType))
-        
-            

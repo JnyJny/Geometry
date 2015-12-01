@@ -7,7 +7,7 @@ try:
     __import__('pkg_resources').declare_namespace(__name__)
 except:
     from pkgutil import extend_path
-    __path__ = extend_path(__path__,__name__)
+    __path__ = extend_path(__path__, __name__)
 
 __author__ = '\n'.join(["Erik O'Shaughnessy",
                         'erik.oshaughnessy@gmail.com',
@@ -24,16 +24,12 @@ from .graph import Node, Edge, Graph
 from .constants import *
 from .exceptions import *
 
-__all__ =  [ 'Point',
-             'Ellipse','Circle',
-             'Line','Segment','Ray',
-             'Triangle','Rectangle',
-             'Graph','Node','Edge',
-             'ZeroSlope','InfiniteSlope','CollinearPoints',
-             'InfiniteLength','ParallelLines','CollinearLines',
-             'UngrokkableObject',
-             '__author__','__version__' ]
-             
-
-
-
+__all__ = ['Point',
+           'Ellipse', 'Circle',
+           'Line', 'Segment', 'Ray',
+           'Triangle', 'Rectangle',
+           'Graph', 'Node', 'Edge',
+           'ZeroSlope', 'InfiniteSlope', 'CollinearPoints',
+           'InfiniteLength', 'ParallelLines', 'CollinearLines',
+           'UngrokkableObject',
+           '__author__', '__version__']

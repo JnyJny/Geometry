@@ -9,11 +9,11 @@ from .test_triangle import TriangleTestCase
 from .test_rectangle import RectangleTestCase
 from .test_graph import GraphTestCase, NodeTestCase
 
-__all__ = [ 'PointTestCase',
-            'EllipseTestCase',
-            'LineTestCase',
-            'SegmentTestCase',
-            'RayTestCase',
-            'TriangleTestCase',
-            'RectangleTestCase',
-            'GraphTestCase']
+__all__ = ['PointTestCase',
+           'EllipseTestCase',
+           'LineTestCase',
+           'SegmentTestCase',
+           'RayTestCase',
+           'TriangleTestCase',
+           'RectangleTestCase',
+           'GraphTestCase']
