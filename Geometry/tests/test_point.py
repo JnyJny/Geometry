@@ -1,924 +1,940 @@
 
 import unittest
 import sys
+import math
 
 from .. import Point
 from ..exceptions import *
 
 
-class NumberFactory(object):
-
-    @classmethod
-    def List(cls, n=3, v=0):
-        if n == 0:
-            return []
-        return [v] * n
-
-    @classmethod
-    def Dict(cls, keys='xyz', v=0):
-        if len(keys) == 0:
-            return {}
-        return dict(zip(keys, [v] * len(keys)))
-
-    @classmethod
-    def Tuple(cls, n=3, v=0):
-        if n == 0:
-            return ()
-        return tuple([v] * n)
-
-    @classmethod
-    def Object(cls, keys='xyz', v=0):
-        class TestObject(object):
-
-            def __init__(self, x=None, y=None, z=None):
-                if x is not None:
-                    self.x = x
-                if y is not None:
-                    self.y = y
-                if z is not None:
-                    self.z = z
-
-        if len(keys) == 0:
-            return TestObject()
-
-        mapping = cls.Dict(keys, v)
-        return TestObject(**mapping)
-
-    @classmethod
-    def Point(cls, keys='xyz', v=0):
-        return Point(cls.Dict(keys, v))
-
-    @classmethod
-    def Herd(cls, keys='xyz', v=0):
-        n = len(keys)
-
-        return [cls.List(n, v), cls.Dict(keys, v),
-                cls.Tuple(n, v), cls.Object(keys, v),
-                cls.Point(keys, v)]
-
-    @classmethod
-    def KeyMutator(cls, keys='xyz'):
-        '''
-        Kinda broke string mutator.
-        '''
-
-        s = set()
-        s.add(keys)
-        kks = []
-        for k in keys:
-            s.add(k)
-            kks.extend(
-                [a + b for a, b in zip(keys, [k] * len(keys)) if a != b])
-
-        kks.sort()
-        for kk in kks:
-            if kk in s or kk[::-1] in s:
-                continue
-            s.add(kk)
-
-        l = sorted(s)
-        return l
-
-
 class PointTestCase(unittest.TestCase):
 
-    def assertIsOrigin(self, p):
+    def testObjects(self,value=0,*args):
+        '''
+        '''
+        test_objs = [ Point([value]*3),
+                 { 'x':value, 'y':value, 'z':value },
+                 [value]*3]
+        if len(args):
+            test_objs.extend(args)
+        return test_objs
+
+    def assertIsPoint(self, p):
         self.assertIsInstance(p, Point)
-        self.assertListEqual(p.xyz, [0] * 3)
+
+    def assertCoordinatesEqual(self, p, values, msg=None):
+        '''
+        '''
+
+        if len(values) == 4:
+            self.assertSequenceEqual(p.xyzw, values, msg)
+        else:
+            self.assertSequenceEqual(p.xyz, values, msg)
+
+    def assertIsOrigin(self, p, msg=None):
+        '''
+        '''
+        self.assertIsInstance(p, Point)
+        self.assertCoordinatesEqual(p, [0] * 3, msg)
 
     def assertPointsEqual(self, a, b):
+        '''
+        '''
         self.assertIsInstance(a, Point)
         self.assertIsInstance(b, Point)
         self.assertFalse(a is b)
-        self.assertListEqual(a.xyz, b.xyz)
+        self.assertSequenceEqual(a.xyz, b.xyz)
 
-    def testPointCreationWithNoArgumentsOrKeywords(self):
+    def testOriginPointCreation(self):
+        '''
+        '''
+        self.assertIsOrigin(Point.origin())
         self.assertIsOrigin(Point())
-
-    def testPointCreationFromNone(self):
         self.assertIsOrigin(Point(None))
 
-    def testPointCreationFromEmptyTuple(self):
-        self.assertIsOrigin(Point(()))
+    def testPointCreation(self):
+        '''
+        '''
 
-    def testPointCreationFromEmptyList(self):
-        self.assertIsOrigin(Point([]))
+        # intialized with positional arguments
+        self.assertCoordinatesEqual(Point(1), (1, 0, 0))
+        self.assertCoordinatesEqual(Point(1, 2), (1, 2, 0))
+        self.assertCoordinatesEqual(Point(1, 2, 3), (1, 2, 3))
 
-    def testPointCreationFromEmptyDict(self):
-        self.assertIsOrigin(Point({}))
+        # initialized with keyword arguments
+        self.assertCoordinatesEqual(Point(x=1), (1, 0, 0))
+        self.assertCoordinatesEqual(Point(y=1), (0, 1, 0))
+        self.assertCoordinatesEqual(Point(z=1), (0, 0, 1))
+        self.assertCoordinatesEqual(Point(x=1, y=1), (1, 1, 0))
+        self.assertCoordinatesEqual(Point(x=1, z=1), (1, 0, 1))
+        self.assertCoordinatesEqual(Point(y=1, z=1), (0, 1, 1))
+        self.assertCoordinatesEqual(Point(x=1, y=1, z=1), (1, 1, 1))
 
-    def testPointCreationFromEmptyObject(self):
-        with self.assertRaises(UngrokkableObject):
-            Point(NumberFactory.Object(keys=''))
+        # initialized with a sequence (list in this cas)
+        self.assertCoordinatesEqual(Point([1] * 1), (1, 0, 0))
+        self.assertCoordinatesEqual(Point([1] * 2), (1, 1, 0))
+        self.assertCoordinatesEqual(Point([1] * 3), (1, 1, 1))
 
-    def testPointCreationFromAnotherDefaultPoint(self):
-        a = Point()
-        self.assertPointsEqual(Point(a), a)
+        # initialized with a mapping
+        self.assertCoordinatesEqual(Point({'x': 1}), (1, 0, 0))
+        self.assertCoordinatesEqual(Point({'y': 1}), (0, 1, 0))
+        self.assertCoordinatesEqual(Point({'z': 1}), (0, 0, 1))
+        self.assertCoordinatesEqual(Point({'x': 1, 'y': 1}), (1, 1, 0))
+        self.assertCoordinatesEqual(Point({'x': 1, 'z': 1}), (1, 0, 1))
+        self.assertCoordinatesEqual(Point({'y': 1, 'z': 1}), (0, 1, 1))
+        self.assertCoordinatesEqual(Point({'x': 1, 'y': 1, 'z': 1}), (1, 1, 1))
 
-    def testPointCreationFromAnotherInitializedPoint(self):
-        a = Point(1, 1, 1)
-        self.assertPointsEqual(Point(a), a)
+        with self.assertRaises(ValueError, msg="Point('nope')"):
+            Point('nope')
 
-    def testPointCreationFromDictionary(self):
-        d = {'x': 1, 'y': 1, 'z': 1}
-        p = Point(d)
-        self.assertListEqual(p.xyz, [d['x'], d['y'], d['z']])
+    def testPointPropertyGetters(self):
+        '''
+        '''
 
-    def testPointCreationFromConformingObject(self):
-        o = NumberFactory.Object(v=1)
-        p = Point(o)
-        self.assertListEqual(p.xyz, [o.x, o.y, o.z])
+        p = Point(1, 2, 3)
 
-    def testPointOrdinateW(self):
-        p = Point()
-        self.assertListEqual(p.xyzw, [0, 0, 0, 1])
-        self.assertIsInstance(p.w, float)
+        # property style
+        self.assertEqual(p.x, 1)
+        self.assertEqual(p.y, 2)
+        self.assertEqual(p.z, 3)
         self.assertEqual(p.w, 1)
-        with self.assertRaises(AttributeError):
-            p.w = 2
 
-    def testCreatePointWithRegularArguments(self):
-        self.assertListEqual(Point(1).xyz, [1, 0, 0])
-        self.assertListEqual(Point(1, 1).xyz, [1, 1, 0])
-        self.assertListEqual(Point(1, 1, 1).xyz, [1, 1, 1])
-
-    def testCreatePointWithOnlyKeywords(self):
-        self.assertListEqual(Point(x=1).xyz, [1, 0, 0])
-        self.assertListEqual(Point(y=1).xyz, [0, 1, 0])
-        self.assertListEqual(Point(z=1).xyz, [0, 0, 1])
-        self.assertListEqual(Point(x=1, y=1).xyz, [1, 1, 0])
-        self.assertListEqual(Point(x=1, z=1).xyz, [1, 0, 1])
-        self.assertListEqual(Point(y=1, z=1).xyz, [0, 1, 1])
-        self.assertListEqual(Point(x=1, y=1, z=1).xyz, [1, 1, 1])
-
-    def testCreatePointWithArgumentsAndKeywords(self):
-
-        self.assertListEqual(Point(1, x=2).xyz, [2, 0, 0])
-        self.assertListEqual(Point(0, 1, y=2).xyz, [0, 2, 0])
-        self.assertListEqual(Point(0, 0, 1, z=2).xyz, [0, 0, 2])
-
-        self.assertListEqual(Point(1, x=2, y=1).xyz, [2, 1, 0])
-        self.assertListEqual(Point(0, 1, y=2, x=1).xyz, [1, 2, 0])
-        self.assertListEqual(Point(0, 1, y=2, z=1).xyz, [0, 2, 1])
-        self.assertListEqual(Point(0, 0, 1, z=2, x=1).xyz, [1, 0, 2])
-        self.assertListEqual(Point(0, 0, 1, z=2, y=1).xyz, [0, 1, 2])
-
-        self.assertListEqual(Point(1, x=2, y=1, z=1).xyz, [2, 1, 1])
-        self.assertListEqual(Point(0, 1, y=2, x=1, z=1).xyz, [1, 2, 1])
-        self.assertListEqual(Point(0, 1, y=2, z=1, x=1).xyz, [1, 2, 1])
-        self.assertListEqual(Point(0, 0, 1, z=2, x=1, y=1).xyz, [1, 1, 2])
-        self.assertListEqual(Point(0, 0, 1, z=2, y=1, x=1).xyz, [1, 1, 2])
-
-        self.assertListEqual(Point(1, x=4, y=5, z=6).xyz, [4, 5, 6])
-        self.assertListEqual(Point(1, 2, x=4, y=5, z=6).xyz, [4, 5, 6])
-        self.assertListEqual(Point(1, 2, 3, x=4, y=5, z=6).xyz, [4, 5, 6])
-
-    def testCreatePointWithObjects(self):
-
-        self.assertListEqual(Point(NumberFactory.List(v=1)).xyz,
-                             NumberFactory.List(v=1))
-
-        self.assertListEqual(Point(NumberFactory.Dict(v=1)).xyz,
-                             NumberFactory.List(v=1))
-
-        self.assertListEqual(Point(NumberFactory.Tuple(v=1)).xyz,
-                             NumberFactory.List(v=1))
-
-        self.assertListEqual(Point(NumberFactory.Point(v=1)).xyz,
-                             NumberFactory.List(v=1))
-
-        self.assertListEqual(Point(NumberFactory.Object(v=1)).xyz,
-                             NumberFactory.List(v=1))
-
-        with self.assertRaises(UngrokkableObject):
-            Point(object())
-
-    def testXYZSetter(self):
-
-        p = Point(1, 1, 1)
-        self.assertListEqual(p.xyz, NumberFactory.List(v=1))
-
-        p.xyz = None
-        self.assertListEqual(p.xyz, NumberFactory.List(), 'p.xyz = None')
-
-        for thing in NumberFactory.Herd():
-            msg = 'p.xyz = {t}({o})'.format(
-                o=thing, t=thing.__class__.__name__)
-            p = Point()
-            p.xyz = thing
-            self.assertListEqual(p.xyz, NumberFactory.List(), msg)
-
-        with self.assertRaises(UngrokkableObject):
-            p = Point()
-            p.xyz = NumberFactory.Object(keys='')
-
-        # scalars
-        data = [(1, [1, 0, 0]), ((1, 2), [1, 2, 0]), ((1, 2, 3), [1, 2, 3])]
-        for value, result in data:
-            p = Point()
-            p.xyz = value
-            self.assertListEqual(p.xyz, result, 'p.xyz = {v}'.format(v=value))
-
-        # permuted list
-        for n in range(0, 4):
-            p = Point()
-            src = NumberFactory.List(n=n, v=1)
-            p.xyz = src
-            src.extend([0] * 3)
-            self.assertListEqual(p.xyz, src[:3])
-
-        # permuted list
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            p.xyz = NumberFactory.Dict(key, v=1)
-            self.assertEqual(getattr(p, key), 1,
-                             "p.{k} = dict('{k}':1)".format(k=key))
-
-        # permuted object
-        for key in 'xyz':
-            p = Point()
-            p.xyz = NumberFactory.Object(key, v=1)
-            self.assertEqual(getattr(p, key), 1,
-                             'p.{k} = Object.{k} => 1'.format(k=key))
-
-    def testXYSetterWithNone(self):
-
-        p = Point(1, 1, 1)
-        p.xy = None
-        self.assertListEqual(p.xyz, [0, 0, 1], 'p.xy = None')
-
-    def testXYSetterFullyQualifiedObjects(self):
-
-        for thing in NumberFactory.Herd(v=1):
-            msg = 'p.xy = {t}({o})'.format(o=thing, t=thing.__class__.__name__)
-            p = Point()
-            p.xy = thing
-            self.assertListEqual(p.xyz, [1, 1, 0], msg)
-
-        with self.assertRaises(UngrokkableObject):
-            p = Point()
-            p.xy = NumberFactory.Object(keys='')
-
-    def testXYSetterWithScalar(self):
-
-        p = Point()
-        p.xy = 1
-        self.assertListEqual(p.xyz, [1, 0, 0])
-
-    def testXYSetterWithPermutedList(self):
-
-        # permuted list
-        for value, result in [([1], [1, 0, 0]), ([1, 2], [1, 2, 0])]:
-            p = Point()
-            p.xy = value
-            self.assertListEqual(p.xyz, result, 'p.xy = {v}'.format(v=value))
-
-    def testXYSetterWithPermutedTuple(self):
-        # permuted tuple
-        for value, result in [(1, [1, 0, 0]), ((1, 2), [1, 2, 0])]:
-            p = Point()
-            p.xy = value
-            self.assertListEqual(p.xyz, result, 'p.xy = {v}'.format(v=value))
-
-    def testXYSetterWithPermutedDict(self):
-        # permuted dict
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            p.xy = NumberFactory.Dict(key, 1)
-            value = getattr(p, key)
-            expected = int(key != 'z')
-            self.assertEqual(
-                value, expected, "p.{k} = dict('{k}':1)".format(k=key))
-
-    def testXYSetterWithPermutedObject(self):
-        # permuted object
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            expected = int(key != 'z')
-            if expected:
-                p.xy = NumberFactory.Object(key, 1)
-                value = getattr(p, key)
-                self.assertEqual(value, expected,
-                                 "p.{k} = obj('{k}':1)".format(k=key))
-            else:
-                with self.assertRaises(UngrokkableObject):
-                    p.xy = NumberFactory.Object(key, 1)
-
-    def testYZSetterWithNone(self):
-
-        p = Point(1, 1, 1)
-        p.yz = None
-        self.assertListEqual(p.xyz, [1, 0, 0], 'p.yz = None')
-
-    def testYZSetterWithFullyQualifiedObjects(self):
-        for thing in NumberFactory.Herd(v=1):
-            msg = 'p.yz = {t}({o})'.format(o=thing, t=thing.__class__.__name__)
-            p = Point()
-            p.yz = thing
-            self.assertListEqual(p.xyz, [0, 1, 1], msg)
-
-        with self.assertRaises(UngrokkableObject):
-            p = Point()
-            p.yz = NumberFactory.Object(keys='')
-
-    def testYZSetterWithScalar(self):
-        p = Point()
-        p.yz = 1
-        self.assertListEqual(p.xyz, [0, 1, 0])
-
-    def testYZSetterWithPermutedTuple(self):
-        for value, result in [(1, [0, 1, 0]), ((1, 2), [0, 1, 2])]:
-            p = Point()
-            p.yz = value
-            self.assertListEqual(p.xyz, result, 'p.xyz = {v}'.format(v=value))
-
-    def testYZSetterWithPermutedDict(self):
-
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            expected = int(key != 'x')
-            p.yz = NumberFactory.Dict(key, 1)
-            value = getattr(p, key)
-            self.assertEqual(value, expected,
-                             "p.{k} = dict('{k}':1)".format(k=key))
-
-    def testYZSetterWithPermutedObject(self):
-
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            expected = int(key != 'x')
-            if expected:
-                p.yz = NumberFactory.Object(key, 1)
-                self.assertEqual(getattr(p, key), expected,
-                                 "p.{k} = obj('{k}'):1)".format(k=key))
-            else:
-                with self.assertRaises(UngrokkableObject):
-                    p.yz = NumberFactory.Object(key, 1)
-
-    def testXZSetterWithNone(self):
-        p = Point(1, 1, 1)
-        p.xz = None
-        self.assertListEqual(p.xyz, [0, 1, 0], 'p.xz = None')
-
-    def testXZSetterWithFullyQualifiedObjects(self):
-
-        for thing in NumberFactory.Herd(v=1, keys='xz'):
-            msg = 'p.xz = {t}({o})'.format(o=thing, t=thing.__class__.__name__)
-            p = Point()
-            p.xz = thing
-            self.assertListEqual(p.xyz, [1, 0, 1], msg)
-
-        with self.assertRaises(UngrokkableObject):
-            p = Point()
-            p.xz = NumberFactory.Object(keys='')
-
-    def testXZSetterWithScalar(self):
-        p = Point()
-        p.xz = 1
-        self.assertListEqual(p.xyz, [1, 0, 0])
-
-    def testXZSetterWithPermutedTuple(self):
-        for value, result in [(1, [1, 0, 0]), ((1, 2), [1, 0, 2])]:
-            p = Point()
-            p.xz = value
-            self.assertListEqual(p.xyz, result, 'p.xyz = {v}'.format(v=value))
-
-    def testXZSetterWithPermutedDict(self):
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            p.xz = NumberFactory.Dict(key, 1)
-            expected = int(key != 'y')
-            self.assertEqual(getattr(p, key), expected,
-                             "p.{k} = dict('{k}':1)".format(k=key))
-
-    def testXZSetterWithPermutedObject(self):
-        for key in Point.ordinateNamesXYZ:
-            p = Point()
-            expected = int(key != 'y')
-
-            if expected:
-                p.xz = NumberFactory.Object(key, 1)
-                self.assertEqual(getattr(p, key), expected,
-                                 "p.{k} = dict('{k}':1)".format(k=key))
-            else:
-                with self.assertRaises(UngrokkableObject):
-                    p.xz = NumberFactory.Object(key, 1)
-
-    def testPointCoordinateTypesForFloat(self):
-        p = Point()
-        self.assertIsInstance(p.x, float)
-        self.assertIsInstance(p.y, float)
-        self.assertIsInstance(p.z, float)
-
-        for thing in NumberFactory.Herd():
-            p = Point()
-            p.xyz = thing
-            self.assertIsInstance(p.x, float)
-            self.assertIsInstance(p.y, float)
-            self.assertIsInstance(p.z, float)
-
-    def testPointAddition(self):
-
-        p = Point()
-        q = Point(1, 1, 1)
-
-        r = p + p
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = p + q
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = q + q
-        self.assertListEqual(r.xyz, [2] * 3)
-
-        r = q + 1
-        self.assertListEqual(r.xyz, [2] * 3)
-
-        r += 1
-        self.assertListEqual(r.xyz, [3] * 3)
-
-        r += q
-        self.assertListEqual(r.xyz, [4] * 3)
-
-    def testPointSubtraction(self):
-
-        p = Point()
-        q = Point(1, 1, 1)
-
-        r = p - q
-        self.assertListEqual(r.xyz, [-1] * 3)
-
-        r = q - p
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = q - 1
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r -= 1
-        self.assertListEqual(r.xyz, [-1] * 3)
-
-        r -= q
-        self.assertListEqual(r.xyz, [-2] * 3)
-
-    def testPointMultiplication(self):
-
-        p = Point()
-        q = Point(1, 1, 1)
-
-        r = p * p
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = p * q
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = q * q
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = p * 1
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = q * 1
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r *= q
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r *= 1
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r *= 0
-        self.assertListEqual(r.xyz, [0] * 3)
-
-    def testPointTrueDivision(self):
-
-        n = 2.
-        m = 3.
-
-        p = Point([n] * 3)
-        q = Point([m] * 3)
-
-        r = q / p
-        self.assertListEqual(r.xyz, [m / n] * 3)
-
-        r = p / p
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = p / q
-        self.assertListEqual(r.xyz, [n / m] * 3)
-
-        r = p / NumberFactory.Object(v=1)
-        self.assertListEqual(r.xyz, [n] * 3)
-
-        r = p / 2
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = p / 1
-        self.assertListEqual(r.xyz, [n] * 3)
-
-        r /= 1
-        self.assertListEqual(r.xyz, [n] * 3)
-
-        r /= n
-        self.assertListEqual(r.xyz, [n / n] * 3)
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            q = Point()
-            r = p / q
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            r = q / 0
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            r = q / NumberFactory.Object(v=0)
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            p /= Point()
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            p /= 0
-
-    def testPointFloorDivision(self):
-
-        n = 2.
-        m = 3.
-
-        p = Point([n] * 3)
-        q = Point([m] * 3)
-
-        r = p // p
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = q // p
-        self.assertListEqual(r.xyz, [m // n] * 3)
-
-        r = p // q
-        self.assertListEqual(r.xyz, [n // m] * 3)
-
-        r = p // NumberFactory.Object(v=1)
-        self.assertListEqual(r.xyz, [n // 1] * 3)
-
-        r = p // n
-        self.assertListEqual(r.xyz, [n // n] * 3)
-
-        r = p // 1
-        self.assertListEqual(r.xyz, [n] * 3)
-
-        r //= n
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        with self.assertRaises(ZeroDivisionError):
-            r = p // NumberFactory.Point()
-
-        with self.assertRaises(ZeroDivisionError):
-            r = p // 0
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            p //= Point()
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            p //= 0
-
-    def testPointModulus(self):
-
-        p = Point([2] * 3)
-        q = Point([4] * 3)
-
-        r = p % p
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = p % q
-        self.assertListEqual(r.xyz, [2] * 3)
-
-        r = q % p
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        with self.assertRaises(ZeroDivisionError):
-            z = Point()
-            r = p % z
-
-        with self.assertRaises(ZeroDivisionError):
-            r = p % NumberFactory.Object()
-
-        with self.assertRaises(ZeroDivisionError):
-            r = p % 0
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            p %= 0
-
-        with self.assertRaises(ZeroDivisionError):
-            p = Point(1, 1, 1)
-            p %= Point()
-
-        r = q % 3
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r %= 2
-        self.assertListEqual(r.xyz, [1] * 3)
-
-    def testPointPow(self):
-
-        p = Point()
-        q = Point(2, 2, 2)
-
-        r = p ** p
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = q ** p
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = p ** q
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = q ** p
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = p ** 0
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = p ** 1
-        self.assertListEqual(r.xyz, [0] * 3)
-
-        r = q ** 0
-        self.assertListEqual(r.xyz, [1] * 3)
-
-        r = q ** 1
-        self.assertListEqual(r.xyz, [2] * 3)
-
-        r **= 2
-        self.assertListEqual(r.xyz, [4] * 3)
-
-        r **= Point([2] * 3)
-        self.assertListEqual(r.xyz, [16] * 3)
-
-    def testPointMiscOps(self):
-
-        p = Point(1, 1, 1)
-
-        q = -p
-        self.assertListEqual(q.xyz, [-1] * 3)
-
-        q = +p
-        self.assertEqual(p, q)
-        self.assertTrue(q is p)
-
-        q = ~p
-        self.assertListEqual(q.xyz, [-2] * 3)
-
-        q = abs(Point(-1, -1, -1))
-        self.assertEqual(p, q)
-
-        self.assertEqual(hash(p), hash(q))
-        self.assertTrue(p is not q)
-
-        q = Point()
-        self.assertNotEqual(p, q)
-        self.assertNotEqual(hash(p), hash(q))
-        self.assertTrue(p is not q)
-
-    def testPointIteration(self):
-
-        pts = [1, 2, 3]
-        p = Point(pts)
-
-        for n, v in enumerate(p):
-            self.assertEqual(p[n], pts[n])
-
+        # mapping style
+        self.assertEqual(p['x'], 1)
+        self.assertEqual(p['y'], 2)
+        self.assertEqual(p['z'], 3)
+        self.assertEqual(p['w'], 1)
+
+        # indexed style
+        self.assertEqual(p[0], 1)
+        self.assertEqual(p[1], 2)
+        self.assertEqual(p[2], 3)
         self.assertEqual(p[3], 1)
 
-        with self.assertRaises(IndexError):
-            p[4]
+        # bad index keys
+        for bad_key in [-1, 4, 'f', ]:
+            with self.assertRaises(TypeError,
+                                   msg='p[{}] = 1'.format(bad_key)):
+                p[bad_key] = 1
 
-        with self.assertRaises(IndexError):
-            p[-5]
+    def testPointMultiplePropertyGetters(self):
+        '''
+        '''
 
-    def testPointStrings(self):
+        p = Point(1, 2, 3)
+        self.assertSequenceEqual(p.xy, (1, 2))
+        self.assertSequenceEqual(p.xz, (1, 3))
+        self.assertSequenceEqual(p.yz, (2, 3))
+        self.assertSequenceEqual(p.xyz, (1, 2, 3))
+        self.assertSequenceEqual(p.xyzw, (1, 2, 3, 1))
+
+        self.assertSequenceEqual(p['xy'], (1, 2))
+        self.assertSequenceEqual(p['xz'], (1, 3))
+        self.assertSequenceEqual(p['yz'], (2, 3))
+        self.assertSequenceEqual(p['xyz'], (1, 2, 3))
+        self.assertSequenceEqual(p['xyzw'], (1, 2, 3, 1))
+
+    def testPointPropertySettersSimple(self):
+
         p = Point()
-        s = str(p)
-        self.assertTrue('x=' in s)
-        self.assertTrue('y=' in s)
-        self.assertTrue('z=' in s)
 
-        r = repr(p)
-        self.assertTrue(r.startswith(Point.__name__))
-        self.assertTrue('x=' in r)
-        self.assertTrue('y=' in r)
-        self.assertTrue('z=' in r)
+        p.x = 1
+        self.assertEqual(p.x, 1)
+        p[0] = 0
+        self.assertEqual(p.x, 0)
+        p['x'] = 1
+        self.assertEqual(p.x, 1)
+        p.x = None
+        self.assertEqual(p.x, 0)
 
-    def testPointBytes(self):
+        p.y = 1
+        self.assertEqual(p.y, 1)
+        p[1] = 0
+        self.assertEqual(p.y, 0)
+        p['y'] = 1
+        self.assertEqual(p.y, 1)
+        p.y = None
+        self.assertEqual(p.y, 0)
+
+        p.z = 1
+        self.assertEqual(p.z, 1)
+        p[2] = 0
+        self.assertEqual(p.z, 0)
+        p['z'] = 1
+        self.assertEqual(p.z, 1)
+        p.z = None
+        self.assertEqual(p.y, 0)
+
+        with self.assertRaises(AttributeError, msg='p.w = 2'):
+            p.w = 2
+        with self.assertRaises(TypeError, msg='p[3] = 2'):
+            p[3] = 2
+        with self.assertRaises(TypeError, msg="p['w'] = 2"):
+            p['w'] = 2
+
+    def testPointMultiplePropertySettersSimple(self):
+
         p = Point()
-        self.assertIsInstance(p.bytes, bytes)
-        self.assertEqual(p.bytes, bytes(repr(p), 'utf-8'))
 
-    def testPointPropertyMapping(self):
+        p.xy = (1, 1)
+        self.assertSequenceEqual(p.xyz, (1, 1, 0))
+        p.xy = None
+        self.assertIsOrigin(p)
+
+        p.xz = (2, 2)
+        self.assertSequenceEqual(p.xyz, (2, 0, 2))
+        p.xz = None
+        self.assertIsOrigin(p)
+
+        p.yz = (3, 3)
+        self.assertSequenceEqual(p.xyz, (0, 3, 3))
+        p.yz = None
+        self.assertIsOrigin(p)
+
+        p.xyz = (4, 4, 4)
+        self.assertSequenceEqual(p.xyz, (4, 4, 4))
+        p.xyz = None
+        self.assertIsOrigin(p)
+
+        p.xyzw = (5, 5, 5, 5)
+        self.assertSequenceEqual(p.xyzw, (5, 5, 5, 1))
+        p.xyzw = None
+        self.assertIsOrigin(p)
+
+        p['xy'] = (6, 6)
+        self.assertSequenceEqual(p.xyz, (6, 6, 0))
+        p['xy'] = None
+        self.assertIsOrigin(p)
+
+        p['yz'] = (7, 7)
+        self.assertSequenceEqual(p.xyz, (0, 7, 7))
+        p['yz'] = None
+        self.assertIsOrigin(p)
+
+        p['xz'] = (8, 8)
+        self.assertSequenceEqual(p.xyz, (8, 0, 8))
+        p['xz'] = None
+        self.assertIsOrigin(p)
+
+        p['xyz'] = (9, 9, 9)
+        self.assertSequenceEqual(p.xyz, (9, 9, 9))
+        p['xyz'] = None
+        self.assertIsOrigin(p)
+
+        p['xyzw'] = (10, 10, 10, 10)
+        self.assertSequenceEqual(p.xyzw, (10, 10, 10, 1))
+        p['xyzw'] = None
+        self.assertIsOrigin(p)
+
+    def testPointPropertySettersComplex(self):
+
+        mapping = {'x': 1, 'y': 2, 'z': 3}
+        iterable = [4, 5, 6]
+
         p = Point()
-        m = p.mapping
-        self.assertEqual(len(m), 4)
-        for key in Point.ordinateNamesAll:
-            self.assertEqual(getattr(p, key), m[key])
+        p.x = mapping
+        self.assertCoordinatesEqual(p, (1, 0, 0))
+        p.x = iterable
+        self.assertCoordinatesEqual(p, (4, 0, 0))
 
-    def testPointCCW(self):
+        p = Point()
+        p.y = mapping
+        self.assertCoordinatesEqual(p, (0, 2, 0))
+        p.y = iterable
+        self.assertCoordinatesEqual(p, (0, 4, 0))
 
-        a = Point()
-        self.assertListEqual(a.xyz, [0] * 3)
-        b = Point(1, 0)
-        self.assertListEqual(b.xyz, [1, 0, 0])
-        c = Point(1, 1)
-        self.assertListEqual(c.xyz, [1, 1, 0])
-        d = Point(2, 2)
-        self.assertListEqual(d.xyz, [2, 2, 0])
+        p = Point()
+        p.z = mapping
+        self.assertCoordinatesEqual(p, (0, 0, 3))
+        p.z = iterable
+        self.assertCoordinatesEqual(p, (0, 0, 4))
 
-        self.assertEqual(a.ccw(b, c), 1)
-        self.assertEqual(a.ccw(c, d), 0)
-        self.assertEqual(c.ccw(b, a), -1)
+    def testPointMultiplePropertySettersComplex(self):
 
-        self.assertTrue(a.isCCW(b, c))
-        self.assertFalse(c.isCCW(b, a))
+        mapping = {'x': 1, 'y': 2, 'z': 3}
+        iterable = [4, 5, 6]
 
-        with self.assertRaises(CollinearPoints):
-            a.isCCW(c, d)
+        p = Point()
+        p.xy = mapping
+        self.assertCoordinatesEqual(p, (1, 2, 0))
+        p.xy = iterable
+        self.assertCoordinatesEqual(p, (4, 5, 0))
 
-        self.assertTrue(a.isCollinear(c, d))
-        self.assertFalse(a.isCollinear(b, c))
+        p = Point()
+        p.xz = mapping
+        self.assertCoordinatesEqual(p, (1, 0, 3))
+        p.xz = iterable
+        self.assertCoordinatesEqual(p, (4, 0, 5))
 
-    def testPointCrossProduct(self):
+        p = Point()
+        p.yz = mapping
+        self.assertCoordinatesEqual(p, (0, 2, 3))
+        p.yz = iterable
+        self.assertCoordinatesEqual(p, (0, 4, 5))
 
+        p = Point()
+        p.xyz = mapping
+        self.assertCoordinatesEqual(p, (1, 2, 3))
+        p.xyz = iterable
+        self.assertCoordinatesEqual(p, (4, 5, 6))
+
+        p = Point()
+        p.xyzw = mapping
+        self.assertCoordinatesEqual(p, (1, 2, 3))
+        p.xyzw = iterable
+        self.assertCoordinatesEqual(p, (4, 5, 6))
+
+    def testPointClassmethod_unit(self):
+        '''
+        '''
+        with self.assertRaises(TypeError, msg='Point.unit(None,None)'):
+            Point.unit(None, None)
+
+        o = Point.origin()
+
+        self.assertCoordinatesEqual(Point.unit(o, Point(3, 0, 0)), [1, 0, 0])
+        self.assertCoordinatesEqual(Point.unit(o, Point(0, 3, 0)), [0, 1, 0])
+        self.assertCoordinatesEqual(Point.unit(o, Point(0, 0, 3)), [0, 0, 1])
+
+    def testPointClassmethod_units(self):
+        '''
+        '''
+        v = Point.units()
+        self.assertEqual(len(v), 3)
+        self.assertCoordinatesEqual(v[0], [1, 0, 0])
+        self.assertCoordinatesEqual(v[1], [0, 1, 0])
+        self.assertCoordinatesEqual(v[2], [0, 0, 1])
+
+        for scale in [2,3,4]:
+            v = Point.units(scale)
+            self.assertEqual(len(v), 3)
+            self.assertCoordinatesEqual(v[0], [scale, 0, 0])
+            self.assertCoordinatesEqual(v[1], [0, scale, 0])
+            self.assertCoordinatesEqual(v[2], [0, 0, scale])
+
+    def testPointClassmethod_gaussian(self):
+        '''
+        '''
+
+        self.assertIsPoint(Point.gaussian())
+
+    def testPointClassmethod_random(self):
+        '''
+        '''
+
+        self.assertIsPoint(Point.random())
+        for _ in range(100):
+            self.assertTrue(Point.random().distance() <= 1.0)
+
+        o = Point(10, 10)
+        for _ in range(100):
+            self.assertTrue(Point.random(o, 2).distance(o) <= 2)
+
+    def testPointMethod_hash(self):
+        '''
+        '''
+        
+        # MAGIC NUMBER: hash value for a Point(0,0,0) object
+        v = 1553416657114974281
+        
+        self.assertTrue(hash(Point.origin()) == v)
+        self.assertFalse(hash(Point(1, 1, 1)) == v)
+
+    def testPointMethod_len(self):
+        '''
+        '''
+        self.assertEqual(len(Point()), 3)
+
+    def testPointMethod_iter(self):
+        '''
+        '''
+        p = Point()
+        i = iter(p)
+        self.assertTrue(p == i)
+        self.assertTrue(p is i)
+
+    def testPointMethod_next(self):
+        '''
+        '''
+        i = iter(Point())
+
+        self.assertTrue(next(i) == 'x')
+        self.assertTrue(next(i) == 'y')
+        self.assertTrue(next(i) == 'z')
+
+        with self.assertRaises(StopIteration, msg='next({!r})'.format(i)):
+            next(i)
+
+    def testPointMethod_eq(self):
+        '''
+        '''
+        
+        self.assertTrue(Point() == Point())
+        self.assertTrue(Point() != Point(1))
+
+        self.assertTrue(None == Point.origin())
+        self.assertTrue(Point.origin() == None)
+        self.assertTrue(None != Point(1))
+        self.assertTrue(Point(1) != None)
+
+        o = Point.origin()
+        for x in range(1, 3):
+            zeros = [0] * x
+            ones = [1] * x
+            self.assertTrue(zeros == o)
+            self.assertTrue(o == zeros)
+            self.assertTrue(ones != o)
+            self.assertTrue(o != ones)
+
+    def testPointMethod_addition(self):
+        '''
+        '''
+        # __add__
+        for b in self.testObjects(1):
+            a = Point()
+            c = a + b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            c = b + a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            a += b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+
+    def testPointMethod_subtraction(self):
+        '''
+        '''
+        for b in self.testObjects(1):
+            a = Point()
+            c = a - b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [-1, -1, -1])
+            c = b - a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            a -= b
+            self.assertCoordinatesEqual(a, [-1, -1, -1])
+
+    def testPointMethod_multiplication(self):
+        '''
+        '''
+        for b in self.testObjects(2):
+            a = Point(2, 2, 2)
+            c = a * b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [4, 4, 4])
+            c = b * a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [4, 4, 4])
+            a *= b
+            self.assertCoordinatesEqual(a, [4, 4, 4])
+
+    def testPointMethod_floordivision(self):
+        '''
+        '''
+        for b in self.testObjects(2):
+            a = Point(3, 3, 3)
+            c = a // b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            c = b // a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+            a //= b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+
+        a = Point(1, 1, 1)
+        for b in self.testObjects(0,None):
+            with self.assertRaises(ZeroDivisionError,
+                                   msg='{!r} // {!r}'.format(a, b)):
+                c = a // b
+            with self.assertRaises(ZeroDivisionError,
+                                   msg='{!r} //= {!r}'.format(a, b)):
+                a //= b
+
+    def testPointMethod_truedivision(self):
+        '''
+        '''
+        for b in self.testObjects(2):
+            a = Point(3, 3, 3)
+            c = a / b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1.5] * 3)
+            c = b / a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [2 / 3] * 3)
+            a /= b
+            self.assertCoordinatesEqual(a, [1.5] * 3)
+
+        a = Point(1, 1, 1)
+        for b in self.testObjects(0,None):
+            with self.assertRaises(ZeroDivisionError,
+                                   msg='{!r} / {!r}'.format(a, b)):
+                c = a / b
+            with self.assertRaises(ZeroDivisionError,
+                                   msg='{!r} /= {!r}'.format(a, b)):
+                a /= b
+
+    def testPointMethod_modulus(self):
+        '''
+        '''
+        for b in self.testObjects(2):
+            a = Point(1, 1, 1)
+            c = a % b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            c = b % a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+            a %= b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+
+        a = Point(1, 1, 1)
+        for b in self.testObjects(0,None):
+            with self.assertRaises(ZeroDivisionError,
+                                   msg='{!r} % {!r}'.format(a, b)):
+                c = a % b
+            with self.assertRaises(ZeroDivisionError,
+                                   msg='{!r} %= {!r}'.format(a, b)):
+                a %= b
+
+    def testPointMethod_power(self):
+        '''
+        '''
+        self.assertCoordinatesEqual(Point() ** 1, [0, 0, 0])
+        self.assertCoordinatesEqual(Point() ** 0, [1, 1, 1])
+
+        for b in self.testObjects(2):
+            a = Point(2, 2, 2)
+            c = a ** b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [4, 4, 4])
+            c = b ** a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [4, 4, 4])
+            a **= b
+            self.assertCoordinatesEqual(a, [4, 4, 4])
+
+    def testPointMethod_rightshift(self):
+        '''
+        '''
+        for b in self.testObjects(1):
+            a = Point(2, 2, 2)
+            c = a >> b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            c = b >> a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+            a >>= b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+
+    def testPointMethod_leftshift(self):
+        '''
+        '''
+        for b in self.testObjects(1):
+            a = Point(2, 2, 2)
+            c = a << b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [4, 4, 4])
+            c = b << a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [4, 4, 4])
+            a <<= b
+            self.assertCoordinatesEqual(a, [4, 4, 4])
+
+    def testPointMethod_bitwise_and(self):
+        '''
+        '''
+        for b in self.testObjects(1):
+            a = Point()
+            c = a & b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+
+            c = b & a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+
+            a &= b
+            self.assertCoordinatesEqual(a, [0, 0, 0])
+
+    def testPointMethod_bitwise_or(self):
+        '''
+        '''
+        for b in self.testObjects(1):
+            a = Point()
+            c = a | b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+
+            c = b | a
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+
+            a |= b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+
+    def testPointMethod_bitwise_xor(self):
+        '''
+        '''
+
+        # XOR Truth Table:
+        # 0 ^ 0 -> 0
+        # 0 ^ 1 -> 1
+        # 1 ^ 0 -> 1
+        # 1 ^ 1 -> 0
+
+        for b in self.testObjects(1):
+            a = Point()
+            c = a ^ b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            a ^= b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+
+            a = Point(1, 1, 1)
+            c = a ^ b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+            a ^= b
+            self.assertCoordinatesEqual(a, [0, 0, 0])
+
+        for b in self.testObjects(0):
+            a = Point(1, 1, 1)
+            c = a ^ b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [1, 1, 1])
+            a ^= b
+            self.assertCoordinatesEqual(a, [1, 1, 1])
+            a = Point()
+            c = a ^ b
+            self.assertFalse(c is a)
+            self.assertFalse(c is b)
+            self.assertCoordinatesEqual(c, [0, 0, 0])
+            a ^= b
+            self.assertCoordinatesEqual(a, [0, 0, 0])
+
+    # unary methods
+
+    def testPointMethod_positive(self):
+        '''
+        '''
+        for v in [1, -1]:
+            p = Point([v] * 3)
+            self.assertTrue(+p is p)
+            self.assertCoordinatesEqual(+p, [v] * 3)
+
+    def testPointMethod_negative(self):
+        '''
+        '''
+        for v in [1, -1]:
+            p = Point([v] * 3)
+            self.assertFalse(-p is p)
+            self.assertCoordinatesEqual(-p, [-v] * 3)
+
+    def testPointMethod_absolute(self):
+        '''
+        '''
+        for v in [1, -1]:
+            p = Point([v] * 3)
+            self.assertTrue(abs(p) is p)
+            self.assertCoordinatesEqual(p, [abs(v)] * 3)
+
+    def testPointMethod_invert(self):
+        '''
+        '''
+        p = Point()
+
+        self.assertTrue(~p is p)
+        self.assertCoordinatesEqual(p, [-1] * 3)
+        ~p
+        self.assertCoordinatesEqual(p, [0] * 3)
+
+    def testPointMethod_round(self):
+        '''
+        '''
+        V = 1.234 
+
+        p = Point([V] * 3)
+        round(p)
+        self.assertCoordinatesEqual(p, [round(V)] * 3)
+
+        for n in range(1, 4):
+            p = Point([V] * 3)
+            round(p, n)
+            self.assertCoordinatesEqual(
+                p, [round(V, n)] * 3, 'round({!r},{})'.format(p, n))
+
+    def testPointMethod_floor(self):
+        '''
+        '''
+        for v in range(1, 10):
+            f = math.floor(1 / v)
+            p = Point([1 / v] * 3)
+            self.assertTrue(math.floor(p) is p)
+            self.assertCoordinatesEqual(
+                p, [f] * 3, 'floor {!r} for 1/{}'.format(p, v))
+
+    def testPointMethod_ceiling(self):
+        '''
+        '''
+        for v in range(1, 10):
+            f = math.ceil(1 / v)
+            p = Point([1 / v] * 3)
+            self.assertTrue(math.ceil(p) is p)
+            self.assertCoordinatesEqual(
+                p, [f] * 3, 'ceil {!r} for 1/{}'.format(p, v))
+
+    # class specific methods
+    def testPointMethod_dot_product(self):
+        '''
+        '''
+        for scale in [1,-1]:
+            i, j, k = Point.units(scale)
+            self.assertEqual(i.dot(i), 1)
+            self.assertEqual(i.dot(j), 0)
+            self.assertEqual(i.dot(k), 0)
+
+            self.assertEqual(j.dot(j), 1)
+            self.assertEqual(j.dot(i), 0)
+            self.assertEqual(j.dot(k), 0)
+
+            self.assertEqual(k.dot(k), 1)
+            self.assertEqual(k.dot(i), 0)
+            self.assertEqual(k.dot(j), 0)
+        
+
+    def testPointMethod_cross_product(self):
+        '''
+        '''
+        for scale in [1,-1]:
+            i, j, k = Point.units()
+            self.assertEqual(i.cross(i), 0)
+            self.assertEqual(i.cross(j), 1)
+            self.assertEqual(i.cross(k), -1)
+
+            self.assertEqual(j.cross(j), 0)
+            self.assertEqual(j.cross(k), 1)
+            self.assertEqual(j.cross(i), -1)
+
+            self.assertEqual(k.cross(k), 0)
+            self.assertEqual(k.cross(i), 1)
+            self.assertEqual(k.cross(j), -1)
+        
+
+    def testPointMethod_midpoint(self):
+        '''
+        '''
+        p = Point(2, 2, 2)
+        q = Point.origin()
+        m = p.midpoint(q)
+        self.assertFalse(m is p)
+        self.assertFalse(m is q)
+        self.assertCoordinatesEqual(m, [1, 1, 1])
+        self.assertEqual(m.distance(p), m.distance(q))
+
+    def testPointMethod_isBetween(self):
+        '''
+        '''
+        o = Point.origin()
+        p = Point(1, 1, 1)
+        u, v, w = Point.units(scale=2)
+
+        self.assertFalse(p.isBetween(o, u))
+        self.assertFalse(p.isBetween(o, v))
+        self.assertFalse(p.isBetween(o, w))
+
+        self.assertTrue(p.isBetween(o, u + v + w))
+
+        self.assertTrue(p.isBetween(o, u, axes='x'))
+        self.assertTrue(p.isBetween(o, v, axes='y'))
+        self.assertTrue(p.isBetween(o, w, axes='z'))
+
+        self.assertFalse(p.isBetween(o, u, axes='y'))
+        self.assertFalse(p.isBetween(o, u, axes='z'))
+        self.assertFalse(p.isBetween(o, u, axes='yz'))
+
+        self.assertFalse(p.isBetween(o, v, axes='x'))
+        self.assertFalse(p.isBetween(o, v, axes='z'))
+        self.assertFalse(p.isBetween(o, v, axes='xz'))
+
+        self.assertFalse(p.isBetween(o, w, axes='x'))
+        self.assertFalse(p.isBetween(o, w, axes='y'))
+        self.assertFalse(p.isBetween(o, w, axes='xy'))
+
+    def testPointMethod_distance(self):
+        '''
+        '''
         i, j, k = Point.units()
 
-        self.assertEqual(i.cross(i), 0)
-        self.assertEqual(j.cross(j), 0)
-        self.assertEqual(k.cross(k), 0)
+        o = Point.origin()
 
-        self.assertEqual(i.cross(j), 1)
-        self.assertEqual(i.cross(k), -1)
+        self.assertEqual(i.distance(i), 0)
+        self.assertEqual(j.distance(j), 0)
+        self.assertEqual(k.distance(k), 0)
 
-        self.assertEqual(j.cross(k), 1)
-        self.assertEqual(j.cross(i), -1)
-
-        self.assertEqual(k.cross(i), 1)
-        self.assertEqual(k.cross(j), -1)
-
-    def testPointDotProduct(self):
-
-        i, j, k = Point.units()
-
-        self.assertEqual(i.dot(i), 1)
-        self.assertEqual(j.dot(j), 1)
-        self.assertEqual(k.dot(k), 1)
-
-        self.assertEqual(i.dot(j), 0)
-        self.assertEqual(i.dot(k), 0)
-
-        self.assertEqual(j.dot(i), 0)
-        self.assertEqual(j.dot(k), 0)
-
-        self.assertEqual(k.dot(i), 0)
-        self.assertEqual(k.dot(j), 0)
-
-    def testPointDistance(self):
-
-        i, j, k = Point.units()
-
-        self.assertEqual(i.distance(), 1)
-        self.assertEqual(j.distance(), 1)
-        self.assertEqual(k.distance(), 1)
+        self.assertEqual(o.distance(i), 1)
+        self.assertEqual(o.distance(j), 1)
+        self.assertEqual(o.distance(k), 1)
 
         self.assertEqual(i.distance(j), j.distance(i))
         self.assertEqual(i.distance(k), k.distance(i))
         self.assertEqual(j.distance(k), k.distance(j))
 
-        self.assertEqual(i.distanceSquared(j), j.distanceSquared(i))
-        self.assertEqual(i.distanceSquared(k), k.distanceSquared(i))
-        self.assertEqual(j.distanceSquared(k), k.distanceSquared(j))
+        self.assertEqual(i.distance(),i.distance(o))
 
-    def testPointMidpoint(self):
+    def testPointMethod_distanceSquared(self):
+        '''
+        '''
         i, j, k = Point.units()
-        m = i.midpoint(j)
-        self.assertIsInstance(m, Point)
-        self.assertTrue(m.isCollinear(i, j))
-        self.assertEqual(m.distance(i), m.distance(j))
-        self.assertEqual(i.distance(m), j.distance(m))
-        self.assertEqual(m, (i + j) / 2)
+        o = Point.origin()
 
-    def testPointBetween(self):
+        self.assertEqual(i.distanceSquared(i), 0)
+        self.assertEqual(j.distanceSquared(j), 0)
+        self.assertEqual(k.distanceSquared(k), 0)
 
+        self.assertEqual(i.distanceSquared(o), 1)
+        self.assertEqual(j.distanceSquared(o), 1)
+        self.assertEqual(k.distanceSquared(o), 1)
+
+        self.assertEqual(i.distanceSquared(j), 2)
+        self.assertEqual(i.distanceSquared(k), 2)
+        self.assertEqual(j.distanceSquared(i), 2)
+        self.assertEqual(j.distanceSquared(k), 2)
+        self.assertEqual(k.distanceSquared(i), 2)
+        self.assertEqual(k.distanceSquared(j), 2)
+
+        self.assertEqual(i.distanceSquared(),i.distanceSquared(o))
+
+    def testPointMethod_ccw(self):
+        '''
+        '''
         i, j, k = Point.units()
+        o = Point.origin()
 
-        a = (i + j + k) / 2
+        self.assertEqual(o.ccw(i, j, axis='x'), 0)
+        self.assertEqual(o.ccw(i, j, axis='y'), 0)
+        self.assertEqual(o.ccw(i, j, axis='z'), 1)
 
-        self.assertTrue(a.isBetweenX(i, j))
-        self.assertTrue(a.isBetweenX(j, i))
-        self.assertTrue(a.isBetweenX(i, k))
-        self.assertTrue(a.isBetweenX(k, i))
-        self.assertFalse(a.isBetweenX(j, k))
-        self.assertFalse(a.isBetweenX(k, j))
+        self.assertEqual(o.ccw(j, i, axis='x'), 0)
+        self.assertEqual(o.ccw(j, i, axis='y'), 0)
+        self.assertEqual(o.ccw(j, i, axis='z'), -1)
 
-        self.assertTrue(a.isBetweenY(i, j))
-        self.assertTrue(a.isBetweenY(j, i))
-        self.assertTrue(a.isBetweenY(j, k))
-        self.assertTrue(a.isBetweenY(k, j))
-        self.assertFalse(a.isBetweenY(i, k))
-        self.assertFalse(a.isBetweenY(k, i))
+        self.assertEqual(o.ccw(i, k, axis='x'), 0)
+        self.assertEqual(o.ccw(i, k, axis='y'), 1)
+        self.assertEqual(o.ccw(i, k, axis='z'), 0)
 
-        self.assertTrue(a.isBetweenZ(k, i))
-        self.assertTrue(a.isBetweenZ(i, k))
-        self.assertTrue(a.isBetweenZ(k, j))
-        self.assertTrue(a.isBetweenZ(j, k))
-        self.assertFalse(a.isBetweenZ(i, j))
-        self.assertFalse(a.isBetweenZ(j, i))
+        self.assertEqual(o.ccw(k, i, axis='x'), 0)
+        self.assertEqual(o.ccw(k, i, axis='y'), -1)
+        self.assertEqual(o.ccw(k, i, axis='z'), 0)
 
-        a = (i + j + k) * 2
+        self.assertEqual(o.ccw(j, k, axis='x'), 1)
+        self.assertEqual(o.ccw(j, k, axis='y'), 0)
+        self.assertEqual(o.ccw(j, k, axis='z'), 0)
 
-        self.assertListEqual(a.xyz, [2] * 3)
+        self.assertEqual(o.ccw(k, j, axis='x'), -1)
+        self.assertEqual(o.ccw(k, j, axis='y'), 0)
+        self.assertEqual(o.ccw(k, j, axis='z'), 0)
 
-        self.assertFalse(a.isBetweenX(i, j))
-        self.assertFalse(a.isBetweenX(j, i))
-        self.assertFalse(a.isBetweenX(i, k))
-        self.assertFalse(a.isBetweenX(k, i))
-        self.assertFalse(a.isBetweenX(j, k))
-        self.assertFalse(a.isBetweenX(k, j))
+        for junk in [-1, 'foo', {}, 13.0, None]:
+            with self.assertRaises(ValueError,
+                                   msg='junk is {}'.format(junk)):
+                o.ccw(i, j, axis=junk)
 
-        self.assertFalse(a.isBetweenY(i, j))
-        self.assertFalse(a.isBetweenY(j, i))
-        self.assertFalse(a.isBetweenY(j, k))
-        self.assertFalse(a.isBetweenY(k, j))
-        self.assertFalse(a.isBetweenY(i, k))
-        self.assertFalse(a.isBetweenY(k, i))
-
-        self.assertFalse(a.isBetweenZ(k, i))
-        self.assertFalse(a.isBetweenZ(i, k))
-        self.assertFalse(a.isBetweenZ(k, j))
-        self.assertFalse(a.isBetweenZ(j, k))
-        self.assertFalse(a.isBetweenZ(i, j))
-        self.assertFalse(a.isBetweenZ(j, i))
-
-    def testPointClassmethodGaussian(self):
-        p = Point.gaussian()
-        self.assertIsInstance(p, Point)
-
-    def testPointClassmethodRandomXY(self):
-        p = Point.randomXY()
-        self.assertIsInstance(p, Point)
-        self.assertLessEqual(p.distance(), 1)
-
-        p = Point.randomXY(Point(5, 5, 0), 2)
-        self.assertIsInstance(p, Point)
-        self.assertLessEqual(p.distance(Point(5, 5, 0)), 2)
-
-    def testPointClassmethodRandomXYZ(self):
-        p = Point.randomXYZ()
-        self.assertIsInstance(p, Point)
-        self.assertLessEqual(p.distance(), 1)
-
-        o = Point(5, 5, 0)
-        r = 2
-        p = Point.randomXYZ(o, r)
-        self.assertIsInstance(p, Point)
-
-        l = p.distance(o)
-
-        # XXX horrible bandaid
-        if abs(l - r) / r <= sys.float_info.epsilon:
-            self.assertTrue(True)
-        else:
-            self.assertLessEqual(l, r)
-
-    def testPointClassmethodRandomLocationInRectangle(self):
-        i, j, _ = Point.units()
-        p = Point.randomInRectangle()
-        self.assertIsInstance(p, Point)
-        self.assertTrue(p.isBetweenX(i, j))
-        self.assertTrue(p.isBetweenY(i, j))
-
-        o = Point(2, 2)
-        p = Point.randomInRectangle(o, 2, 2)
-        self.assertIsInstance(p, Point)
-        self.assertTrue(p.isBetweenX(o, o + 2))
-        self.assertTrue(p.isBetweenY(o, o + 2))
-
-    def testPointClassmethodUnits(self):
+    def testPointMethod_isCCW(self):
+        '''
+        '''
         i, j, k = Point.units()
-        self.assertListEqual(i.xyz, [1, 0, 0])
-        self.assertListEqual(j.xyz, [0, 1, 0])
-        self.assertListEqual(k.xyz, [0, 0, 1])
+        o = Point.origin()
 
-    def testPointClassmethodUnitize(self):
+        self.assertTrue(o.isCCW(i, j, axis='z'))
+        self.assertFalse(o.isCCW(j, i, axis='z'))
 
-        a, b = Point.gaussian(), Point.gaussian()
+        self.assertTrue(o.isCCW(j, k, axis='x'))
+        self.assertFalse(o.isCCW(k, j, axis='x'))
 
-        c = Point.unitize(a, b)
+        self.assertTrue(o.isCCW(i, k, axis='y'))
+        self.assertFalse(o.isCCW(k, i, axis='y'))
 
-        self.assertIsInstance(c, Point)
-        self.assertAlmostEqual(c.distance(), 1.0, delta=sys.float_info.epsilon)
+        with self.assertRaises(CollinearPoints):
+            o.isCCW(i, j, axis='x')
+        with self.assertRaises(CollinearPoints):
+            o.isCCW(i, j, axis='y')
 
-        for u in Point.units():
-            r = Point.unitize(Point(), u)
-            msg = 'unitize(O,{u}) => {r} != {u}'
-            self.assertListEqual(u.xyz, r.xyz, msg.format(u=u, r=r))
+        with self.assertRaises(CollinearPoints):
+            o.isCCW(j, k, axis='y')
+        with self.assertRaises(CollinearPoints):
+            o.isCCW(j, k, axis='z')
+
+        with self.assertRaises(CollinearPoints):
+            o.isCCW(i, k, axis='x')
+        with self.assertRaises(CollinearPoints):
+            o.isCCW(i, k, axis='z')
+
+        for junk in [-1, 'foo', {}, 13.0, None]:
+            with self.assertRaises(ValueError,
+                                   msg='junk is {}'.format(junk)):
+                o.isCCW(i, j, axis=junk)
+
+    def testPointMethod_isCollinear(self):
+        '''
+        '''
+        i, j, k = Point.units()
+        u, v, w = Point.units(2)
+        o = Point.origin()
+        
+        self.assertTrue(o.isCollinear(i,u))
+        self.assertTrue(o.isCollinear(u,i))
+        self.assertTrue(i.isCollinear(o,u))
+        self.assertTrue(i.isCollinear(u,o))
+        self.assertTrue(u.isCollinear(o,i))
+        self.assertTrue(u.isCollinear(i,o))
+
+        self.assertTrue(o.isCollinear(j,v))
+        self.assertTrue(o.isCollinear(v,j))
+        self.assertTrue(j.isCollinear(o,v))
+        self.assertTrue(j.isCollinear(v,o))
+        self.assertTrue(v.isCollinear(o,j))
+        self.assertTrue(v.isCollinear(j,o))
+
+        self.assertTrue(o.isCollinear(k,w))
+        self.assertTrue(o.isCollinear(w,k))
+        self.assertTrue(k.isCollinear(o,w))
+        self.assertTrue(k.isCollinear(w,o))
+        self.assertTrue(w.isCollinear(o,k))
+        self.assertTrue(w.isCollinear(k,o))
+
+        self.assertFalse(o.isCollinear(i,v))
+        self.assertFalse(o.isCollinear(i,w))
+
+        self.assertFalse(o.isCollinear(j,u))
+        self.assertFalse(o.isCollinear(j,w))
+
+        self.assertFalse(o.isCollinear(k,u))
+        self.assertFalse(o.isCollinear(k,v))
