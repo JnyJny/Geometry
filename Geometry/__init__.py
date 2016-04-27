@@ -15,7 +15,7 @@ __author__ = '\n'.join(["Erik O'Shaughnessy",
 
 __version__ = "0.0.23"
 
-from .point2 import Point
+from .point2 import Point, PointCollection
 from .ellipse import Ellipse, Circle
 from .line import Line, Segment, Ray
 from .triangle import Triangle
@@ -23,13 +23,15 @@ from .rectangle import Rectangle
 from .graph import Node, Edge, Graph
 from .constants import *
 from .exceptions import *
+from .polygon import Polygon
 
-__all__ = ['Point',
+__all__ = ['Point','PointCollection',
+           'Polygon',
            'Ellipse', 'Circle',
            'Line', 'Segment', 'Ray',
            'Triangle', 'Rectangle',
            'Graph', 'Node', 'Edge',
            'ZeroSlope', 'InfiniteSlope', 'CollinearPoints',
            'InfiniteLength', 'ParallelLines', 'CollinearLines',
-           'UngrokkableObject',
+           'epsilon',
            '__author__', '__version__']
