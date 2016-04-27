@@ -2,18 +2,12 @@
 '''
 
 import math
-from .point import Point
-from .exceptions import *
+import collections
+from .point2 import Point
+from .exceptions import InfiniteLength, CollinearPoints, ParallelLines
 from .constants import *
 
-#
-
-
-class Line(object):
-    vertexNames = 'AB'
-    vertexNameA = vertexNames[0]
-    vertexNameB = vertexNames[1]
-
+class Line(collections.Mapping):
     '''
     A line with infinite length defined by two points; A and B.
 
@@ -21,7 +15,7 @@ class Line(object):
     >>> a = Line()
     ...
     >>> b = Line((0,0),(1,1))
-    >>> c = Line(Point(),{'y':1,'x':1])
+    >>> c = Line(Point(),{'y':1,'x':1})
     >>> b == c
     True
     >>>
@@ -66,17 +60,32 @@ class Line(object):
         '''
         return [cls(B=p) for p in Point.units()]
 
-    def __init__(self, A=None, B=None):
+    def __init__(self, *args, **kwds):
+        '''
+        line(<iterable>,A=..,B=...)
+        '''
+        
+        self(*args, **kwds)
+
+    def __call__(self, *args, **kwds):
         '''
         '''
-        self.A = A
-        self.B = B
+
+        if len(args) == 1:
+            self.A, self.B = args[0]
+
+        if len(args) > 1:
+            self.A, self.B = args
+        
+        for p in ['A','B']:
+            try:
+                setattr(self,p,kwds[p])
+            except KeyError:
+                pass
+
 
     @property
     def A(self):
-        '''
-        A point on the line, Point subclass.
-        '''
         try:
             return self._A
         except AttributeError:
@@ -85,14 +94,11 @@ class Line(object):
         return self._A
 
     @A.setter
-    def A(self, newA):
-        self.A.xyz = newA
+    def A(self, newValue):
+        self.A.xyz = newValue
 
     @property
     def B(self):
-        '''
-        A point on the line, Point subclass.
-        '''
         try:
             return self._B
         except AttributeError:
@@ -101,30 +107,30 @@ class Line(object):
         return self._B
 
     @B.setter
-    def B(self, newB):
-        self.B.xyz = newB
+    def B(self, newValue):
+        self.B.xyz = newValue        
+
+    def __iter__(self):
+        return iter(self.AB)
 
     @property
     def AB(self):
         '''
+        A list containing Points A and B.
         '''
-        return [self.A, self.B]
+        try:
+            return self._AB
+        except AttributeError:
+            pass
+        self._AB = [self.A, self.B]
+        return self._AB
 
     @AB.setter
-    def AB(self, iterable):
-
+    def AB(self,newValues):
         try:
-            self.A, self.B = iterable
-            return
-        except TypeError:
-            if iterable is None:
-                self.A = None
-                self.B = None
-                return
+            self.A, self.B = newValues
         except ValueError:
-            pass
-
-        self.A = iterable
+            self.A = newValues
 
     @property
     def isVertical(self):
@@ -143,6 +149,7 @@ class Line(object):
     @property
     def isCoplanar(self):
         # XXX what is the property of A.z == B.z called?
+        # XXX need four points to determine coplanarity
         '''
         XXX missing doc string
         '''
@@ -156,11 +163,6 @@ class Line(object):
         return self.B - self.A
 
     @property
-    def mapping(self):
-        return {self.vertexNameA: self.A.__class__(self.A),
-                self.vertexNameB: self.B.__class__(self.B)}
-
-    @property
     def length(self):
         '''
         Lines have an infinite length, raises InfiniteLength() exception.
@@ -172,7 +174,7 @@ class Line(object):
         '''
         :return: Line
 
-        Returns a line normal (perpendicular) to this line.
+        Returns a Line normal (perpendicular) to this Line.
         '''
 
         d = self.B - self.A
@@ -181,10 +183,10 @@ class Line(object):
 
     def pointAt(self, t):
         '''
-        :param: t - float
+        :t: float parameter
         :return: Point subclass
 
-        Varying 't' will produce a new point along this line.
+        Varying 't' will produce a new Point along this Line.
 
         t = 0 -> point A
         t = 1 -> point B
@@ -195,10 +197,10 @@ class Line(object):
 
     def t(self, point):
         '''
-        :param: point - Point subclass
+        :point: Point subclass
         :return: float
 
-        If point is collinear, determine the 't' coefficient of
+        If :point: is collinear, determine the 't' coefficient of
         the parametric equation:
 
         xyz = A<xyz> + t ( B<xyz> - A<xyz> )
@@ -206,13 +208,13 @@ class Line(object):
         if t < 0, point is less than A and B on the line
         if t >= 0 and <= 1, point is between A and B
         if t > 1 point is greater than B
-
-        XXX could use for an ordering on points?
         '''
+        
+        #XXX could use for an ordering on points?
 
         if point not in self:
-            msg = "'{point}' is not collinear with '{line}'"
-            raise CollinearPoints(msg.format(point=point, line=self))
+            msg = "'{p}' is not collinear with '{l}'"
+            raise CollinearPoints(msg.format(p=point, l=self))
 
         # p = A + t ( B - A)
         # p - A = t ( B - A)
@@ -222,17 +224,14 @@ class Line(object):
 
     def __str__(self):
         '''
-
         '''
-        return 'A=({A}), B=({B})'.format(**self.mapping)
+        return 'A=({l.A}), B=({l.B})'.format(l=self)
 
     def __repr__(self):
         '''
         Returns a representation string of this instance.
-
         '''
-        return '{klass}({args})'.format(klass=self.__class__.__name__,
-                                        args=str(self))
+        return '{l.__class__.__name__}({l!s})'.format(l=self)
 
     def __len__(self):
         '''
@@ -245,37 +244,38 @@ class Line(object):
         index zero is equivalent to property A
         index one is equivalent to property B
         '''
-        try:
-            key = int(key)
-            try:
-                return self.AB[key]
-            except IndexError:
-                pass
-            raise IndexError("index '{k}' out of range".format(k=key))
-        except ValueError:
-            pass
-        raise ValueError("index '{k}' is not an integer".format(k=key))
+
+        if key == 'A' or key == 0:
+            return self.A
+
+        if key == 'B' or key == 0:
+            return self.B
+
+        raise TypeError(key)
 
     def __setitem__(self, key, value):
         '''
         index zero is equivalent to property A
         index one is equivalent to property B
         '''
-        key = int(key)
 
-        try:
-            return [self.A, self.B][key]
-        except IndexError:
-            pass
-        raise IndexError('index {i} out of range'.format(i=key))
+        if key == 'A' or key == 0:
+            self.A = value
+
+        if key == 'B' or key == 0:
+            self.B = value
+
+        raise TypeError(key)
 
     def __contains__(self, other):
         '''
         p in l
 
-        Returns True iff p is a point and is collinear with l.A and l.B.
+        Returns True iff p is a point and is collinear with l.A and
+        l.B.
 
-        Returns True iff p is a line and p.A is collinear with l.A and l.B.
+        Returns True iff p is a line and p.A and p.B are collinear 
+        with l.A and l.B.
 
         '''
 
@@ -285,11 +285,11 @@ class Line(object):
             return self.A.isCollinear(other, self.B)
 
         if issubclass(otherType, Line):
-            if not self.A.isCollinear(other.A, self.B):
+            if not self.A.isCollinear(other.A, other.B):
                 return False
-            return self.A.isCollinear(other.B, self.B)
+            return self.B.isCollinear(other.A, other.B)
 
-        raise TypeError('unknown type {t}'.format(t=otherTYpe))
+        raise TypeError('unable to contain type {t}'.format(t=otherType))
 
     def flip(self):
         '''
@@ -352,7 +352,7 @@ class Line(object):
         '''
 
         if self.isCollinear(other):
-            msg = '{s} and {o} are collinear'
+            msg = '{s!r} and {o!r} are collinear'
             raise CollinearLines(msg.format(s=self, o=other))
 
         d0 = self.A - self.B
@@ -361,7 +361,7 @@ class Line(object):
         denominator = (d0.x * d1.y) - (d0.y * d1.x)
 
         if denominator == 0:
-            msg = '{s} and {o} are parallel'
+            msg = '{s!r} and {o!r} are parallel'
             raise ParallelLines(msg.format(s=self, o=other))
 
         cp0 = self.A.cross(self.B)
@@ -379,8 +379,13 @@ class Line(object):
         #     comparison to zero? I guess it can't hurt but I'm
         #     not sure how we would get here. Maybe a precision
         #     error?
-        msg = "found point {p} but not in {a} and {b}"
-        raise Parallel(msg.format(p=p, a=self, b=other))
+        #
+        #     Might be fixed in new Point coordinate property
+        #     setter that catches values < epsilon and substitutes
+        #     zero. 
+        
+        msg = "found point {p!r} but not in {a!r} and {b!r}"
+        raise ParallelLines(msg.format(p=p, a=self, b=other))
 
     def distanceFromPoint(self, point):
         '''
@@ -409,7 +414,8 @@ class Line(object):
         :param: other - Line subclass
         :return: float
 
-        Returns the angle between two lines in radians [0, 2 * math.pi], float.
+        Returns the angle measured between two lines in radians 
+        with a range of [0, 2 * math.pi].
 
         '''
         # a.dot.b = |a||b| * cos(theta)
@@ -421,31 +427,32 @@ class Line(object):
         # origin is 1.
         #
 
-        A = Point.unitize(self.A, self.B)
-        B = Point.unitize(other.A, other.B)
+        a = Point.unit(self.A, self.B)
+        b = Point.unit(other.A, other.B)
 
-        # in a perfect world, after unitize: |A| = |B| = 1
+        # in a perfect world, after unit: |A| = |B| = 1
         # which is a noop when dividing the dot product of A,B
-        # but sometimes they aren't but who cares?
-        # let's just assume things are perfect.
+        # but sometimes the lengths are different. 
+        # let's just assume things are perfect and the lengths equal 1.
         #
         # a = A.distance()
         # b = B.distance()
         # if abs(a - b) > epsilon:
         #    raise ExceededEpsilonError(a,b,epsilon)
 
-        return math.acos(A.dot(B))
+        return math.acos(a.dot(b))
 
     def degreesBetween(self, other):
         '''
         :param: other - Line subclass
         :return: float
 
-        Returns the angle between two lines in degrees [0,), float.
+        Returns the angle between two lines measured in degrees.
         '''
         return math.degrees(self.radiansBetween(other))
 
 
+    
 class Segment(Line):
     '''
     A Line subclass with finite length.
@@ -472,20 +479,30 @@ class Segment(Line):
            or
          ((x.A == y.B) and (x.B == y.A))
         '''
-        if (self.A == other.A) and (self.B == other.B):
-            return True
-        return (self.A == other.B) and (self.B == other.A)
+        return len(set(self.AB+other.AB)) == 2
 
-    def __contains__(self, point):
+    def __contains__(self, other):
         '''
+        XXX modified to allow segments to contain lines
         p in s
+
         Returns True iff:
                A,point,B are collinear and A.xyz <= point.xyz <= B.xyz
         '''
-        if not super(self.__class__, self).__contains__(point):
+        if not super().__contains__(other):
             return False
-        return point.isBetween(self.A, self.B)
 
+        otherType = type(other)
+
+        if issubclass(otherType, Point):
+            return point.isBetween(self.A, self.B)
+
+        if issubclass(otherType,Line):
+            return all([other.A.isBetween(self.A,self.B),
+                        other.B.isBetween(self.A,self.B)])
+
+        raise TypeError('unable to contain type {t}'.format(t=otherType))
+    
     @property
     def normal(self):
         '''
@@ -493,13 +510,16 @@ class Segment(Line):
 
         Returns a segment normal (perpendicular) to this segment.
         '''
-        return Segment.fromLine(super(Segment, self).normal)
+        return Segment.fromLine(super().normal)
 
 
 class Ray(Line):
     '''
     Rays have head and tail vertices with an infinite length in the
     direction of the head vertex.
+
+    o----->
+    
     '''
 
     @property
@@ -530,8 +550,7 @@ class Ray(Line):
 
         Returns true if x.head == y.head and y.tail.isCollinear(x.head,x.tail)
         '''
-        return (self.head == other.head) and other.tail.isCollinear(
-            self.head, self.tail)
+        return (self.head == other.head) and other.tail.isCollinear(self.head, self.tail)
 
     def __contains__(self, point):
         '''
@@ -589,7 +608,7 @@ class Ray(Line):
 
         Returns a ray normal (perpendicular) to this segment.
         '''
-        return Ray.fromLine(super(Ray, self).normal)
+        return Ray.fromLine(super().normal)
 
     # rays can be treated much like vectors so many of the point operations
     # can be reused here

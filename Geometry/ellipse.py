@@ -4,7 +4,7 @@ Super awesome.
 '''
 
 import math
-from .point import Point
+from .point2 import Point
 from .rectangle import Rectangle
 from .triangle import Triangle
 from .line import Line, Segment
@@ -15,7 +15,7 @@ class Ellipse(object):
     '''
     Implements an ellipse in the XY plane with the supplied radii.
 
-    Returns a unit ellipse centered on the origin by default.
+    Returns a unit ellipse centered on the origin in the XY by default.
 
     Usage:
     >>> from Geometry import Ellipse
@@ -24,70 +24,39 @@ class Ellipse(object):
     True
     >>> type(e)
     <class 'Geometry.ellipse.Ellipse'>
-    >>> e.x_radius *= 2
+    >>> e.radius.x *= 2
     >>> e.isCircle,e.isEllipse
     (False,True)
 
-
     '''
 
-    def __init__(self, center=None, x_radius=1, y_radius=1):
+
+    
+    def __init__(self, center=None, x_radius=1, y_radius=1, z_radius=0):
         '''
-        :param: center    - optional Point subclass initializer
-        :param: x_radius  - optional float
-        :param: y_radius  - optional float
+        :center:    - optional Point class initializer
+        :x_radius:  - optional float
+        :y_radius:  - optional float
+        :z_radius:  - optional float
+
         Defaults to a unit ellipse centered on the origin.
-
         '''
-        # XXX implement radius with a Point instead of scalar
-        #     get a z radius
-        #     simplifies circle subclass
+
+        # XXX what does it mean to have non-zero radii in
+        #     all three dimensions?
+
+
         self.center = center
-        self.x_radius = x_radius
-        self.y_radius = y_radius
+        self.radius = x_radius, y_radius, z_radius
 
-    @property
-    def x_radius(self):
-        '''
-        The absolute value of the X ordinate of a point on the ellipse
-        when y == 0, float.
-
-        '''
-        try:
-            return self._x_radius
-        except AttributeError:
-            pass
-        self._x_radius = 1.0
-        return self._x_radius
-
-    @x_radius.setter
-    def x_radius(self, newValue):
-        self._x_radius = float(newValue)
-
-    @property
-    def y_radius(self):
-        '''
-        The absolute value of the Y ordinate of a point on the ellipse
-        when y == 0, float.
-
-        '''
-        try:
-            return self._y_radius
-        except AttributeError:
-            pass
-        self._y_radius = 1.0
-        return self._y_radius
-
-    @y_radius.setter
-    def y_radius(self, newValue):
-        self._y_radius = float(newValue)
+                       
+                       
 
     @property
     def center(self):
         '''
-        Center point of the ellipse, equidistance from foci, Point subclass.
+        Center point of the ellipse, equidistant from foci, Point class.\n 
         Defaults to the origin.
-
         '''
         try:
             return self._center
@@ -97,35 +66,39 @@ class Ellipse(object):
         return self._center
 
     @center.setter
-    def center(self, newCenter):
-        self.center.xyz = newCenter
+    def center(self, newValue):
+        self.center.xyz = newValue
 
     @property
-    def mapping(self):
+    def radius(self):
         '''
-        A mapping of ellipse attribute names to attribute values, dict.
+        Radius of the ellipse, Point class.
         '''
-        return {'x_radius': self.x_radius,
-                'y_radius': self.y_radius,
-                'center': self.center}
+        try:
+            return self._radius
+        except AttributeError:
+            pass
+        self._radius = Point(1,1,0)
+        return self._radius
 
+    @radius.setter
+    def radius(self, newValue):
+        self.radius.xyz = newValue
+        
     def __str__(self):
         '''
         '''
-        output = 'center=({center}), x_radius={x_radius}, y_radius={y_radius}'
-        return output.format(**self.mapping)
+        return 'center={p.center!r}, radius={p.radius!r}'.format(p=self)
 
     def __repr__(self):
         '''
         '''
-        return '{klass}({args})'.format(klass=self.__class__.__name__,
-                                        args=str(self))
+        return '{p.__class__.__name__}({p!s})'.format(p=self)
 
     def __hash__(self):
         '''
         '''
-        # this will cause circles/ellipses to hash to points
-        return hash(self.center)
+        return hash(self.center) + hash(self.radius)
 
     @property
     def majorRadius(self):
@@ -133,7 +106,7 @@ class Ellipse(object):
         The longest radius of the ellipse, float.
 
         '''
-        return max(self.x_radius, self.y_radius)
+        return max(self.radius.x, self.radius.y)
 
     @property
     def minorRadius(self):
@@ -141,35 +114,35 @@ class Ellipse(object):
         The shortest radius of the ellipse, float.
 
         '''
-        return min(self.x_radius, self.y_radius)
+        return min(self.radius.x, self.radius.y)
 
     @property
     def xAxisIsMajor(self):
         '''
         Returns True if the major axis is parallel to the X axis, boolean.
         '''
-        return max(self.x_radius, self.y_radius) == self.x_radius
+        return max(self.radius.x, self.radius.y) == self.radius.x
 
     @property
     def xAxisIsMinor(self):
         '''
         Returns True if the minor axis is parallel to the X axis, boolean.
         '''
-        return min(self.x_radius, self.y_radius) == self.x_radius
+        return min(self.radius.x, self.radius.y) == self.radius.x
 
     @property
     def yAxisIsMajor(self):
         '''
         Returns True if the major axis is parallel to the Y axis, boolean.
         '''
-        return max(self.x_radius, self.y_radius) == self.y_radius
+        return max(self.radius.x, self.radius.y) == self.radius.y
 
     @property
     def yAxisIsMinor(self):
         '''
         Returns True if the minor axis is parallel to the Y axis, boolean.
         '''
-        return min(self.x_radius, self.y_radius) == self.y_radius
+        return min(self.radius.x, self.radius.y) == self.radius.y
 
     @property
     def eccentricity(self):
@@ -216,7 +189,7 @@ class Ellipse(object):
     @property
     def a(self):
         '''
-        Positive antipodal point on the major axis, Point subclass.
+        Positive antipodal point on the major axis, Point class.
 
         '''
         a = Point(self.center)
@@ -230,7 +203,7 @@ class Ellipse(object):
     @property
     def a_neg(self):
         '''
-        Negative antipodal point on the major axis, Point subclass.
+        Negative antipodal point on the major axis, Point class.
 
         '''
         na = Point(self.center)
@@ -244,7 +217,7 @@ class Ellipse(object):
     @property
     def b(self):
         '''
-        Positive antipodal point on the minor axis, Point subclass.
+        Positive antipodal point on the minor axis, Point class.
 
         '''
         b = Point(self.center)
@@ -258,7 +231,7 @@ class Ellipse(object):
     @property
     def b_neg(self):
         '''
-        Negative antipodal point on the minor axis, Point subclass.
+        Negative antipodal point on the minor axis, Point class.
         '''
         nb = Point(self.center)
 
@@ -279,7 +252,7 @@ class Ellipse(object):
     @property
     def focus0(self):
         '''
-        First focus of the ellipse, Point subclass.
+        First focus of the ellipse, Point class.
 
         '''
         f = Point(self.center)
@@ -293,14 +266,14 @@ class Ellipse(object):
     @property
     def f0(self):
         '''
-        Shorthand notation for focus0, Point subclass
+        Shorthand notation for focus0, Point class
         '''
         return self.focus0
 
     @property
     def focus1(self):
         '''
-        Second focus of the ellipse, Point subclass.
+        Second focus of the ellipse, Point class.
         '''
         f = Point(self.center)
 
@@ -313,7 +286,7 @@ class Ellipse(object):
     @property
     def f1(self):
         '''
-        Shorthand notation for focus1, Point subclass
+        Shorthand notation for focus1, Point class
         '''
         return self.focus1
 
@@ -328,7 +301,7 @@ class Ellipse(object):
     @property
     def majorAxis(self):
         '''
-        A line coincident with the ellipse's major axis, Segment subclass.
+        A line coincident with the ellipse's major axis, Segment class.
         The major axis is the largest distance across an ellipse.
 
         '''
@@ -337,7 +310,7 @@ class Ellipse(object):
     @property
     def minorAxis(self):
         '''
-        A line coincident with the ellipse' minor axis, Segment subclass.
+        A line coincident with the ellipse' minor axis, Segment class.
         The minor axis is the smallest distance across an ellipse.
 
         '''
@@ -349,7 +322,7 @@ class Ellipse(object):
         Is true if the major and minor axes are equal, boolean.
 
         '''
-        return self.x_radius == self.y_radius
+        return self.radius.x == self.radius.y
 
     @property
     def isEllipse(self):
@@ -357,22 +330,22 @@ class Ellipse(object):
         Is true if the major and minor axes are not equal, boolean.
 
         '''
-        return self.x_radius != self.y_radius
+        return self.radius.x != self.radius.y
 
     def __eq__(self, other):
         '''
-        x == y iff:
-            x.center == y.center
-            x.x_radius == y.x_radius
-            x.y_radius == y.y_radius
+        a == b iff:
+            a.center   == b.center
+            a.radius.x == b.radius.x
+            a.radius.y == b.radius.y
         '''
         if self.center != other.center:
             return False
 
-        if self.x_radius != other.x_radius:
+        if self.radius.x != other.radius.x:
             return False
 
-        if self.y_radius != other.y_radius:
+        if self.radius.y != other.radius.y:
             return False
 
         return True
@@ -387,21 +360,23 @@ class Ellipse(object):
 
         otherType = type(other)
 
-        if issubclass(otherType, Point):
+        if isclass(otherType, Point):
             d = sum([other.distance(f) for f in self.foci])
             # d < majorAxis.length interior point
             # d == majorAxis.length on perimeter of ellipse
             # d > majorAxis.length exterior point
             return d <= self.majorAxis.length
 
-        if issubclass(otherType, Segment):
+        if isclass(otherType, Segment):
             return (other.A in self) and (other.B in self)
 
-        if issubclass(otherType, Ellipse):
+        if isclass(otherType, Ellipse):
             return (other.majorAxis in self) and (other.minorAxis in self)
 
         raise TypeError("unknown type '{t}'".format(t=otherType))
 
+    # XXX do math operations on ellipses make sense?
+    
 
 class Circle(Ellipse):
     '''
@@ -449,8 +424,8 @@ class Circle(Ellipse):
     @classmethod
     def circumcircleForTriangle(cls, triangle):
         '''
-        :param: triangle - Triangle subclass
-        :return: Circle subclass
+        :param: triangle - Triangle class
+        :return: Circle class
 
         Returns the circle where every vertex in the input triangle is
         on the radius of that circle.
@@ -481,316 +456,79 @@ class Circle(Ellipse):
 
     def __init__(self, center=None, radius=1.0):
         '''
-        :param: center - optional Point subclass initializer
+        :param: center - optional Point class initializer
         :param: radius - optional float
         Defaults to a unit circle centered on the origin.
         '''
         self.center = center
-        self.radius = radius
-
-    @Ellipse.x_radius.setter
-    def x_radius(self, newValue):
-        self._x_radius = self._y_radius = float(newValue)
-
-    @Ellipse.y_radius.setter
-    def y_radius(self, newValue):
-        self._y_radius = self._x_radius = float(newValue)
-
-    @property
-    def radius(self):
-        '''
-        The circle's radius, float.
-        '''
-        return self.x_radius
-
-    @radius.setter
-    def radius(self, newValue):
-        self.x_radius = newValue
-
-    @property
-    def r(self):
-        '''
-        Shorthand notation for radius, float.
-        '''
-        return self.x_radius
-
-    @r.setter
-    def r(self, newValue):
-        self.radius = newValue
+        self.radius = [radius]*3
 
     @property
     def diameter(self):
         '''
         The circle's diameter, float.
         '''
-        return self.radius * 2
+        return self.radius.x * 2
 
     @property
     def circumfrence(self):
         '''
         The circle's circumfrence, float.
         '''
-        return 2 * math.pi * self.radius
+        return 2 * math.pi * self.radius.x
 
     @property
     def area(self):
         '''
         The circle's area, float.
         '''
-        return math.pi * (self.radius ** 2)
-
-# class Sphere(Circle):
-#    @property
-#    def volume(self):
-#        '''
-#        The spherical volume bounded by this circle, float.
-#        '''
-#        return (4./3.) * math.pi * (self.radius**3)
-
+        return math.pi * (self.radius.x ** 2)
+    
     def __contains__(self, other):
-        '''
-        :param: Point | Segment | Ellipse subclass
-        :return: boolean
+       '''
+       :param: Point | Segment | Ellipse class
+       :return: boolean
 
-        Returns True if the distance from the center to the point
-        is less than or equal to the radius.
-        '''
-        otherType = type(other)
+       Returns True if the distance from the center to the point
+       is less than or equal to the radius.
+       '''
+       otherType = type(other)
 
-        if issubclass(otherType, Point):
-            return other.distance(self.center) <= self.radius
+       if isclass(otherType, Point):
+           return other.distance(self.center) <= self.radius
 
-        if issubclass(otherType, Segment):
-            return (other.A in self) and (other.B in self)
+       if isclass(otherType, Segment):
+           return (other.A in self) and (other.B in self)
 
-        if issubclass(otherType, Ellipse):
-            return (other.majorAxis in self) and (other.minorAxis in self)
+       if isclass(otherType, Ellipse):
+           return (other.majorAxis in self) and (other.minorAxis in self)
 
-        raise TypeError("unknown type '{t}'".format(t=otherType))
-
-    @property
-    def mapping(self):
-        return {'center': self.center, 'radius': self.radius}
-
-    def __str__(self):
-        '''
-        '''
-        return 'center=({center}), radius={radius}'.format(**self.mapping)
-
-    def __add__(self, other):
-        '''
-        x + y => Circle(x.radius+y.radius,x.center.midpoint(y.center))
-
-        Returns a new Circle object.
-
-        '''
-        try:
-            return Circle(self.radius + other.radius,
-                          self.center.midpoint(other.center))
-        except AttributeError:
-            return self.__radd__(other)
-
-    def __radd__(self, other):
-        '''
-        x + y => Circle(x.radius+y,x.origin)
-
-        Returns a new Circle object.
-        '''
-        # other isn't a circle
-        return Circle(self.radius + other, self.center)
-
-    def __iadd__(self, other):
-        '''
-        x += y =>
-          x.center += y.center
-          x.center /= 2
-          x.radius += y.radius
-
-        Updates the current object.
-        '''
-        try:
-            self.center += other.center
-            self.center /= 2.
-            self.radius += other.radius
-        except AttributeError:
-            self.radius += other
-        return self
-
-    def __sub__(self, other):
-        '''
-        x - y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__sub__')
-
-    def __rsub__(self, other):
-        '''
-        x - y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__rsub__')
-
-    def __isub__(self, other):
-        '''
-        x -= y
-
-        Updates the current object.
-        '''
-        raise NotImplementedError('__isub__')
-
-    def __mul__(self, other):
-        '''
-        x * y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__mul__')
-
-    def __rmul__(self, other):
-        '''
-        x * y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__rmul__')
-
-    def __imul__(self, other):
-        '''
-        x *= y
-
-        Returns a new Circle object
-        Updates the current object..
-        '''
-        raise NotImplementedError('__imul__')
-
-    def __floordiv__(self, other):
-        '''
-        x // y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__floordiv__')
-
-    def __rfloordiv__(self, other):
-        '''
-        x // y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__rfloordiv__')
-
-    def __ifloordiv__(self, other):
-        '''
-        x //= y
-
-        Updates the current object.
-        '''
-        raise NotImplementedError('__rfloordiv__')
-
-    def __truediv__(self, other):
-        '''
-        x / y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__truediv__')
-
-    def __rtruediv__(self, other):
-        '''
-        x / y =>
-
-        Returns a new Circle object.
-        '''
-        raise NotImplementedError('__rtruediv__')
-
-    def __itruediv__(self, other):
-        '''
-        x /= y
-
-        Updates the current object.
-        '''
-        raise NotImplementedError('__rtruediv__')
-
-    def __mod__(self, other):
-        '''
-        x % y
-
-        Returns a new Circle object
-        '''
-        raise NotImplementedError('__mod__')
-
-    def __rmod__(self, other):
-        '''
-        x % y
-
-        Returns a new Circle object
-        '''
-        raise NotImplementedError('__rmod__')
-
-    def __imod__(self, other):
-        '''
-        x %= y
-
-        Updates the current object.
-        '''
-        raise NotImplementedError('__imod__')
-
-    def __pow__(self, other):
-        '''
-        x ** y
-
-        Returns a new Circle object
-        '''
-        raise NotImplementedError('__pow__')
-
-    def __rpow__(self, other):
-        '''
-        x ** y
-
-        Returns a new Circle object
-        '''
-        raise NotImplementedError('__rpow__')
-
-    def __ipow__(self, other):
-        '''
-        x **= y
-
-        Updates the current object.
-        '''
-        raise NotImplementedError('__ipow__')
-
-    def __neg__(self):
-        '''
-        -x
-
-        '''
-        raise NotImplementedError('__neg__')
-
-    def __pos__(self):
-        '''
-        +x
-
-        '''
-        raise NotImplementedError('__pos__')
+       raise TypeError("unknown type '{t}'".format(t=otherType))
 
     def doesIntersect(self, other):
+       '''
+       :param: other - Circle class
+
+       Returns True iff:
+         self.center.distance(other.center) <= self.radius+other.radius
+       '''
+
+       otherType = type(other)
+
+       if isclass(otherType, Ellipse):
+           distance = self.center.distance(other.center)
+           radiisum = self.radius + other.radius
+           return distance <= radiisum
+
+       if isclass(otherType, Line):
+           raise NotImplementedError('doesIntersect,other is Line class')
+
+       raise TypeError("unknown type '{t}'".format(t=otherType))
+
+class Sphere(Circle):
+    @property
+    def volume(self):
         '''
-        :param: other - Circle subclass
-
-        Returns True iff:
-          self.center.distance(other.center) <= self.radius+other.radius
+        The spherical volume bounded by this circle, float.
         '''
-
-        otherType = type(other)
-
-        if issubclass(otherType, Ellipse):
-            distance = self.center.distance(other.center)
-            radiisum = self.radius + other.radius
-            return distance <= radiisum
-
-        if issubclass(otherType, Line):
-            raise NotImplementedError('doesIntersect,other is Line subclass')
-
-        raise TypeError("unknown type '{t}'".format(t=otherType))
+        return (4./3.) * math.pi * (self.radius**3)   
