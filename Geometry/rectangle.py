@@ -8,8 +8,9 @@ Provides an implementation of a rectangle designed to be easy to use:
 import random
 import math
 
-from .point import Point
+from .point2 import Point
 from .exceptions import *
+
 
 
 class Rectangle(object):
@@ -21,11 +22,6 @@ class Rectangle(object):
 
     Note: Origin may have a non-zero z coordinate.
     '''
-    vertexNames = 'ABCD'
-    vertexNameA = vertexNames[0]
-    vertexNameB = vertexNames[1]
-    vertexNameC = vertexNames[2]
-    vertexNameD = vertexNames[3]
 
     @classmethod
     def randomSizeAndLocation(cls, radius, widthLimits,
@@ -71,7 +67,7 @@ class Rectangle(object):
                    height,
                    Point.randomLocation(radius, origin))
 
-    def __init__(self, origin=None, width=1, height=1):
+    def __init__(self, origin=None, width=1, height=1, theta=0):
         '''
         :param: width  - float X distance from origin.x
         :param: height - float Y distance from origin.y
