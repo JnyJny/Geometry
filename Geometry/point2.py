@@ -2,6 +2,7 @@
 '''
 
 import collections
+import itertools
 import hashlib
 import random
 import math
@@ -13,7 +14,7 @@ from .propgen import FloatProperty, FloatMultiProperty
 class Point(collections.Mapping):
     '''
     A three dimensional Point initialized with x,y and z values
-    supplied or the origin if no ordinates are given. 
+    supplied or the origin if no ordinates are given.
 
     Point initialization is very flexible! It can be initialized with
     zero to three positional parameters; 'x', 'y', 'z'.
@@ -29,8 +30,7 @@ class Point(collections.Mapping):
     >> repr(Point(1,2,3))
     'Point(x=1.0, y=2.0, z=3.0)'
 
-    Of course, the Point can also be initialized with keyword
-    arguments: x, y and z.
+    Point can also be initialized with keyword arguments: x, y and z.
 
     >> repr(Point(z=1)
     'Point(x=0.0, y=0.0, z=1.0)'
@@ -44,22 +44,21 @@ class Point(collections.Mapping):
     >> repr(Point({'x':1,'y':2,'z':3,'foo':'whatevers'}))
     'Point(x=1.0, y=2.0, z=3.0)'
 
-    Accessing the values of a Point are also very flexible. Each
+    Accessing the values of Point are also very flexible. Each
     coordinate can be set/get individually via the properties 'x',
     'y' and 'z'. Coordinates can also be set/get in groups using
     the properties 'xy', 'xz', 'yz', 'xyz' and 'xyzw'.  Arguments
-    to the setters can be mappings, sequences, or scalars. 
+    to the setters can be mappings, sequences, or scalars.
 
     Operations
     ==========
 
     +, -, *, /, //, %, **, +=, -=, *=, /=, //=, %=, **=, ==, !=
 
-    Operands can be mappings, sequences or scalars. 
+    Operands can be mappings, sequences or scalars.
 
     Methods
     =======
-
                 ccw: counter-clockwise function, also known as:
                      "The beating red heart of computational geometry."
                 dot: dot product of two points
@@ -79,33 +78,45 @@ class Point(collections.Mapping):
        units: list of three unit vectors on each axis
     gaussian: random Point with coordinates chosen from gaussian distribution.
       random: random Point within a circle
-    
+
     '''
-    x = FloatProperty('x')
-    y = FloatProperty('y')
-    z = FloatProperty('z')
-    w = FloatProperty('w', default=1.0, readonly=True)
-    xyzw = FloatMultiProperty('xyzw', readonly_keys='w')
-    xyz = FloatMultiProperty('xyz')
-    xy = FloatMultiProperty('xy')
-    yz = FloatMultiProperty('yz')
-    xz = FloatMultiProperty('xz')
+    
+    x = FloatProperty('x',docs='X axis coordinate, float.')
+    y = FloatProperty('y',docs='Y axis coordinate, float.')
+    z = FloatProperty('z',docs='Z axis coordinate, float.')
+    w = FloatProperty('w',
+                      docs='W coordinate, read-only float. '\
+                      'Used to form square matrices. ',
+                      default=1.0, readonly=True)
+    xyzw = FloatMultiProperty('xyzw',
+                              docs='A list of all coordinates including W.',
+                              readonly_keys='w')
+    xyz = FloatMultiProperty('xyz',
+                             docs='A list of all coordinates excluding W.')
+    xy = FloatMultiProperty('xy',docs='A list of X and Y coordinates.')
+    yz = FloatMultiProperty('yz',docs='A list of Y and Z coordinates.')
+    xz = FloatMultiProperty('xz',docs='A list of X and Z coordinates.')
 
     _keys = 'xyz'
 
     @classmethod
     def origin(cls):
         '''
+        Returns a Point whose coordinates are [0,0,0]
         '''
         return cls(0, 0, 0)
 
     @classmethod
     def _convert(cls, other, ignoreScalars=False):
         '''
+        :other: Point or point equivalent
+        :ignorescalars: optional boolean
+        :return: Point
+
         Class private method for converting 'other' into a Point
         subclasss. If 'other' already is a Point subclass, nothing
         is done. If ignoreScalars is True and other is a float or int
-        type, a TypeError exception is raised. 
+        type, a TypeError exception is raised.
         '''
         if ignoreScalars:
             if isinstance(other, (int, float)):
@@ -117,19 +128,19 @@ class Point(collections.Mapping):
     @classmethod
     def unit(cls, A, B):
         '''
-        :param: A - Point subclass
-        :param: B - Point subclass
+        :A:      Point subclass
+        :B:      Point subclass
         :return: Point subclass
 
         Translates the vector AB to the origin and scales the length
-        of the vector to one. 
+        of the vector to one.
         '''
         return (B - A) / A.distance(B)
 
     @classmethod
     def units(cls, scale=1):
         '''
-        :param: scale - optional integer scale
+        :scale: optional integer scaling factor
         :return: list of three Point subclass
 
         Returns three points whose coordinates are the head of a
@@ -137,16 +148,17 @@ class Point(collections.Mapping):
 
         '''
         return [cls(x=scale), cls(y=scale), cls(z=scale)]
-                
 
     @classmethod
     def gaussian(cls, mu=0, sigma=1):
         '''
-        :param: mu
-        :param: sigma
+        :mu:     mean
+        :sigma:  standard deviation
         :return: Point subclass
-        
-        
+
+        Returns a point whose coordinates are picked from a Gaussian
+        distribution with mean 'mu' and standard deviation 'sigma'.
+        See random.gauss for further explanation of those parameters.
         '''
         return cls(random.gauss(mu, sigma),
                    random.gauss(mu, sigma),
@@ -155,12 +167,18 @@ class Point(collections.Mapping):
     @classmethod
     def random(cls, origin=None, radius=1):
         '''
-        :param: origin
-        :param: radius
+        :origin: optional Point or point equivalent
+        :radius: optional float, radius around origin
         :return: Point subclass
 
+        Returns a point with random x, y and z coordinates bounded by
+        the sphere defined by (origin,radius).
+
+        If a sphere is not supplied, a unit sphere at the origin is
+        used by default.
         '''
-        p = cls._convert(origin)
+
+        p = cls(origin)
 
         r = random.uniform(0, radius)
         u = random.uniform(0, two_pi)
@@ -174,16 +192,105 @@ class Point(collections.Mapping):
 
         return p
 
+# EJO - This (property classmethod) was a good idea, however in
+#       practice it had the following problems:
+#
+#       - used outside of an __init__ method of a class it declared
+#         the properties as class entities and not instanance entities.
+#         So all instances shared the property rather than having their
+#         own unique properties. Crazy annoying bugs to debug.
+#
+#       - used in an __init__ method declared the properties as
+#         instance variables but the documentation visibility of
+#         the property was impacted: eg:
+#
+#         class Foo(object):
+#             def __init__(self):
+#                 baz = Point.property("baz","it's a baz!")
+#  
+#         >>>help(Foo)
+#         # no mention of baz
+#         >>> foo = Foo()
+#         >>> help(foo.baz)
+#         it's a baz!
+#
+#       I'm leaving this commented out in the source because I
+#       like the idea and I liked the resulting usage, it just
+#       didn't work satisfactorily and I hope to fix it in the
+#       future.
+#
+#
+#    @classmethod
+#    def property(cls,name,docs=None,readonly=False,default=None):
+#        '''
+#        :name: string - client class property name
+#        :docs: optional string - document string for the property
+#        :readonly: optional Boolean - True if property is readonly
+#        :default: optional Point or equivalent
+#
+#        This class method returns a Property class that can be
+#        used by client classes as shorthand for a property
+#        constructor, e.g.:
+#
+#        class Foo(object):
+#            A = Point.property('A',"It's an A",default=[1,1])
+#
+#        >>>foo = Foo()
+#        >>>foo.A
+#        Point(x=1,y=1,z=0)
+#
+#        '''
+#
+#        private_name = '_'+name
+#
+#        default = cls._convert(default)
+#
+#        def getf(self):
+#            if not hasattr(self, private_name):
+#                setattr(self, private_name, default)
+#            return getattr(self, private_name)
+#
+#        def setf(self, newValue):
+#            try:
+#                o = getattr(self, private_name)
+#            except AttributeError:
+#                o = default
+#                setattr(self, private_name, o) #? this may be redundant
+#            o.xyz = newValue
+#
+#        if readonly:
+#            setf = None
+#
+#        return property(getf,setf,None,docs)
+
+        
+
     def __init__(self, *args, **kwds):
         '''
         Initialize with:
-        - positional arguments coresponding to x, y and z
+        - positional arguments corresponding to x, y and z
         - keyword arguments: x, y and z
         - mappings
         - sequences
         '''
+        # see docstring of __call__
+        self(*args, **kwds)
 
-        self.x, self.y, self.z = 0.0, 0.0, 0.0
+    def __call__(self, *args, **kwds):
+        '''
+        Point objects are 'callable' as an alternate way to
+        change the values of 'x', 'y', and 'z' properties.
+
+        Can be useful in lambda functions where assignments are
+        forbidden but calling an object with arguments acceptable.
+
+        Arguments are:
+        - positional arguments corresponding to x, y and z
+        - keyword arguments: x, y and z
+        - mappings
+        - sequences
+
+        '''
 
         if len(args) == 1:
             self.xyz = args[0]
@@ -196,7 +303,7 @@ class Point(collections.Mapping):
     def __setattr__(self, attr, value):
         '''
         Side-effect: deletes cached computed hash value if
-                     x, y, or z attributes change. 
+                     x, y, or z attributes change.
         '''
         super().__setattr__(attr, value)
         try:
@@ -208,10 +315,17 @@ class Point(collections.Mapping):
         except IndexError:
             pass
 
+    def __str__(self):
+        return 'x={p.x}, y={p.y}, z={p.z}'.format(p=self)
+
+    def __repr__(self):
+        return '{p.__class__.__name__}({p!s})'.format(p=self)
+
     def __hash__(self):
         '''
-        Hash computed from the repr string. Re-computed if the
-        object's repr string changes. 
+        Hash computed from the repr value. Re-computed if the
+        object's repr string changes (x, y, or z properties
+        change).
         '''
         try:
             return self._hashvalue
@@ -221,19 +335,18 @@ class Point(collections.Mapping):
         self._hashvalue = int(digest, 16)
         return self._hashvalue
 
-    def __str__(self):
+    def __delhash__(self):
         '''
         '''
-        return 'x={p.x}, y={p.y}, z={p.z}'.format(p=self)
-
-    def __repr__(self):
-        '''
-        '''
-        return '{p.__class__.__name__}({p!s})'.format(p=self)
+        try:
+            del(self._hashvalue)
+        except AttributeError:
+            pass
+        
 
     def __len__(self):
         '''
-        Number of coordinates defined in a Point.
+        Number of coordinates defined in a Point: x, y and z
         '''
         try:
             return self._len
@@ -250,93 +363,93 @@ class Point(collections.Mapping):
 
     def __iter__(self):
         '''
-        '''
-        self._ = list(self._keys)
-        return self
+        :return: iterator
 
-    def __next__(self):
+        Returns an iterator which steps through the key
+        names of the Point.
         '''
-        When iterating, returns the mapping key for the next value. 
-        '''
-        try:
-            return self._.pop(0)
-        except IndexError:
-            pass
-        del(self._)
-        raise StopIteration()
+        return iter(self._keys)
 
     def __getitem__(self, key):
         '''
+        :key:    string or integer
+        :return: float 
+
         Recognizes keys:
 
-        x, y, z, xy, yz, xz, xyz, xyzw, 0, 1, 2, 3
+        x, y, z, w, xy, yz, xz, xyz, xyzw, [0 .. 8]
 
-        Raises TypeError for any other key. 
+        Raises TypeError for any other key.
         '''
-        if key == 'x' or key == 0:
+        if key in ['x', 0]:
             return self.x
-        if key == 'y' or key == 1:
+        if key in ['y', 1]:
             return self.y
-        if key == 'z' or key == 2:
+        if key in ['z', 2]:
             return self.z
-        if key == 'w' or key == 3:
+        if key in ['w' ,3]:
             return self.w
-        if key == 'xy':
+        if key in ['xy', 4]:
             return (self.x, self.y)
-        if key == 'yz':
+        if key in ['yz', 5]:
             return (self.y, self.z)
-        if key == 'xz':
+        if key in ['xz', 6]:
             return (self.x, self.z)
-        if key == 'xyz':
+        if key in ['xyz', 7]:
             return (self.x, self.y, self.z)
-        if key == 'xyzw':
+        if key in ['xyzw', 8]:
             return (self.x, self.y, self.z, self.w)
         raise TypeError(key)
 
     def __setitem__(self, key, newValue):
         '''
+        :key:       string or integer
+        :newValue:  Point or point equivalent
+
         Recognizes keys:
 
-        x, y, z, xy, yz, xz, xyz, xyzw, 0, 1, 2
+        x, y, z, xy, yz, xz, xyz, xyzw, [0-2,4-8]
 
         Raises TypeError for any other key.
         '''
-        if key == 'x' or key == 0:
+        if key in ['x', 0]:
             self.x = newValue
             return
 
-        if key == 'y' or key == 1:
+        if key in ['y', 1]:
             self.y = newValue
             return
 
-        if key == 'z' or key == 2:
+        if key in ['z', 2]:
             self.z = newValue
             return
 
-        if key == 'xy':
+        # key ['w',3] is readonly, will raise TypeError
+
+        if key in ['xy', 4]:
             self.xy = newValue
             return
 
-        if key == 'yz':
+        if key in ['yz', 5]:
             self.yz = newValue
             return
 
-        if key == 'xz':
+        if key in ['xz', 6]:
             self.xz = newValue
             return
 
-        if key == 'xyz' or key == 'xyzw':
+        if key in ['xyz', 'xyzw', 7, 8]:
             self.xyz = newValue
             return
 
         raise TypeError(key)
 
-    
     def __eq__(self, other):
         '''
-        a == b
+        :other:  Point or point equivalent
+        :return: boolean
 
-        Returns boolean.
+        a == b
         '''
         try:
             b = self.__class__._convert(other)
@@ -346,6 +459,11 @@ class Point(collections.Mapping):
 
     def _binary_(self, other, func, inplace=False):
         '''
+        :other:   Point or point equivalent
+        :func:    binary function to apply
+        :inplace: optional boolean
+        :return:  Point
+
         Implementation private method.
 
         All of the binary operations funnel thru this method to
@@ -357,10 +475,8 @@ class Point(collections.Mapping):
         If 'inplace' is True the results of will be stored in 'self',
         otherwise the results will be stored in a new object.
 
-        :param: other   mapping, array or scalar
-        :param: func    callable with signature x(a,b)
-        :param: inplace optional boolean
-        :return: Point subclass
+        Returns a Point.
+
         '''
 
         dst = self if inplace else self.__class__(self)
@@ -381,6 +497,10 @@ class Point(collections.Mapping):
 
     def _unary_(self, func, inplace=False):
         '''
+        :func: unary function to apply to each coordinate
+        :inplace: optional boolean
+        :return: Point
+
         Implementation private method.
 
         All of the unary operations funnel thru this method
@@ -389,12 +509,12 @@ class Point(collections.Mapping):
 
         Applies 'func' to self and returns the result.
 
+        The expected call signature of 'func' is f(a)
+
         If 'inplace' is True, the results are stored in 'self',
         otherwise the results will be stored in a new object.
 
-        :param: func    callable with signature x(a)
-        :param: inplace optional boolean
-        :return: Point subclass
+        Returns a Point.
 
         '''
         dst = self if inplace else self.__class__(self)
@@ -405,6 +525,9 @@ class Point(collections.Mapping):
 
     def __add__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x + b.x || a.x + b[0] || a.x + b
         a.y + b.y || a.y + b[1] || a.y + b
         a.z + b.z || a.z + b[2] || a.z + b
@@ -419,6 +542,8 @@ class Point(collections.Mapping):
 
     def __radd__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
 
         b.x + a.x || b[0] + a.x || b + a.x
         b.y + a.y || b[1] + a.y || b + a.y
@@ -434,6 +559,9 @@ class Point(collections.Mapping):
 
     def __iadd__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x += b.x || a.x += b[0] || a.x += b
         a.y += b.y || a.y += b[1] || a.y += b
         a.z += b.z || a.z += b[2] || a.z += b
@@ -448,6 +576,9 @@ class Point(collections.Mapping):
 
     def __sub__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x - b.x || a.x - b[0] || a.x - b
         a.y - b.y || a.y - b[1] || a.y - b
         a.z - b.z || a.z - b[2] || a.z - b
@@ -462,6 +593,9 @@ class Point(collections.Mapping):
 
     def __rsub__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x - a.x || b[0] - a.x || b - a.x
         b.y - a.y || b[1] - a.y || b - a.y
         b.z - a.z || b[2] - a.z || b - a.z
@@ -476,6 +610,9 @@ class Point(collections.Mapping):
 
     def __isub__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x -= b.x || a.x -= b[0] || a.x -= b
         a.y -= b.y || a.y -= b[1] || a.y -= b
         a.z -= b.z || a.z -= b[2] || a.z -= b
@@ -490,6 +627,9 @@ class Point(collections.Mapping):
 
     def __mul__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x * b.x || a.x * b[0] || a.x * b
         a.y * b.y || a.y * b[1] || a.y * b
         a.z * b.z || a.z * b[2] || a.z * b
@@ -504,6 +644,9 @@ class Point(collections.Mapping):
 
     def __rmul__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x * a.x || b[0] * a.x || b * a.x
         b.y * a.y || b[1] * a.y || b * a.y
         b.z * a.z || b[2] * a.z || b * a.z
@@ -518,6 +661,9 @@ class Point(collections.Mapping):
 
     def __imul__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x *= b.x || a.x *= b[0] || a.x *= b
         a.y *= b.y || a.y *= b[1] || a.y *= b
         a.z *= b.z || a.z *= b[2] || a.z *= b
@@ -532,6 +678,9 @@ class Point(collections.Mapping):
 
     def __floordiv__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x // b.x || a.x // b[0] || a.x // b
         a.y // b.y || a.y // b[1] || a.y // b
         a.z // b.z || a.z // b[2] || a.z // b
@@ -548,6 +697,9 @@ class Point(collections.Mapping):
 
     def __rfloordiv__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x // a.x || b[0] // a.x || b // a.x
         b.y // a.y || b[1] // a.y || b // a.y
         b.z // a.z || b[2] // a.z || b // a.z
@@ -564,6 +716,9 @@ class Point(collections.Mapping):
 
     def __ifloordiv__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x //= b.x || a.x //= b[0] || a.x //= b
         a.y //= b.y || a.y //= b[1] || a.y //= b
         a.z //= b.z || a.z //= b[2] || a.z //= b
@@ -580,6 +735,9 @@ class Point(collections.Mapping):
 
     def __truediv__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x / b.x || a.x / b[0] || a.x / b
         a.y / b.y || a.y / b[1] || a.y / b
         a.z / b.z || a.z / b[2] || a.z / b
@@ -596,6 +754,9 @@ class Point(collections.Mapping):
 
     def __rtruediv__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x / a.x || b[0] / a.x || b / a.x
         b.y / a.y || b[1] / a.y || b / a.y
         b.z / a.z || b[2] / a.z || b / a.z
@@ -612,6 +773,9 @@ class Point(collections.Mapping):
 
     def __itruediv__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x /= b.x || a.x /= b[0] || a.x /= b
         a.y /= b.y || a.y /= b[1] || a.y /= b
         a.z /= b.z || a.z /= b[2] || a.z /= b
@@ -628,6 +792,9 @@ class Point(collections.Mapping):
 
     def __mod__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x % b.x || a.x % b[0] || a.x % b
         a.y % b.y || a.y % b[1] || a.y % b
         a.z % b.z || a.z % b[2] || a.z % b
@@ -644,6 +811,9 @@ class Point(collections.Mapping):
 
     def __rmod__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x % a.x || b[0] % a.x || b % a.x
         b.y % a.y || b[1] % a.y || b % a.y
         b.z % a.z || b[2] % a.z || b % a.z
@@ -660,6 +830,9 @@ class Point(collections.Mapping):
 
     def __imod__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x %= b.x || a.x %= b[0] || a.x %= b
         a.y %= b.y || a.y %= b[1] || a.y %= b
         a.z %= b.z || a.z %= b[2] || a.z %= b
@@ -676,6 +849,10 @@ class Point(collections.Mapping):
 
     def __pow__(self, other, modulus=None):
         '''
+        :other: Point or point equivalent
+        :modulus: optional integer, see pow
+        :return: Point
+
         a.x ** b.x || a.x ** b[0] || a.x ** b
         a.y ** b.y || a.y ** b[1] || a.y ** b
         a.z ** b.z || a.z ** b[2] || a.z ** b
@@ -693,6 +870,10 @@ class Point(collections.Mapping):
 
     def __rpow__(self, other, modulus=None):
         '''
+        :other: Point or point equivalent
+        :modulus: optional integer, see pow
+        :return: Point
+
         b.x ** a.x || b[0] ** a.x || b ** a.x
         b.y ** a.y || b[1] ** a.y || b ** a.y
         b.z ** a.z || b[2] ** a.z || b ** a.z
@@ -709,6 +890,10 @@ class Point(collections.Mapping):
 
     def __ipow__(self, other, modulus=None):
         '''
+        :other: Point or point equivalent
+        :modulus: optional integer, see pow
+        :return: Point
+
         a.x **= b.x || a.x **= b[0] || a.x **= b
         a.y **= b.y || a.y **= b[1] || a.y **= b
         a.z **= b.z || a.z **= b[2] || a.z **= b
@@ -725,6 +910,9 @@ class Point(collections.Mapping):
 
     def __rshift__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x >> b.x || a.x >> b[0] || a.x >> b
         a.y >> b.y || a.y >> b[1] || a.y >> b
         a.z >> b.z || a.z >> b[2] || a.z >> b
@@ -739,6 +927,9 @@ class Point(collections.Mapping):
 
     def __rrshift__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x >> a.x || b[0] >> a.x|| b >> a.x
         b.y >> a.y || b[1] >> a.y|| b >> a.y
         b.z >> a.z || b[2] >> a.z|| b >> a.z
@@ -753,6 +944,9 @@ class Point(collections.Mapping):
 
     def __irshift__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x >> b.x || a.x >> b[0] || a.x >> b
         a.y >> b.y || a.y >> b[1] || a.y >> b
         a.z >> b.z || a.z >> b[2] || a.z >> b
@@ -768,6 +962,9 @@ class Point(collections.Mapping):
 
     def __lshift__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x << b.x || a.x << b[0] || a.x << b
         a.y << b.y || a.y << b[1] || a.y << b
         a.z << b.z || a.z << b[2] || a.z << b
@@ -782,6 +979,9 @@ class Point(collections.Mapping):
 
     def __rlshift__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x << a.x || b[0] << a.x|| b << a.x
         b.y << a.y || b[1] << a.y|| b << a.y
         b.z << a.z || b[2] << a.z|| b << a.z
@@ -796,6 +996,9 @@ class Point(collections.Mapping):
 
     def __ilshift__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x << b.x || a.x << b[0] || a.x << b
         a.y << b.y || a.y << b[1] || a.y << b
         a.z << b.z || a.z << b[2] || a.z << b
@@ -811,6 +1014,9 @@ class Point(collections.Mapping):
 
     def __and__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x & b.x || a.x & b[0] || a.x & b
         a.y & b.y || a.y & b[1] || a.y & b
         a.z & b.z || a.z & b[2] || a.z & b
@@ -825,6 +1031,9 @@ class Point(collections.Mapping):
 
     def __rand__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x & a.x || b[0] & a.x|| b & a.x
         b.y & a.y || b[1] & a.y|| b & a.y
         b.z & a.z || b[2] & a.z|| b & a.z
@@ -839,6 +1048,9 @@ class Point(collections.Mapping):
 
     def __iand__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x &= b.x || a.x &= b[0] || a.x &= b
         a.y &= b.y || a.y &= b[1] || a.y &= b
         a.z &= b.z || a.z &= b[2] || a.z &= b
@@ -854,6 +1066,9 @@ class Point(collections.Mapping):
 
     def __or__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x | b.x || a.x | b[0] || a.x | b
         a.y | b.y || a.y | b[1] || a.y | b
         a.z | b.z || a.z | b[2] || a.z | b
@@ -868,6 +1083,9 @@ class Point(collections.Mapping):
 
     def __ror__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x | a.x || b[0] | a.x|| b | a.x
         b.y | a.y || b[1] | a.y|| b | a.y
         b.z | a.z || b[2] | a.z|| b | a.z
@@ -882,6 +1100,9 @@ class Point(collections.Mapping):
 
     def __ior__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x | b.x || a.x | b[0] || a.x | b
         a.y | b.y || a.y | b[1] || a.y | b
         a.z | b.z || a.z | b[2] || a.z | b
@@ -897,6 +1118,9 @@ class Point(collections.Mapping):
 
     def __xor__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x ^ b.x || a.x ^ b[0] || a.x ^ b
         a.y ^ b.y || a.y ^ b[1] || a.y ^ b
         a.z ^ b.z || a.z ^ b[2] || a.z ^ b
@@ -911,6 +1135,9 @@ class Point(collections.Mapping):
 
     def __rxor__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         b.x ^ a.x || b[0] ^ a.x|| b ^ a.x
         b.y ^ a.y || b[1] ^ a.y|| b ^ a.y
         b.z ^ a.z || b[2] ^ a.z|| b ^ a.z
@@ -926,6 +1153,9 @@ class Point(collections.Mapping):
 
     def __ixor__(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         a.x ^ b.x || a.x ^ b[0] || a.x ^ b
         a.y ^ b.y || a.y ^ b[1] || a.y ^ b
         a.z ^ b.z || a.z ^ b[2] || a.z ^ b
@@ -975,6 +1205,8 @@ class Point(collections.Mapping):
 
     def __round__(self, n=0):
         '''
+        :n: optional integer
+
         round(a.x,n), round(a.y,n), round(a.z,n)
 
         Returns a new object.
@@ -1008,6 +1240,9 @@ class Point(collections.Mapping):
 
     def dot(self, other):
         '''
+        :other: Point or point equivalent
+        :return: float
+
         Dot product of self and other, computed:
 
         a.x*b.x + a.y*b.y + a.z*b.z
@@ -1018,6 +1253,9 @@ class Point(collections.Mapping):
 
     def cross(self, other):
         '''
+        :other: Point or point equivalent
+        :return: float
+
         Vector cross product of points U (self) and V (other), computed:
 
         U x V = (u1*i + u2*j + u3*k) x (v1*i + v2*j + v3*k)
@@ -1038,6 +1276,9 @@ class Point(collections.Mapping):
 
     def midpoint(self, other):
         '''
+        :other: Point or point equivalent
+        :return: Point
+
         The point midway between 'self' and 'other'.
 
         Returns a new object.
@@ -1047,6 +1288,11 @@ class Point(collections.Mapping):
 
     def isBetween(self, a, b, axes='xyz'):
         '''
+        :a: Point or point equivalent
+        :b: Point or point equivalent
+        :axis: optional string 
+        :return: float
+
         Checks the coordinates specified in 'axes' of 'self' to
         determine if they are bounded by 'a' and 'b'. The range
         is inclusive of end-points.
@@ -1063,6 +1309,9 @@ class Point(collections.Mapping):
 
     def distance(self, other=None):
         '''
+        :other:  optional Point or point equivalent
+        :return: float
+
         The Euclidean distance from 'self' to 'other'.
 
         If 'other' is not specified, the origin is used.
@@ -1073,6 +1322,9 @@ class Point(collections.Mapping):
 
     def distanceSquared(self, other=None):
         '''
+        :other:  optional Point or point equivalent
+        :return: float
+
         Returns the squared Euclidean distance from 'self' to 'other'.
 
         If 'other' is not specified, the origin is used.
@@ -1087,10 +1339,15 @@ class Point(collections.Mapping):
 
     def ccw(self, b, c, axis='z'):
         '''
+        :b: Point or point equivalent
+        :c: Point or point equivalent
+        :axis: optional string or integer in set('x',0,'y',1,'z',2)
+        :return: float
+
         CCW - Counter Clockwise
 
         Returns an integer signifying the direction of rotation around 'axis'
-        described by the angle b,self,c.
+        described by the angle [b, self, c].
 
         > 0 : counter-clockwise
           0 : points are collinear
@@ -1098,25 +1355,31 @@ class Point(collections.Mapping):
 
         Returns an integer.
 
-        Raises a ValueError if axis is not in 'xyz'.
+        Raises ValueError if axis is not in 'xyz'.
         '''
         bsuba = b - self
         csuba = c - self
 
-        if axis == 'z' or axis == 0:
+        if axis in ['z', 2]:
             return (bsuba.x * csuba.y) - (bsuba.y * csuba.x)
 
-        if axis == 'y' or axis == 1:
+        if axis in ['y', 1]:
             return (bsuba.x * csuba.z) - (bsuba.z * csuba.x)
 
-        if axis == 'x' or axis == 2:
+        if axis in ['x', 0]:
             return (bsuba.y * csuba.z) - (bsuba.z * csuba.y)
 
         msg = "invalid axis '{!r}', must be one of {}".format(axis, self._keys)
+        
         raise ValueError(msg)
 
     def isCCW(self, b, c, axis='z'):
         '''
+        :b: Point or point equivalent
+        :c: Point or point equivalent
+        :axis: optional string or integer in set('x',0,'y',1,'z',2)
+        :return: boolean
+
         Returns True if the angle determined by a,self,b around 'axis'
         describes a counter-clockwise rotation, otherwise False.
 
@@ -1132,7 +1395,152 @@ class Point(collections.Mapping):
 
     def isCollinear(self, b, c):
         '''
+        :b: Point or point equivalent
+        :c: Point or point equivalent
+        :return: boolean
+
         Returns True if 'self' is collinear with 'b' and 'c', otherwise False.
         '''
 
         return all(self.ccw(b, c, axis) == 0 for axis in self._keys)
+
+    def rotate2d(self, theta, origin=None, axis='z', radians=False):
+        '''
+        :theta: float radians to rotate self around origin
+        :origin: optional Point, defaults to 0,0,0
+
+        Returns a Point rotated by :theta: around :origin:.
+        '''
+        
+        origin = Point._convert(origin)
+
+        delta = self - origin
+
+        p = Point(origin)
+
+        if not radians:
+            theta = math.radians(theta)
+
+        cosT = math.cos(theta)
+        sinT = math.sin(theta)
+
+        if axis == 'z':
+            p.x += (cosT * delta.x) - (sinT * delta.y)
+            p.y += (sinT * delta.x) + (cosT * delta.y)
+            return p
+
+        if axis == 'y':
+            p.z += (cosT * delta.z) - (sinT * delta.x)
+            p.x += (sinT * delta.z) + (cosT * delta.x)
+            return p
+
+        if axis == 'x':
+            p.y += (cosT * delta.y) - (sinT * delta.z)
+            p.z += (sinT * delta.y) + (cosT * delta.z)
+            return p
+        
+        raise KeyError('unknown axis {}, expecting x, y or z'.format(axis))
+
+    def irotate2d(self, theta, origin=None, axis='z', radians=False):
+
+        self.xyz = self.rotate2d(theta,origin,axis,radians).xyz
+
+        return self
+
+    def rotate(self, theta_x, theta_y, theta_z, origin=None, radians=False):
+
+        origin = Point._convert(origin)
+
+        thetas = [theta_x,theta_y,theta_z]
+        
+        if not radians:
+            thetas = list(map(math.radians,thetas))
+
+        cosX,cosY,cosZ = list(map(math.cos,thetas))
+        sinX,sinY,sinZ = list(map(math.sin.thetas))
+
+        raise NotImplementedError("working on it")
+
+
+class PointCollection(collections.OrderedDict):
+    '''
+    A named sequence of points.  Work in Progress.
+    '''
+
+    def __str__(self):
+        s = []
+        for label,p in self.items():
+            s.append('{}={!r}'.format(label,p))
+        return '['+','.join(s)+']'
+
+    def __repr__(self):
+        return '{p.__class__.__name__}({p!s})'.format(p=self)
+
+    def __hash__(self):
+        '''
+        Hash computed from the repr value. Re-computed if the
+        object's repr string changes (points added or deleted).
+        '''
+        try:
+            return self._hashvalue
+        except AttributeError:
+            pass
+        digest = hashlib.sha1(bytes(repr(self), 'utf-8')).hexdigest()
+        self._hashvalue = int(digest, 16)
+        return self._hashvalue
+
+    def _uncache(self):
+        for attr in ['_hashvalue','_pairs']:
+            try:
+                super().__delattr__(attr)
+            except AttributeError:
+                pass
+
+    def __setitem__(self, key, item):
+        try:
+            super().__setitem__(key, Point._convert(item))
+            self._uncache()
+            return
+        except:
+            pass
+        
+        super().__setitem__(key, item)
+
+    def __delitem__(self, key):
+        super().__delitem__(key)
+        self._uncache()
+
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError:
+            pass
+        return super().__getattr__(attr)
+
+    def __setattr__(self, attr, value):
+        try:
+            self[attr] = value
+        except AttributeError:
+            pass
+        return super().__setattr__(attr, value)
+
+    @property
+    def labels(self):
+        return self.keys()
+    
+    @property
+    def points(self):
+        return self.values()
+
+    # how to disambiguate point label collisions?
+    def __add__(self, other):
+        pass
+    
+    def __radd__(self, other):
+        pass
+
+    def __sub__(self, other):
+        pass
+
+    def __rsub__(self, other):
+        pass
