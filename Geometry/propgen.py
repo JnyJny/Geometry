@@ -46,38 +46,40 @@ def FloatProperty(name, default=0.0, readonly=False, docs=None):
         # fset: creates a float from v unless that float is less than
         #       epsilon, which will be considered effectively zero.
         #
-        fset = lambda v: float(v) if abs(float(v)) > epsilon else 0.0
+        def epsilon_set(v):
+            fv = float(v)
+            return fv if abs(fv) - epsilon > epsilon else 0.0
         
         def setf(self, newValue):
             try:
-                setattr(self, private_name, fset(newValue))
+                setattr(self, private_name, epsilon_set(newValue))
                 return
             except TypeError:
                 pass
 
             if isinstance(newValue, collections.Mapping):
                 try:
-                    setattr(self, private_name, fset(newValue[name]))
+                    setattr(self, private_name, epsilon_set(newValue[name]))
                 except KeyError:
                     pass
                 return
 
             if isinstance(newValue, collections.Iterable):
                 try:
-                    setattr(self, private_name, fset(newValue[0]))
+                    setattr(self, private_name, epsilon_set(newValue[0]))
                     return
                 except (IndexError, TypeError):
                     pass
 
             try:
                 mapping = vars(newValue)
-                setattr(self, private_name, fset(mapping[name]))
+                setattr(self, private_name, epsilon_set(mapping[name]))
                 return
             except (TypeError, KeyError):
                 pass
 
             if newValue is None:
-                setattr(self, private_name, fset(default))
+                setattr(self, private_name, epsilon_set(default))
                 return
 
             raise ValueError(newValue)
