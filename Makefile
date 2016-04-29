@@ -24,7 +24,7 @@ PKG_ROOT= ${TARGET}
 PKG_INIT = ${PKG_ROOT}/__init__.py
 README = README.md
 
-TMPFILES= VERSION dist build ${TARGET}.egg-info
+TMPFILES= VERSION dist build ${TARGET}.egg-info cover
 
 NOSEFLAGS= --with-coverage --cover-tests --cover-html
 
@@ -33,6 +33,8 @@ AUTOPEP8_FLAGS = -ria
 
 FLAKE8 = flake8
 FLAKE8_IGN = F401,F403
+# F401 - imported but unused
+# F403 - import * used, unable to detect undefined names
 
 GIT = git
 SED = sed
@@ -44,20 +46,20 @@ all:
 	@echo "make sdist         - creates a source distribution"
 	@echo "make bdist         - creates a binary distribution"
 	@echo "make wheel         - creates a wheel distribution"
-	@echo "make test          - runs unit tests"
-	@echo "make upload        - uploads bdist_wheel to PYPI=${PYPI}"
 	@echo "make clean         - removes all derived files and directories"
 	@echo "make bump_major    - increment version major number MAJOR=${MAJOR}"
 	@echo "make bump_minor    - increment version minor number MINOR=${MINOR}"
 	@echo "make bump_point    - increment version point number POINT=${POINT}"
 	@echo "make update        - updates the version VERSION=${VERSION}"
+	@echo "make upload        - uploads bdist_wheel to PYPI=${PYPI}"
 	@echo ""		  
 	@echo "make test-install  - pip install from PYPI=${PYPI}"
 	@echo "make test-upgrade  - pip upgrade from PYPI=${PYPI}"
-	@echo "make test-coverage - run unittests with code coverage"
 	@echo ""
+	@echo "make test          - run unit tests"
+	@echo "make test-coverage - run unittests with code coverage"
 	@echo "make autopep8      - run autopep8 on source, modifies in-place"
-	@echo "make flake8        - run flake8 on source"
+	@echo "make flake8        - run flake8 on source, report only"
 	@echo ""
 	@echo "Update workflow:"
 	@echo "----------------"

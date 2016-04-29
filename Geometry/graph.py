@@ -3,7 +3,7 @@
 Nodes and edges, not pretty colors and pitchers.
 '''
 
-from .point import Point
+from . import Point
 from .line import Segment
 from .exceptions import *
 
