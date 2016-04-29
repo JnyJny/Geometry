@@ -11,69 +11,69 @@ class EllipseTestCase(unittest.TestCase):
         e = Ellipse()
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, [0] * 3)
-        self.assertEqual(e.x_radius, 1)
-        self.assertEqual(e.y_radius, 1)
+        self.assertListEqual(e.radius.xyz, [1,1,0])
 
     def testEllipseCreationWithOnlyCenterArgument(self):
         p = Point.gaussian()
         e = Ellipse(p)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, p.xyz)
-        self.assertEqual(e.x_radius, 1)
-        self.assertEqual(e.y_radius, 1)
+        self.assertListEqual(e.radius.xyz, [1,1,0])
 
     def testEllipseCreationWithOnlyCenterKeyword(self):
         p = Point.gaussian()
         e = Ellipse(center=p)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, p.xyz)
-        self.assertEqual(e.x_radius, 1)
-        self.assertEqual(e.y_radius, 1)
+        self.assertListEqual(e.radius.xyz, [1,1,0])
 
     def testEllipseCreationWithOnlyXRadiusKeyword(self):
         e = Ellipse(x_radius=2)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, [0] * 3)
-        self.assertEqual(e.x_radius, 2)
-        self.assertEqual(e.y_radius, 1)
+        self.assertListEqual(e.radius.xyz, [2,1,0])
 
     def testEllipseCreationWithOnlyYRadiusKeyword(self):
         e = Ellipse(y_radius=2)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, [0] * 3)
-        self.assertEqual(e.x_radius, 1)
-        self.assertEqual(e.y_radius, 2)
+        self.assertListEqual(e.radius.xyz, [1,2,0])
 
-    def testEllipseCreationWithOnlyRadiusKeywords(self):
-        e = Ellipse(x_radius=2, y_radius=3)
+    def testEllipseCreationWithOnlyZRadiusKeyword(self):
+        e = Ellipse(z_radius=2)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, [0] * 3)
-        self.assertEqual(e.x_radius, 2)
-        self.assertEqual(e.y_radius, 3)
+        self.assertListEqual(e.radius.xyz, [1,1,2])        
+
+    def testEllipseCreationWithOnlyRadiusKeywords(self):
+        e = Ellipse(x_radius=2, y_radius=3, z_radius=4)
+        self.assertIsInstance(e, Ellipse)
+        self.assertListEqual(e.center.xyz, [0] * 3)
+        self.assertListEqual(e.radius.xyz, [2,3,4])
+
 
     def testEllipseCreationWithAllKeywords(self):
         p = Point.gaussian()
-        e = Ellipse(center=p, x_radius=2, y_radius=3)
+        e = Ellipse(center=p, x_radius=2, y_radius=3, z_radius=4)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, p.xyz)
-        self.assertEqual(e.x_radius, 2)
-        self.assertEqual(e.y_radius, 3)
+        self.assertListEqual(e.radius.xyz, [2,3,4])
 
     def testEllipseCreationWithCenterAndXRadius(self):
         p = Point.gaussian()
         e = Ellipse(p, 2)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, p.xyz)
-        self.assertEqual(e.x_radius, 2)
-        self.assertEqual(e.y_radius, 1)
+        self.assertListEqual(e.radius.xyz, [2,1,0])
+
 
     def testEllipseCreationWithCenterAndRadii(self):
         p = Point.gaussian()
-        e = Ellipse(p, 2, 3)
+        e = Ellipse(p, 2, 3, 4)
         self.assertIsInstance(e, Ellipse)
         self.assertListEqual(e.center.xyz, p.xyz)
-        self.assertEqual(e.x_radius, 2)
-        self.assertEqual(e.y_radius, 3)
+        self.assertListEqual(e.radius.xyz, [2,3,4])
+
 
     def testEllipseSettingCenterAttribute(self):
 
@@ -94,41 +94,40 @@ class EllipseTestCase(unittest.TestCase):
 
         for n in [2, 3.4, '5', '6.7']:
             e = Ellipse()
-            e.x_radius = n
+            e.radius.x = n
             self.assertListEqual(e.center.xyz, [0] * 3)
-            self.assertEqual(e.x_radius, float(n))
-            self.assertEqual(e.y_radius, 1)
+            self.assertEqual(e.radius.x, float(n))
+            self.assertEqual(e.radius.y, 1)
+            self.assertEqual(e.radius.z, 0)
 
     def testEllipseSettingYRadiusWithNumbers(self):
 
         for n in [2, 3.4, '5', '6.7']:
             e = Ellipse()
-            e.y_radius = n
+            e.radius.y = n
             self.assertListEqual(e.center.xyz, [0] * 3)
-            self.assertEqual(e.x_radius, 1)
-            self.assertEqual(e.y_radius, float(n))
+            self.assertEqual(e.radius.x, 1)
+            self.assertEqual(e.radius.y, float(n))
+            self.assertEqual(e.radius.z, 0)
 
     def testEllipseSettingXRadiusWithNonNumbers(self):
 
         with self.assertRaises(ValueError):
             e = Ellipse()
-            e.x_radius = 'fail'
-
-        for fail in [None, [], {}, ()]:
-            with self.assertRaises(TypeError):
-                e = Ellipse()
-                e.x_radius = fail
+            e.radius.x = 'fail'
 
     def testEllipseSettingYRadiusWithNonNumbers(self):
 
         with self.assertRaises(ValueError):
             e = Ellipse()
-            e.y_radius = 'fail'
+            e.radius.y = 'fail'
 
-        for fail in [None, [], {}, ()]:
-            with self.assertRaises(TypeError):
-                e = Ellipse()
-                e.y_radius = fail
+    def testEllipseSettingZRadiusWithNonNumbers(self):
+
+        with self.assertRaises(ValueError):
+            e = Ellipse()
+            e.radius.z = 'fail'
+
 
     def testEllipseCenterGetter(self):
         e = Ellipse()
@@ -138,27 +137,21 @@ class EllipseTestCase(unittest.TestCase):
 
     def testEllipseXRadiusGetter(self):
         e = Ellipse(x_radius=2)
-        xr = e.x_radius
+        xr = e.radius.x
         self.assertIsInstance(xr, float)
         self.assertEqual(xr, 2)
 
     def testEllipseYRadiusGetter(self):
         e = Ellipse(y_radius=2)
-        yr = e.y_radius
+        yr = e.radius.y
         self.assertIsInstance(yr, float)
         self.assertEqual(yr, 2)
 
-    def testEllipseMappingGetter(self):
-        e = Ellipse()
-        m = e.mapping
-        self.assertIsInstance(m, dict)
-        self.assertEqual(len(m), 3)
-        self.assertIsInstance(m['center'], Point)
-        self.assertListEqual(m['center'].xyz, [0] * 3)
-        self.assertIsInstance(m['x_radius'], float)
-        self.assertEqual(m['x_radius'], 1)
-        self.assertIsInstance(m['y_radius'], float)
-        self.assertEqual(m['y_radius'], 1)
+    def testEllipseZRadiusGetter(self):
+        e = Ellipse(z_radius=2)
+        zr = e.radius.z
+        self.assertIsInstance(zr, float)
+        self.assertEqual(zr, 2)        
 
     def testEllipseMajorRadiusGetter(self):
         e = Ellipse()
@@ -223,12 +216,12 @@ class EllipseTestCase(unittest.TestCase):
         self.assertEqual(e.e, 0)
 
         for y in range(1, 5, 10000000):
-            e.y_radius = y
+            e.radius.y = y
             self.assertLessEqual(e.eccentricity, 1)
             self.assertLessEqual(e.e, 1)
 
         for x in range(1, 5, 10000000):
-            e.x_radius = x
+            e.radius.x = x
             self.assertLessEqual(e.eccentricity, 1)
             self.assertLessEqual(e.e, 1)
 
@@ -347,13 +340,18 @@ class EllipseTestCase(unittest.TestCase):
         self.assertFalse(a == b)
         self.assertTrue(a != b)
 
-        b = Ellipse(Point([1, 1, 1]), 2, 3)
+        b = Ellipse(y_radius=3)
+        self.assertFalse(a == b)
+        self.assertTrue(a != b)        
+
+        b = Ellipse(Point([1, 1, 1]), 2, 3, 4)
         self.assertFalse(a == b)
         self.assertTrue(a != b)
 
         b.center = None
-        b.x_radius = 1
-        b.y_radius = 1
+        b.radius.x = 1
+        b.radius.y = 1
+        b.radius.z = 0
         self.assertTrue(a == b)
         self.assertFalse(a != b)
 

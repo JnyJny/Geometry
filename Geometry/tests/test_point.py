@@ -5,6 +5,7 @@ import math
 
 from .. import Point
 from ..exceptions import *
+from .. import epsilon
 
 
 class PointTestCase(unittest.TestCase):
@@ -25,11 +26,7 @@ class PointTestCase(unittest.TestCase):
     def assertCoordinatesEqual(self, p, values, msg=None):
         '''
         '''
-
-        if len(values) == 4:
-            self.assertSequenceEqual(p.xyzw, values, msg)
-        else:
-            self.assertSequenceEqual(p.xyz, values, msg)
+        self.assertSequenceEqual(p.xyz, values[:3], msg)
 
     def assertIsOrigin(self, p, msg=None):
         '''
@@ -44,6 +41,12 @@ class PointTestCase(unittest.TestCase):
         self.assertIsInstance(b, Point)
         self.assertFalse(a is b)
         self.assertSequenceEqual(a.xyz, b.xyz)
+
+    def assertEpsilonEqual(self, test_value, known_value):
+        '''
+        '''
+        
+        return abs(known_value - test_value) < epsilon
 
     def testOriginPointCreation(self):
         '''
@@ -112,7 +115,7 @@ class PointTestCase(unittest.TestCase):
         self.assertEqual(p[3], 1)
 
         # bad index keys
-        for bad_key in [-1, 4, 'f', ]:
+        for bad_key in [-1, 9, 'f', ]:
             with self.assertRaises(TypeError,
                                    msg='p[{}] = 1'.format(bad_key)):
                 p[bad_key] = 1
@@ -122,20 +125,39 @@ class PointTestCase(unittest.TestCase):
         '''
 
         p = Point(1, 2, 3)
+
+        # property style
         self.assertSequenceEqual(p.xy, (1, 2))
         self.assertSequenceEqual(p.xz, (1, 3))
         self.assertSequenceEqual(p.yz, (2, 3))
         self.assertSequenceEqual(p.xyz, (1, 2, 3))
         self.assertSequenceEqual(p.xyzw, (1, 2, 3, 1))
 
+        # mapping, string style
+
         self.assertSequenceEqual(p['xy'], (1, 2))
-        self.assertSequenceEqual(p['xz'], (1, 3))
         self.assertSequenceEqual(p['yz'], (2, 3))
+        self.assertSequenceEqual(p['xz'], (1, 3))
         self.assertSequenceEqual(p['xyz'], (1, 2, 3))
         self.assertSequenceEqual(p['xyzw'], (1, 2, 3, 1))
 
-    def testPointPropertySettersSimple(self):
+        # mapping, index style
 
+        self.assertSequenceEqual(p[4], (1, 2))
+        self.assertSequenceEqual(p[5], (2, 3))
+        self.assertSequenceEqual(p[6], (1, 3))
+        self.assertSequenceEqual(p[7], (1, 2, 3))
+        self.assertSequenceEqual(p[8], (1, 2, 3, 1))
+
+        for bad_key in [-1, 'zyx', 'zx', 9]:
+            with self.assertRaises(TypeError,
+                                   msg='p[{}] = 1'.format(bad_key)):
+                p[bad_key] = 1
+
+    def testPointPropertySettersSimple(self):
+        '''
+        '''
+        
         p = Point()
 
         p.x = 1
@@ -173,7 +195,9 @@ class PointTestCase(unittest.TestCase):
             p['w'] = 2
 
     def testPointMultiplePropertySettersSimple(self):
-
+        '''
+        '''
+        
         p = Point()
 
         p.xy = (1, 1)
@@ -227,7 +251,9 @@ class PointTestCase(unittest.TestCase):
         self.assertIsOrigin(p)
 
     def testPointPropertySettersComplex(self):
-
+        '''
+        '''
+        
         mapping = {'x': 1, 'y': 2, 'z': 3}
         iterable = [4, 5, 6]
 
@@ -250,7 +276,9 @@ class PointTestCase(unittest.TestCase):
         self.assertCoordinatesEqual(p, (0, 0, 4))
 
     def testPointMultiplePropertySettersComplex(self):
-
+        '''
+        '''
+        
         mapping = {'x': 1, 'y': 2, 'z': 3}
         iterable = [4, 5, 6]
 
@@ -287,6 +315,7 @@ class PointTestCase(unittest.TestCase):
     def testPointClassmethod_unit(self):
         '''
         '''
+        
         with self.assertRaises(TypeError, msg='Point.unit(None,None)'):
             Point.unit(None, None)
 
@@ -295,6 +324,9 @@ class PointTestCase(unittest.TestCase):
         self.assertCoordinatesEqual(Point.unit(o, Point(3, 0, 0)), [1, 0, 0])
         self.assertCoordinatesEqual(Point.unit(o, Point(0, 3, 0)), [0, 1, 0])
         self.assertCoordinatesEqual(Point.unit(o, Point(0, 0, 3)), [0, 0, 1])
+
+        for x in range(0,100):
+            self.assertEpsilonEqual(o.distance(Point.unit(o,Point.random())),1.0)
 
     def testPointClassmethod_units(self):
         '''
@@ -335,6 +367,9 @@ class PointTestCase(unittest.TestCase):
         '''
         
         # MAGIC NUMBER: hash value for a Point(0,0,0) object
+        #               will fail if the hash calculation changes.
+        #               need a better test method.
+        
         v = 1553416657114974281
         
         self.assertTrue(hash(Point.origin()) == v)
@@ -343,6 +378,7 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_len(self):
         '''
         '''
+        
         self.assertEqual(len(Point()), 3)
 
     def testPointMethod_iter(self):
@@ -350,8 +386,8 @@ class PointTestCase(unittest.TestCase):
         '''
         p = Point()
         i = iter(p)
-        self.assertTrue(p == i)
-        self.assertTrue(p is i)
+        self.assertTrue(p != i)
+        self.assertFalse(p is i)
 
     def testPointMethod_next(self):
         '''
@@ -389,7 +425,6 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_addition(self):
         '''
         '''
-        # __add__
         for b in self.testObjects(1):
             a = Point()
             c = a + b
@@ -682,14 +717,15 @@ class PointTestCase(unittest.TestCase):
         V = 1.234 
 
         p = Point([V] * 3)
-        round(p)
-        self.assertCoordinatesEqual(p, [round(V)] * 3)
+        q = round(p)
+        self.assertCoordinatesEqual(q, [round(V)] * 3)
 
         for n in range(1, 4):
             p = Point([V] * 3)
-            round(p, n)
+            q = round(p, n)
+            self.assertFalse(q is p)
             self.assertCoordinatesEqual(
-                p, [round(V, n)] * 3, 'round({!r},{})'.format(p, n))
+                q, [round(V, n)] * 3, 'round({!r},{})'.format(p, n))
 
     def testPointMethod_floor(self):
         '''
@@ -697,9 +733,10 @@ class PointTestCase(unittest.TestCase):
         for v in range(1, 10):
             f = math.floor(1 / v)
             p = Point([1 / v] * 3)
-            self.assertTrue(math.floor(p) is p)
+            q = math.floor(p)
+            self.assertFalse(q is p)
             self.assertCoordinatesEqual(
-                p, [f] * 3, 'floor {!r} for 1/{}'.format(p, v))
+                q, [f] * 3, 'floor {!r} for 1/{}'.format(p, v))
 
     def testPointMethod_ceiling(self):
         '''
@@ -707,9 +744,10 @@ class PointTestCase(unittest.TestCase):
         for v in range(1, 10):
             f = math.ceil(1 / v)
             p = Point([1 / v] * 3)
-            self.assertTrue(math.ceil(p) is p)
+            q = math.ceil(p)
+            self.assertFalse(q is p)
             self.assertCoordinatesEqual(
-                p, [f] * 3, 'ceil {!r} for 1/{}'.format(p, v))
+                q, [f] * 3, 'ceil {!r} for 1/{}'.format(p, v))
 
     # class specific methods
     def testPointMethod_dot_product(self):
@@ -734,7 +772,7 @@ class PointTestCase(unittest.TestCase):
         '''
         '''
         for scale in [1,-1]:
-            i, j, k = Point.units()
+            i, j, k = Point.units(scale)
             self.assertEqual(i.cross(i), 0)
             self.assertEqual(i.cross(j), 1)
             self.assertEqual(i.cross(k), -1)
@@ -938,3 +976,21 @@ class PointTestCase(unittest.TestCase):
 
         self.assertFalse(o.isCollinear(k,u))
         self.assertFalse(o.isCollinear(k,v))
+
+    def testPointMethod_rotate2d(self):
+        '''
+        '''
+
+    def testPointMethod_irotate2d(self):
+        '''
+        '''
+        
+    def rotate(self, theta_x, theta_y, theta_z, origin=None, radians=False):
+        '''
+        '''
+
+
+        
+
+    
+
