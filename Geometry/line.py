@@ -7,6 +7,7 @@ from .point2 import Point
 from .exceptions import InfiniteLength, CollinearPoints, ParallelLines
 from .constants import *
 
+
 class Line(collections.Mapping):
     '''
     A line with infinite length defined by two points; A and B.
@@ -64,7 +65,7 @@ class Line(collections.Mapping):
         '''
         line(<iterable>,A=..,B=...)
         '''
-        
+
         self(*args, **kwds)
 
     def __call__(self, *args, **kwds):
@@ -76,13 +77,12 @@ class Line(collections.Mapping):
 
         if len(args) > 1:
             self.A, self.B = args
-        
-        for p in ['A','B']:
+
+        for p in ['A', 'B']:
             try:
-                setattr(self,p,kwds[p])
+                setattr(self, p, kwds[p])
             except KeyError:
                 pass
-
 
     @property
     def A(self):
@@ -108,7 +108,7 @@ class Line(collections.Mapping):
 
     @B.setter
     def B(self, newValue):
-        self.B.xyz = newValue        
+        self.B.xyz = newValue
 
     def __iter__(self):
         return iter(self.AB)
@@ -126,7 +126,7 @@ class Line(collections.Mapping):
         return self._AB
 
     @AB.setter
-    def AB(self,newValues):
+    def AB(self, newValues):
         try:
             self.A, self.B = newValues
         except ValueError:
@@ -209,8 +209,8 @@ class Line(collections.Mapping):
         if t >= 0 and <= 1, point is between A and B
         if t > 1 point is greater than B
         '''
-        
-        #XXX could use for an ordering on points?
+
+        # XXX could use for an ordering on points?
 
         if point not in self:
             msg = "'{p}' is not collinear with '{l}'"
@@ -274,7 +274,7 @@ class Line(collections.Mapping):
         Returns True iff p is a point and is collinear with l.A and
         l.B.
 
-        Returns True iff p is a line and p.A and p.B are collinear 
+        Returns True iff p is a line and p.A and p.B are collinear
         with l.A and l.B.
 
         '''
@@ -382,8 +382,8 @@ class Line(collections.Mapping):
         #
         #     Might be fixed in new Point coordinate property
         #     setter that catches values < epsilon and substitutes
-        #     zero. 
-        
+        #     zero.
+
         msg = "found point {p!r} but not in {a!r} and {b!r}"
         raise ParallelLines(msg.format(p=p, a=self, b=other))
 
@@ -414,7 +414,7 @@ class Line(collections.Mapping):
         :param: other - Line subclass
         :return: float
 
-        Returns the angle measured between two lines in radians 
+        Returns the angle measured between two lines in radians
         with a range of [0, 2 * math.pi].
 
         '''
@@ -432,7 +432,7 @@ class Line(collections.Mapping):
 
         # in a perfect world, after unit: |A| = |B| = 1
         # which is a noop when dividing the dot product of A,B
-        # but sometimes the lengths are different. 
+        # but sometimes the lengths are different.
         # let's just assume things are perfect and the lengths equal 1.
         #
         # a = A.distance()
@@ -452,7 +452,6 @@ class Line(collections.Mapping):
         return math.degrees(self.radiansBetween(other))
 
 
-    
 class Segment(Line):
     '''
     A Line subclass with finite length.
@@ -479,7 +478,7 @@ class Segment(Line):
            or
          ((x.A == y.B) and (x.B == y.A))
         '''
-        return len(set(self.AB+other.AB)) == 2
+        return len(set(self.AB + other.AB)) == 2
 
     def __contains__(self, other):
         '''
@@ -497,12 +496,12 @@ class Segment(Line):
         if issubclass(otherType, Point):
             return point.isBetween(self.A, self.B)
 
-        if issubclass(otherType,Line):
-            return all([other.A.isBetween(self.A,self.B),
-                        other.B.isBetween(self.A,self.B)])
+        if issubclass(otherType, Line):
+            return all([other.A.isBetween(self.A, self.B),
+                        other.B.isBetween(self.A, self.B)])
 
         raise TypeError('unable to contain type {t}'.format(t=otherType))
-    
+
     @property
     def normal(self):
         '''
@@ -519,7 +518,7 @@ class Ray(Line):
     direction of the head vertex.
 
     o----->
-    
+
     '''
 
     @property
@@ -550,7 +549,8 @@ class Ray(Line):
 
         Returns true if x.head == y.head and y.tail.isCollinear(x.head,x.tail)
         '''
-        return (self.head == other.head) and other.tail.isCollinear(self.head, self.tail)
+        return (self.head == other.head) and other.tail.isCollinear(
+            self.head, self.tail)
 
     def __contains__(self, point):
         '''

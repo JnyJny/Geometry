@@ -2,7 +2,7 @@
 Property Generation
 
 These functions try to avoid some of the boilerplate of using
-@property declarations within classes. 
+@property declarations within classes.
 
 '''
 
@@ -27,11 +27,11 @@ def FloatProperty(name, default=0.0, readonly=False, docs=None):
     :name: string - property name
     :default: float - property default value
     :readonly: boolean - if True, setter method is NOT generated
-    
+
     Returns a property object that can be used to initialize a
     class instance variable as a property.
     '''
-    
+
     private_name = '_' + name
 
     def getf(self):
@@ -49,7 +49,7 @@ def FloatProperty(name, default=0.0, readonly=False, docs=None):
         def epsilon_set(v):
             fv = float(v)
             return fv if abs(fv) - epsilon > epsilon else 0.0
-        
+
         def setf(self, newValue):
             try:
                 setattr(self, private_name, epsilon_set(newValue))
@@ -83,17 +83,17 @@ def FloatProperty(name, default=0.0, readonly=False, docs=None):
                 return
 
             raise ValueError(newValue)
-        
-    return property(getf,setf,None,docs)
+
+    return property(getf, setf, None, docs)
 
 
 def FloatMultiProperty(keys, default=0.0, docs=None,
                        readonly_keys=''):
     '''
-    
-    
+
+
     '''
-    
+
     writable_keys = [k for k in keys if k not in readonly_keys]
 
     def getf(self):
@@ -125,17 +125,16 @@ def FloatMultiProperty(keys, default=0.0, docs=None,
             return
         except TypeError:
             pass
-        
+
         setattr(self, writable_keys[0], newValues)
 
-    return property(getf,setf,None,docs)
+    return property(getf, setf, None, docs)
 
 
-
-def MultiObjectProperty(keys,default,all_keys):
+def MultiObjectProperty(keys, default, all_keys):
 
     if not any(set(keys).intersection(all_keys)):
-        raise KeyError('{!r} not subset of {!r}'.format(keys,all_keys))
+        raise KeyError('{!r} not subset of {!r}'.format(keys, all_keys))
 
     @property
     def prop(self):
@@ -169,7 +168,6 @@ def MultiObjectProperty(keys,default,all_keys):
         except TypeError:
             pass
 
-        setattr(self,keys[0], newValues)
+        setattr(self, keys[0], newValues)
 
     return prop
-    

@@ -80,12 +80,12 @@ class Point(collections.Mapping):
       random: random Point within a circle
 
     '''
-    
-    x = FloatProperty('x',docs='X axis coordinate, float.')
-    y = FloatProperty('y',docs='Y axis coordinate, float.')
-    z = FloatProperty('z',docs='Z axis coordinate, float.')
+
+    x = FloatProperty('x', docs='X axis coordinate, float.')
+    y = FloatProperty('y', docs='Y axis coordinate, float.')
+    z = FloatProperty('z', docs='Z axis coordinate, float.')
     w = FloatProperty('w',
-                      docs='W coordinate, read-only float. '\
+                      docs='W coordinate, read-only float. '
                       'Used to form square matrices. ',
                       default=1.0, readonly=True)
     xyzw = FloatMultiProperty('xyzw',
@@ -93,9 +93,9 @@ class Point(collections.Mapping):
                               readonly_keys='w')
     xyz = FloatMultiProperty('xyz',
                              docs='A list of all coordinates excluding W.')
-    xy = FloatMultiProperty('xy',docs='A list of X and Y coordinates.')
-    yz = FloatMultiProperty('yz',docs='A list of Y and Z coordinates.')
-    xz = FloatMultiProperty('xz',docs='A list of X and Z coordinates.')
+    xy = FloatMultiProperty('xy', docs='A list of X and Y coordinates.')
+    yz = FloatMultiProperty('yz', docs='A list of Y and Z coordinates.')
+    xz = FloatMultiProperty('xz', docs='A list of X and Z coordinates.')
 
     _keys = 'xyz'
 
@@ -136,7 +136,7 @@ class Point(collections.Mapping):
         of the vector to one. Returns a Point() whose distance from
         the origin is 1.
         '''
-        
+
         return (B - A) / A.distance(B)
 
     @classmethod
@@ -209,7 +209,7 @@ class Point(collections.Mapping):
 #         class Foo(object):
 #             def __init__(self):
 #                 baz = Point.property("baz","it's a baz!")
-#  
+#
 #         >>>help(Foo)
 #         # no mention of baz
 #         >>> foo = Foo()
@@ -264,8 +264,6 @@ class Point(collections.Mapping):
 #            setf = None
 #
 #        return property(getf,setf,None,docs)
-
-        
 
     def __init__(self, *args, **kwds):
         '''
@@ -344,7 +342,6 @@ class Point(collections.Mapping):
             del(self._hashvalue)
         except AttributeError:
             pass
-        
 
     def __len__(self):
         '''
@@ -375,7 +372,7 @@ class Point(collections.Mapping):
     def __getitem__(self, key):
         '''
         :key:    string or integer
-        :return: float 
+        :return: float
 
         Recognizes keys:
 
@@ -389,7 +386,7 @@ class Point(collections.Mapping):
             return self.y
         if key in ['z', 2]:
             return self.z
-        if key in ['w' ,3]:
+        if key in ['w', 3]:
             return self.w
         if key in ['xy', 4]:
             return (self.x, self.y)
@@ -1292,7 +1289,7 @@ class Point(collections.Mapping):
         '''
         :a: Point or point equivalent
         :b: Point or point equivalent
-        :axis: optional string 
+        :axis: optional string
         :return: float
 
         Checks the coordinates specified in 'axes' of 'self' to
@@ -1372,7 +1369,7 @@ class Point(collections.Mapping):
             return (bsuba.y * csuba.z) - (bsuba.z * csuba.y)
 
         msg = "invalid axis '{!r}', must be one of {}".format(axis, self._keys)
-        
+
         raise ValueError(msg)
 
     def isCCW(self, b, c, axis='z'):
@@ -1413,7 +1410,7 @@ class Point(collections.Mapping):
 
         Returns a Point rotated by :theta: around :origin:.
         '''
-        
+
         origin = Point._convert(origin)
 
         delta = self - origin
@@ -1440,12 +1437,12 @@ class Point(collections.Mapping):
             p.y += (cosT * delta.y) - (sinT * delta.z)
             p.z += (sinT * delta.y) + (cosT * delta.z)
             return p
-        
+
         raise KeyError('unknown axis {}, expecting x, y or z'.format(axis))
 
     def irotate2d(self, theta, origin=None, axis='z', radians=False):
 
-        self.xyz = self.rotate2d(theta,origin,axis,radians).xyz
+        self.xyz = self.rotate2d(theta, origin, axis, radians).xyz
 
         return self
 
@@ -1453,13 +1450,13 @@ class Point(collections.Mapping):
 
         origin = Point._convert(origin)
 
-        thetas = [theta_x,theta_y,theta_z]
-        
-        if not radians:
-            thetas = list(map(math.radians,thetas))
+        thetas = [theta_x, theta_y, theta_z]
 
-        cosX,cosY,cosZ = list(map(math.cos,thetas))
-        sinX,sinY,sinZ = list(map(math.sin.thetas))
+        if not radians:
+            thetas = list(map(math.radians, thetas))
+
+        cosX, cosY, cosZ = list(map(math.cos, thetas))
+        sinX, sinY, sinZ = list(map(math.sin.thetas))
 
         raise NotImplementedError("working on it")
 
@@ -1471,9 +1468,9 @@ class PointCollection(collections.OrderedDict):
 
     def __str__(self):
         s = []
-        for label,p in self.items():
-            s.append('{}={!r}'.format(label,p))
-        return '['+','.join(s)+']'
+        for label, p in self.items():
+            s.append('{}={!r}'.format(label, p))
+        return '[' + ','.join(s) + ']'
 
     def __repr__(self):
         return '{p.__class__.__name__}({p!s})'.format(p=self)
@@ -1492,7 +1489,7 @@ class PointCollection(collections.OrderedDict):
         return self._hashvalue
 
     def _uncache(self):
-        for attr in ['_hashvalue','_pairs']:
+        for attr in ['_hashvalue', '_pairs']:
             try:
                 super().__delattr__(attr)
             except AttributeError:
@@ -1505,7 +1502,7 @@ class PointCollection(collections.OrderedDict):
             return
         except:
             pass
-        
+
         super().__setitem__(key, item)
 
     def __delitem__(self, key):
@@ -1529,7 +1526,7 @@ class PointCollection(collections.OrderedDict):
     @property
     def labels(self):
         return self.keys()
-    
+
     @property
     def points(self):
         return self.values()
@@ -1537,7 +1534,7 @@ class PointCollection(collections.OrderedDict):
     # how to disambiguate point label collisions?
     def __add__(self, other):
         pass
-    
+
     def __radd__(self, other):
         pass
 

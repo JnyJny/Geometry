@@ -71,7 +71,7 @@ class Triangle(object):
 
     def __init__(self, *args, **kwds):
 
-        self(*args,**kwds)
+        self(*args, **kwds)
 
     def __call__(self, *args, **kwds):
 
@@ -100,7 +100,7 @@ class Triangle(object):
             pass
         self._A = Point()
         return self._A
-    
+
     @A.setter
     def A(self, newValue):
         self.A.xyz = newValue
@@ -114,8 +114,9 @@ class Triangle(object):
             return self._B
         except AttributeError:
             pass
-        self._B = Point(1,0)
+        self._B = Point(1, 0)
         return self._B
+
     @B.setter
     def B(self, newValue):
         self.B.xyz = newValue
@@ -129,12 +130,12 @@ class Triangle(object):
             return self._C
         except AttributeError:
             pass
-        self._C = Point(0,1)
+        self._C = Point(0, 1)
         return self._C
-    
+
     @C.setter
     def C(self, newValue):
-        self.C.xyz = newValue        
+        self.C.xyz = newValue
 
     @property
     def ABC(self):
@@ -195,7 +196,7 @@ class Triangle(object):
             pass
         self._BC = [self.B, self.C]
         return self._BC
-        
+
     @BC.setter
     def BC(self, iterable):
         self.B, self.C = iterable
@@ -218,8 +219,8 @@ class Triangle(object):
         except AttributeError:
             pass
 
-        self._sides = { 'AB':self.AB, 'BC':self.BC, 'AC':self.AC }
-        
+        self._sides = {'AB': self.AB, 'BC': self.BC, 'AC': self.AC}
+
         return self._sides
 
     @property
@@ -236,7 +237,7 @@ class Triangle(object):
         The angle described by CAB in radians, float.
 
         '''
-        return Segment(self.C,self.A).radiansBetween(Segment(self.A,self.B))
+        return Segment(self.C, self.A).radiansBetween(Segment(self.A, self.B))
 
     @property
     def beta(self):
@@ -244,15 +245,15 @@ class Triangle(object):
         The angle described by ABC in radians, float.
 
         '''
-        return Segment(self.A,self.B).radiansBetween(Segment(self.B,self.C))
-        
+        return Segment(self.A, self.B).radiansBetween(Segment(self.B, self.C))
+
     @property
     def gamma(self):
         '''
         The angle described by BCA in radians, float.
 
         '''
-        
+
         return Segment(self.B, self.C).radiansBetween(Segment(self.C, self.A))
 
     @property
@@ -315,7 +316,7 @@ class Triangle(object):
         semiperimeter = (|AB|+|BC|+|AC|) / 2
 
         '''
-        return sum([self.ab, self.bc, self.ac])/2
+        return sum([self.ab, self.bc, self.ac]) / 2
 
     @property
     def isEquilateral(self):

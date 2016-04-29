@@ -30,8 +30,6 @@ class Ellipse(object):
 
     '''
 
-
-    
     def __init__(self, center=None, x_radius=1, y_radius=1, z_radius=0):
         '''
         :center:    - optional Point class initializer
@@ -45,17 +43,13 @@ class Ellipse(object):
         # XXX what does it mean to have non-zero radii in
         #     all three dimensions?
 
-
         self.center = center
         self.radius = x_radius, y_radius, z_radius
-
-                       
-                       
 
     @property
     def center(self):
         '''
-        Center point of the ellipse, equidistant from foci, Point class.\n 
+        Center point of the ellipse, equidistant from foci, Point class.\n
         Defaults to the origin.
         '''
         try:
@@ -78,13 +72,13 @@ class Ellipse(object):
             return self._radius
         except AttributeError:
             pass
-        self._radius = Point(1,1,0)
+        self._radius = Point(1, 1, 0)
         return self._radius
 
     @radius.setter
     def radius(self, newValue):
         self.radius.xyz = newValue
-        
+
     def __str__(self):
         '''
         '''
@@ -376,7 +370,7 @@ class Ellipse(object):
         raise TypeError("unknown type '{t}'".format(t=otherType))
 
     # XXX do math operations on ellipses make sense?
-    
+
 
 class Circle(Ellipse):
     '''
@@ -503,7 +497,7 @@ class Circle(Ellipse):
     @property
     def a(self):
         return Point(self.radius, self.center.y)
-    
+
     @property
     def a_neg(self):
         return Point(-self.radius, self.center.y)
@@ -511,60 +505,62 @@ class Circle(Ellipse):
     @property
     def b(self):
         return Point(self.center.x, self.radius)
-    
+
     @property
     def b_neg(self):
         return Point(self.center.x, -self.radius)
 
     def __contains__(self, other):
-       '''
-       :param: Point | Segment | Ellipse class
-       :return: boolean
+        '''
+        :param: Point | Segment | Ellipse class
+        :return: boolean
 
-       Returns True if the distance from the center to the point
-       is less than or equal to the radius.
-       '''
-       otherType = type(other)
+        Returns True if the distance from the center to the point
+        is less than or equal to the radius.
+        '''
+        otherType = type(other)
 
-       if issubclass(otherType, Point):
-           return other.distance(self.center) <= self.radius
+        if issubclass(otherType, Point):
+            return other.distance(self.center) <= self.radius
 
-       if issubclass(otherType, Segment):
-           return (other.A in self) and (other.B in self)
+        if issubclass(otherType, Segment):
+            return (other.A in self) and (other.B in self)
 
-       if issubclass(otherType, Circle):
-           m = self.center.distance(other.center) / 2
-           return (m <= self.radius) and ( m <= other.radius)
+        if issubclass(otherType, Circle):
+            m = self.center.distance(other.center) / 2
+            return (m <= self.radius) and (m <= other.radius)
 
-       if issubclass(otherType, Ellipse):
-           return (other.majorAxis in self) and (other.minorAxis in self)
+        if issubclass(otherType, Ellipse):
+            return (other.majorAxis in self) and (other.minorAxis in self)
 
-       raise TypeError("unknown type '{t}'".format(t=otherType))
+        raise TypeError("unknown type '{t}'".format(t=otherType))
 
     def doesIntersect(self, other):
-       '''
-       :param: other - Circle class
+        '''
+        :param: other - Circle class
 
-       Returns True iff:
-         self.center.distance(other.center) <= self.radius+other.radius
-       '''
+        Returns True iff:
+          self.center.distance(other.center) <= self.radius+other.radius
+        '''
 
-       otherType = type(other)
+        otherType = type(other)
 
-       if issubclass(otherType, Ellipse):
-           distance = self.center.distance(other.center)
-           radiisum = self.radius + other.radius
-           return distance <= radiisum
+        if issubclass(otherType, Ellipse):
+            distance = self.center.distance(other.center)
+            radiisum = self.radius + other.radius
+            return distance <= radiisum
 
-       if issubclass(otherType, Line):
-           raise NotImplementedError('doesIntersect,other is Line class')
+        if issubclass(otherType, Line):
+            raise NotImplementedError('doesIntersect,other is Line class')
 
-       raise TypeError("unknown type '{t}'".format(t=otherType))
+        raise TypeError("unknown type '{t}'".format(t=otherType))
+
 
 class Sphere(Circle):
+
     @property
     def volume(self):
         '''
         The spherical volume bounded by this circle, float.
         '''
-        return (4./3.) * math.pi * (self.radius**3)   
+        return (4. / 3.) * math.pi * (self.radius ** 3)

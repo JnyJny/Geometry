@@ -28,6 +28,8 @@ TMPFILES= VERSION dist build ${TARGET}.egg-info
 
 NOSEFLAGS= --with-coverage --cover-tests --cover-html
 
+AUTOPEP8 = autopep8
+
 GIT = git
 SED = sed
 RM = rm
@@ -49,6 +51,8 @@ all:
 	@echo "make test-install  - pip install from PYPI=${PYPI}"
 	@echo "make test-upgrade  - pip upgrade from PYPI=${PYPI}"
 	@echo "make test-coverage - run unittests with code coverage"
+	@echo ""
+	@echo "make autopep8      - run autopep8 on source"
 	@echo ""
 	@echo "Update workflow:"
 	@echo "----------------"
@@ -104,6 +108,9 @@ test:
 
 test-coverage:
 	${NOSE} ${NOSEFLAGS}
+
+autopep8:
+	@${AUTOPEP8} -ria .
 
 clean:
 	@${PYSETUP} clean

@@ -28,6 +28,7 @@ class InfiniteLength(Exception):
 
 
 class ExceededEpsilonError(Exception):
+
     def __init(self, x, y, epsilon):
         self.x, self.y, self.epsilon = x, y, epsilon
 

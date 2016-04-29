@@ -90,7 +90,7 @@ class CircleAttributeSettersTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             c.radius = 'fail'
 
-            
+
 class CircleAttributeGettersTestCase(unittest.TestCase):
 
     def testCircleCenterAttributeGetter(self):
@@ -135,26 +135,26 @@ class CircleInstanceMethodsTestCase(unittest.TestCase):
         c = Circle(radius=2)
         self.assertTrue(c.center in c)
         for v in c.vertices.values():
-            self.assertTrue(v in c, '{!r} in {!r}'.format(v,c))
+            self.assertTrue(v in c, '{!r} in {!r}'.format(v, c))
         for v in c.vertices.values():
             v *= 2
-            self.assertFalse(v in c, '{!r} in {!r}'.format(v,c))
+            self.assertFalse(v in c, '{!r} in {!r}'.format(v, c))
 
     def testCircleContainsSegmentInstanceMethod(self):
         c = Circle(radius=2)
         s = Segment([-1, 0], [1, 0])
-        self.assertTrue(s in c, '{!r} in {!r}'.format(s,c))
+        self.assertTrue(s in c, '{!r} in {!r}'.format(s, c))
 
         s = Segment(c.a, c.a_neg)
-        self.assertTrue(s in c, '{!r} in {!r}'.format(s,c))
+        self.assertTrue(s in c, '{!r} in {!r}'.format(s, c))
 
     def testCircleContainsCircleInstanceMethod(self):
         c = Circle(radius=2)
         a = Circle(center=[1, 0])
         b = Circle(center=[3, 3], radius=3)
-        self.assertTrue(c in c, '{!r} in {!r}'.format(c,c))
-        self.assertTrue(a in c, '{!r} in {!r}'.format(a,c))
-        self.assertFalse(b in c,'{!r} in {!r}'.format(b,c))
+        self.assertTrue(c in c, '{!r} in {!r}'.format(c, c))
+        self.assertTrue(a in c, '{!r} in {!r}'.format(a, c))
+        self.assertFalse(b in c, '{!r} in {!r}'.format(b, c))
 
     def testCircleDoesIntersectCircleInstanceMethod(self):
         c = Circle()

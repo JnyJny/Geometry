@@ -10,12 +10,12 @@ from .. import epsilon
 
 class PointTestCase(unittest.TestCase):
 
-    def testObjects(self,value=0,*args):
+    def testObjects(self, value=0, *args):
         '''
         '''
-        test_objs = [ Point([value]*3),
-                 { 'x':value, 'y':value, 'z':value },
-                 [value]*3]
+        test_objs = [Point([value] * 3),
+                     {'x': value, 'y': value, 'z': value},
+                     [value] * 3]
         if len(args):
             test_objs.extend(args)
         return test_objs
@@ -45,7 +45,7 @@ class PointTestCase(unittest.TestCase):
     def assertEpsilonEqual(self, test_value, known_value):
         '''
         '''
-        
+
         return abs(known_value - test_value) < epsilon
 
     def testOriginPointCreation(self):
@@ -157,7 +157,7 @@ class PointTestCase(unittest.TestCase):
     def testPointPropertySettersSimple(self):
         '''
         '''
-        
+
         p = Point()
 
         p.x = 1
@@ -197,7 +197,7 @@ class PointTestCase(unittest.TestCase):
     def testPointMultiplePropertySettersSimple(self):
         '''
         '''
-        
+
         p = Point()
 
         p.xy = (1, 1)
@@ -253,7 +253,7 @@ class PointTestCase(unittest.TestCase):
     def testPointPropertySettersComplex(self):
         '''
         '''
-        
+
         mapping = {'x': 1, 'y': 2, 'z': 3}
         iterable = [4, 5, 6]
 
@@ -278,7 +278,7 @@ class PointTestCase(unittest.TestCase):
     def testPointMultiplePropertySettersComplex(self):
         '''
         '''
-        
+
         mapping = {'x': 1, 'y': 2, 'z': 3}
         iterable = [4, 5, 6]
 
@@ -315,7 +315,7 @@ class PointTestCase(unittest.TestCase):
     def testPointClassmethod_unit(self):
         '''
         '''
-        
+
         with self.assertRaises(TypeError, msg='Point.unit(None,None)'):
             Point.unit(None, None)
 
@@ -325,8 +325,13 @@ class PointTestCase(unittest.TestCase):
         self.assertCoordinatesEqual(Point.unit(o, Point(0, 3, 0)), [0, 1, 0])
         self.assertCoordinatesEqual(Point.unit(o, Point(0, 0, 3)), [0, 0, 1])
 
-        for x in range(0,100):
-            self.assertEpsilonEqual(o.distance(Point.unit(o,Point.random())),1.0)
+        for x in range(0, 100):
+            self.assertEpsilonEqual(
+                o.distance(
+                    Point.unit(
+                        o,
+                        Point.random())),
+                1.0)
 
     def testPointClassmethod_units(self):
         '''
@@ -337,7 +342,7 @@ class PointTestCase(unittest.TestCase):
         self.assertCoordinatesEqual(v[1], [0, 1, 0])
         self.assertCoordinatesEqual(v[2], [0, 0, 1])
 
-        for scale in [2,3,4]:
+        for scale in [2, 3, 4]:
             v = Point.units(scale)
             self.assertEqual(len(v), 3)
             self.assertCoordinatesEqual(v[0], [scale, 0, 0])
@@ -365,20 +370,20 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_hash(self):
         '''
         '''
-        
+
         # MAGIC NUMBER: hash value for a Point(0,0,0) object
         #               will fail if the hash calculation changes.
         #               need a better test method.
-        
+
         v = 1553416657114974281
-        
+
         self.assertTrue(hash(Point.origin()) == v)
         self.assertFalse(hash(Point(1, 1, 1)) == v)
 
     def testPointMethod_len(self):
         '''
         '''
-        
+
         self.assertEqual(len(Point()), 3)
 
     def testPointMethod_iter(self):
@@ -404,14 +409,14 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_eq(self):
         '''
         '''
-        
+
         self.assertTrue(Point() == Point())
         self.assertTrue(Point() != Point(1))
 
         self.assertTrue(None == Point.origin())
-        self.assertTrue(Point.origin() == None)
+        self.assertFalse(Point.origin() is None)
         self.assertTrue(None != Point(1))
-        self.assertTrue(Point(1) != None)
+        self.assertTrue(Point(1) is not None)
 
         o = Point.origin()
         for x in range(1, 3):
@@ -487,7 +492,7 @@ class PointTestCase(unittest.TestCase):
             self.assertCoordinatesEqual(a, [1, 1, 1])
 
         a = Point(1, 1, 1)
-        for b in self.testObjects(0,None):
+        for b in self.testObjects(0, None):
             with self.assertRaises(ZeroDivisionError,
                                    msg='{!r} // {!r}'.format(a, b)):
                 c = a // b
@@ -512,7 +517,7 @@ class PointTestCase(unittest.TestCase):
             self.assertCoordinatesEqual(a, [1.5] * 3)
 
         a = Point(1, 1, 1)
-        for b in self.testObjects(0,None):
+        for b in self.testObjects(0, None):
             with self.assertRaises(ZeroDivisionError,
                                    msg='{!r} / {!r}'.format(a, b)):
                 c = a / b
@@ -537,7 +542,7 @@ class PointTestCase(unittest.TestCase):
             self.assertCoordinatesEqual(a, [1, 1, 1])
 
         a = Point(1, 1, 1)
-        for b in self.testObjects(0,None):
+        for b in self.testObjects(0, None):
             with self.assertRaises(ZeroDivisionError,
                                    msg='{!r} % {!r}'.format(a, b)):
                 c = a % b
@@ -714,7 +719,7 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_round(self):
         '''
         '''
-        V = 1.234 
+        V = 1.234
 
         p = Point([V] * 3)
         q = round(p)
@@ -753,7 +758,7 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_dot_product(self):
         '''
         '''
-        for scale in [1,-1]:
+        for scale in [1, -1]:
             i, j, k = Point.units(scale)
             self.assertEqual(i.dot(i), 1)
             self.assertEqual(i.dot(j), 0)
@@ -766,12 +771,11 @@ class PointTestCase(unittest.TestCase):
             self.assertEqual(k.dot(k), 1)
             self.assertEqual(k.dot(i), 0)
             self.assertEqual(k.dot(j), 0)
-        
 
     def testPointMethod_cross_product(self):
         '''
         '''
-        for scale in [1,-1]:
+        for scale in [1, -1]:
             i, j, k = Point.units(scale)
             self.assertEqual(i.cross(i), 0)
             self.assertEqual(i.cross(j), 1)
@@ -784,7 +788,6 @@ class PointTestCase(unittest.TestCase):
             self.assertEqual(k.cross(k), 0)
             self.assertEqual(k.cross(i), 1)
             self.assertEqual(k.cross(j), -1)
-        
 
     def testPointMethod_midpoint(self):
         '''
@@ -845,7 +848,7 @@ class PointTestCase(unittest.TestCase):
         self.assertEqual(i.distance(k), k.distance(i))
         self.assertEqual(j.distance(k), k.distance(j))
 
-        self.assertEqual(i.distance(),i.distance(o))
+        self.assertEqual(i.distance(), i.distance(o))
 
     def testPointMethod_distanceSquared(self):
         '''
@@ -868,7 +871,7 @@ class PointTestCase(unittest.TestCase):
         self.assertEqual(k.distanceSquared(i), 2)
         self.assertEqual(k.distanceSquared(j), 2)
 
-        self.assertEqual(i.distanceSquared(),i.distanceSquared(o))
+        self.assertEqual(i.distanceSquared(), i.distanceSquared(o))
 
     def testPointMethod_ccw(self):
         '''
@@ -946,36 +949,36 @@ class PointTestCase(unittest.TestCase):
         i, j, k = Point.units()
         u, v, w = Point.units(2)
         o = Point.origin()
-        
-        self.assertTrue(o.isCollinear(i,u))
-        self.assertTrue(o.isCollinear(u,i))
-        self.assertTrue(i.isCollinear(o,u))
-        self.assertTrue(i.isCollinear(u,o))
-        self.assertTrue(u.isCollinear(o,i))
-        self.assertTrue(u.isCollinear(i,o))
 
-        self.assertTrue(o.isCollinear(j,v))
-        self.assertTrue(o.isCollinear(v,j))
-        self.assertTrue(j.isCollinear(o,v))
-        self.assertTrue(j.isCollinear(v,o))
-        self.assertTrue(v.isCollinear(o,j))
-        self.assertTrue(v.isCollinear(j,o))
+        self.assertTrue(o.isCollinear(i, u))
+        self.assertTrue(o.isCollinear(u, i))
+        self.assertTrue(i.isCollinear(o, u))
+        self.assertTrue(i.isCollinear(u, o))
+        self.assertTrue(u.isCollinear(o, i))
+        self.assertTrue(u.isCollinear(i, o))
 
-        self.assertTrue(o.isCollinear(k,w))
-        self.assertTrue(o.isCollinear(w,k))
-        self.assertTrue(k.isCollinear(o,w))
-        self.assertTrue(k.isCollinear(w,o))
-        self.assertTrue(w.isCollinear(o,k))
-        self.assertTrue(w.isCollinear(k,o))
+        self.assertTrue(o.isCollinear(j, v))
+        self.assertTrue(o.isCollinear(v, j))
+        self.assertTrue(j.isCollinear(o, v))
+        self.assertTrue(j.isCollinear(v, o))
+        self.assertTrue(v.isCollinear(o, j))
+        self.assertTrue(v.isCollinear(j, o))
 
-        self.assertFalse(o.isCollinear(i,v))
-        self.assertFalse(o.isCollinear(i,w))
+        self.assertTrue(o.isCollinear(k, w))
+        self.assertTrue(o.isCollinear(w, k))
+        self.assertTrue(k.isCollinear(o, w))
+        self.assertTrue(k.isCollinear(w, o))
+        self.assertTrue(w.isCollinear(o, k))
+        self.assertTrue(w.isCollinear(k, o))
 
-        self.assertFalse(o.isCollinear(j,u))
-        self.assertFalse(o.isCollinear(j,w))
+        self.assertFalse(o.isCollinear(i, v))
+        self.assertFalse(o.isCollinear(i, w))
 
-        self.assertFalse(o.isCollinear(k,u))
-        self.assertFalse(o.isCollinear(k,v))
+        self.assertFalse(o.isCollinear(j, u))
+        self.assertFalse(o.isCollinear(j, w))
+
+        self.assertFalse(o.isCollinear(k, u))
+        self.assertFalse(o.isCollinear(k, v))
 
     def testPointMethod_rotate2d(self):
         '''
@@ -984,13 +987,7 @@ class PointTestCase(unittest.TestCase):
     def testPointMethod_irotate2d(self):
         '''
         '''
-        
+
     def rotate(self, theta_x, theta_y, theta_z, origin=None, radians=False):
         '''
         '''
-
-
-        
-
-    
-

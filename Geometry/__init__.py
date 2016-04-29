@@ -25,7 +25,7 @@ from .constants import *
 from .exceptions import *
 from .polygon import Polygon
 
-__all__ = ['Point','PointCollection',
+__all__ = ['Point', 'PointCollection',
            'Polygon',
            'Ellipse', 'Circle',
            'Line', 'Segment', 'Ray',

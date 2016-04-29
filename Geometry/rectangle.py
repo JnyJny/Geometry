@@ -12,7 +12,6 @@ from .point2 import Point
 from .exceptions import *
 
 
-
 class Rectangle(object):
     '''
     Implements a Rectangle object in the XY plane defined by

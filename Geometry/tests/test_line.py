@@ -16,19 +16,17 @@ class LineTestCase(unittest.TestCase):
         pass
 
     def testLineCreation(self):
-        i,j,k = Point.units()
+        i, j, k = Point.units()
         o = Point.origin()
 
         self.assertIsLine(Line())
-        self.assertIsLine(Line(None,None))
-        self.assertIsLine(Line(o,i))
+        self.assertIsLine(Line(None, None))
+        self.assertIsLine(Line(o, i))
 
 
-        
 class SegmentTestCase(unittest.TestCase):
     pass
 
+
 class RayTestCase(unittest.TestCase):
     pass
-        
-        
