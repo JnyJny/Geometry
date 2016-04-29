@@ -5,10 +5,7 @@ Super awesome.
 
 import math
 from .point2 import Point
-from .rectangle import Rectangle
-from .triangle import Triangle
 from .line import Line, Segment
-from .constants import epsilon
 
 
 class Ellipse(object):

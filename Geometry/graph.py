@@ -3,8 +3,6 @@
 Nodes and edges, not pretty colors and pitchers.
 '''
 
-import math
-
 from .point import Point
 from .line import Segment
 from .exceptions import *

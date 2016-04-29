@@ -21,8 +21,10 @@ from .line import Line, Segment, Ray
 from .triangle import Triangle
 from .rectangle import Rectangle
 from .graph import Node, Edge, Graph
-from .constants import *
-from .exceptions import *
+from .constants import epsilon
+from .exceptions import (ZeroSlope, InfiniteSlope, CollinearPoints,
+                         InfiniteLength, ParallelLines, CollinearLines)
+
 from .polygon import Polygon
 
 __all__ = ['Point', 'PointCollection',

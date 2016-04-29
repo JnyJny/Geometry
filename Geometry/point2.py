@@ -2,7 +2,6 @@
 '''
 
 import collections
-import itertools
 import hashlib
 import random
 import math

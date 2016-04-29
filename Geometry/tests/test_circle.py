@@ -120,13 +120,11 @@ class CircleClassmethodsTestCase(unittest.TestCase):
 
     def testCircleInscribedInRectangle(self):
         with self.assertRaises(NotImplementedError):
-            r = Rectangle()
-            c = Circle.inscribedInRectangle(r)
+            Circle.inscribedInRectangle(Rectangle())
 
     def testCircleInscribedInTriangle(self):
         with self.assertRaises(NotImplementedError):
-            t = Triangle()
-            e = Circle.inscribedInTriangle(t)
+            Circle.inscribedInTriangle(Triangle())
 
 
 class CircleInstanceMethodsTestCase(unittest.TestCase):
