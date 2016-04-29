@@ -29,6 +29,10 @@ TMPFILES= VERSION dist build ${TARGET}.egg-info
 NOSEFLAGS= --with-coverage --cover-tests --cover-html
 
 AUTOPEP8 = autopep8
+AUTOPEP8_FLAGS = -ria
+
+FLAKE8 = flake8
+FLAKE8_IGN = F401,F403
 
 GIT = git
 SED = sed
@@ -52,7 +56,8 @@ all:
 	@echo "make test-upgrade  - pip upgrade from PYPI=${PYPI}"
 	@echo "make test-coverage - run unittests with code coverage"
 	@echo ""
-	@echo "make autopep8      - run autopep8 on source"
+	@echo "make autopep8      - run autopep8 on source, modifies in-place"
+	@echo "make flake8        - run flake8 on source"
 	@echo ""
 	@echo "Update workflow:"
 	@echo "----------------"
@@ -110,7 +115,10 @@ test-coverage:
 	${NOSE} ${NOSEFLAGS}
 
 autopep8:
-	@${AUTOPEP8} -ria .
+	@${AUTOPEP8} ${AUTOPEP8_FLAGS} .
+
+flake8:
+	${FLAKE8} --ignore ${FLAKE8_IGN} ${PKG_ROOT}
 
 clean:
 	@${PYSETUP} clean
