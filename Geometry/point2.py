@@ -133,8 +133,10 @@ class Point(collections.Mapping):
         :return: Point subclass
 
         Translates the vector AB to the origin and scales the length
-        of the vector to one.
+        of the vector to one. Returns a Point() whose distance from
+        the origin is 1.
         '''
+        
         return (B - A) / A.distance(B)
 
     @classmethod
