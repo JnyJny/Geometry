@@ -360,17 +360,17 @@ class Ellipse(object):
 
         otherType = type(other)
 
-        if isclass(otherType, Point):
+        if issubclass(otherType, Point):
             d = sum([other.distance(f) for f in self.foci])
             # d < majorAxis.length interior point
             # d == majorAxis.length on perimeter of ellipse
             # d > majorAxis.length exterior point
             return d <= self.majorAxis.length
 
-        if isclass(otherType, Segment):
+        if issubclass(otherType, Segment):
             return (other.A in self) and (other.B in self)
 
-        if isclass(otherType, Ellipse):
+        if issubclass(otherType, Ellipse):
             return (other.majorAxis in self) and (other.minorAxis in self)
 
         raise TypeError("unknown type '{t}'".format(t=otherType))
@@ -461,29 +461,61 @@ class Circle(Ellipse):
         Defaults to a unit circle centered on the origin.
         '''
         self.center = center
-        self.radius = [radius]*3
+        self.radius = radius
+
+    @property
+    def radius(self):
+        '''
+        The circle's radius, float.
+        '''
+        try:
+            return self._radius
+        except AttributeError:
+            pass
+        self._radius = 1.0
+        return self._radius
+
+    @radius.setter
+    def radius(self, newValue):
+        self._radius = float(newValue)
 
     @property
     def diameter(self):
         '''
         The circle's diameter, float.
         '''
-        return self.radius.x * 2
+        return self.radius * 2
 
     @property
     def circumfrence(self):
         '''
         The circle's circumfrence, float.
         '''
-        return 2 * math.pi * self.radius.x
+        return 2 * math.pi * self.radius
 
     @property
     def area(self):
         '''
         The circle's area, float.
         '''
-        return math.pi * (self.radius.x ** 2)
+        return math.pi * (self.radius ** 2)
+
+    @property
+    def a(self):
+        return Point(self.radius, self.center.y)
     
+    @property
+    def a_neg(self):
+        return Point(-self.radius, self.center.y)
+
+    @property
+    def b(self):
+        return Point(self.center.x, self.radius)
+    
+    @property
+    def b_neg(self):
+        return Point(self.center.x, -self.radius)
+
     def __contains__(self, other):
        '''
        :param: Point | Segment | Ellipse class
@@ -494,13 +526,17 @@ class Circle(Ellipse):
        '''
        otherType = type(other)
 
-       if isclass(otherType, Point):
+       if issubclass(otherType, Point):
            return other.distance(self.center) <= self.radius
 
-       if isclass(otherType, Segment):
+       if issubclass(otherType, Segment):
            return (other.A in self) and (other.B in self)
 
-       if isclass(otherType, Ellipse):
+       if issubclass(otherType, Circle):
+           m = self.center.distance(other.center) / 2
+           return (m <= self.radius) and ( m <= other.radius)
+
+       if issubclass(otherType, Ellipse):
            return (other.majorAxis in self) and (other.minorAxis in self)
 
        raise TypeError("unknown type '{t}'".format(t=otherType))
@@ -515,12 +551,12 @@ class Circle(Ellipse):
 
        otherType = type(other)
 
-       if isclass(otherType, Ellipse):
+       if issubclass(otherType, Ellipse):
            distance = self.center.distance(other.center)
            radiisum = self.radius + other.radius
            return distance <= radiisum
 
-       if isclass(otherType, Line):
+       if issubclass(otherType, Line):
            raise NotImplementedError('doesIntersect,other is Line class')
 
        raise TypeError("unknown type '{t}'".format(t=otherType))
