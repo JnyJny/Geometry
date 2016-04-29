@@ -4,7 +4,7 @@
 
 import math
 from .exceptions import InfiniteLength
-from .point2 import Point, PointCollection
+from . import Point, PointCollection
 
 
 class Polygon(PointCollection):

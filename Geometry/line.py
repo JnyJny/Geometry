@@ -3,7 +3,7 @@
 
 import math
 import collections
-from .point2 import Point
+from . import Point
 from .exceptions import InfiniteLength, CollinearPoints, ParallelLines
 from .constants import *
 

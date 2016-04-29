@@ -15,7 +15,7 @@ __author__ = '\n'.join(["Erik O'Shaughnessy",
 
 __version__ = "0.0.23"
 
-from .point2 import Point, PointCollection
+from .point import Point, PointCollection
 from .ellipse import Ellipse, Circle
 from .line import Line, Segment, Ray
 from .triangle import Triangle

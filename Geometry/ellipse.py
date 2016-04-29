@@ -4,7 +4,7 @@ Super awesome.
 '''
 
 import math
-from .point2 import Point
+from . import Point
 from .line import Line, Segment
 
 

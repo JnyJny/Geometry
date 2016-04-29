@@ -8,7 +8,7 @@ Provides an implementation of a rectangle designed to be easy to use:
 import random
 import math
 
-from .point2 import Point
+from . import Point
 from .exceptions import *
 
 

@@ -2,8 +2,8 @@
 '''
 
 import math
-from .point2 import Point
-from .line import Segment
+from . import Point
+from . import Segment
 from .exceptions import *
 
 
