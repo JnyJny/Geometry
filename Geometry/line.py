@@ -352,8 +352,8 @@ class Line(collections.Mapping):
         '''
 
         if self.isCollinear(other):
-            msg = '{s!r} and {o!r} are collinear'
-            raise CollinearLines(msg.format(s=self, o=other))
+            msg = '{!r} and {!r} are collinear'
+            raise CollinearLines(msg.format(self, other))
 
         d0 = self.A - self.B
         d1 = other.A - other.B
@@ -361,8 +361,8 @@ class Line(collections.Mapping):
         denominator = (d0.x * d1.y) - (d0.y * d1.x)
 
         if denominator == 0:
-            msg = '{s!r} and {o!r} are parallel'
-            raise ParallelLines(msg.format(s=self, o=other))
+            msg = '{!r} and {!r} are parallel'
+            raise ParallelLines(msg.format(self, other))
 
         cp0 = self.A.cross(self.B)
         cp1 = other.A.cross(other.B)
@@ -375,17 +375,8 @@ class Line(collections.Mapping):
         if p in self and p in other:
             return p
 
-        # XXX thought this was accounted for in the denominator
-        #     comparison to zero? I guess it can't hurt but I'm
-        #     not sure how we would get here. Maybe a precision
-        #     error?
-        #
-        #     Might be fixed in new Point coordinate property
-        #     setter that catches values < epsilon and substitutes
-        #     zero.
-
-        msg = "found point {p!r} but not in {a!r} and {b!r}"
-        raise ParallelLines(msg.format(p=p, a=self, b=other))
+        msg = "found point {!r} but not in {!r} and {!r}"
+        raise ParallelLines(msg.format(p, self, other))
 
     def distanceFromPoint(self, point):
         '''
@@ -418,9 +409,9 @@ class Line(collections.Mapping):
         with a range of [0, 2 * math.pi].
 
         '''
-        # a.dot.b = |a||b| * cos(theta)
-        # a.dot.b / |a||b| = cos(theta)
-        # cos-1(a.dot.b / |a||b|) = theta
+        # a dot b = |a||b| * cos(theta)
+        # a dot b / |a||b| = cos(theta)
+        # cos-1(a dot b / |a||b|) = theta
 
         # translate each line so that it passes through the origin and
         # produce a new point whose distance (magnitude) from the
@@ -433,12 +424,8 @@ class Line(collections.Mapping):
         # in a perfect world, after unit: |A| = |B| = 1
         # which is a noop when dividing the dot product of A,B
         # but sometimes the lengths are different.
-        # let's just assume things are perfect and the lengths equal 1.
         #
-        # a = A.distance()
-        # b = B.distance()
-        # if abs(a - b) > epsilon:
-        #    raise ExceededEpsilonError(a,b,epsilon)
+        # let's just assume things are perfect and the lengths equal 1.
 
         return math.acos(a.dot(b))
 
@@ -494,7 +481,7 @@ class Segment(Line):
         otherType = type(other)
 
         if issubclass(otherType, Point):
-            return point.isBetween(self.A, self.B)
+            return other.isBetween(self.A, self.B)
 
         if issubclass(otherType, Line):
             return all([other.A.isBetween(self.A, self.B),
