@@ -49,7 +49,7 @@ def FloatProperty(name, default=0.0, readonly=False, docs=None):
                 #              be considered effectively zero.
                 fv = float(v)
                 return 0.0 if nearly_zero(fv) else fv
-            
+
             try:
                 setattr(self, private_name, epsilon_set(newValue))
                 return

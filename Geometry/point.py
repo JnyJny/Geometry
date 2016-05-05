@@ -5,7 +5,7 @@ import collections
 import hashlib
 import random
 import math
-from .constants import  Half_Pi, Two_Pi
+from .constants import Half_Pi, Two_Pi
 from .exceptions import CollinearPoints
 from .propgen import FloatProperty, FloatMultiProperty
 
@@ -92,13 +92,13 @@ class Point(collections.Mapping):
                               readonly_keys='w')
     xyz = FloatMultiProperty('xyz',
                              docs='A list of all coordinates excluding W.')
-    
+
     xy = FloatMultiProperty('xy', docs='A list of X and Y coordinates.')
     yx = FloatMultiProperty('yx', docs='A list of Y and X coordinates.')
-    
+
     yz = FloatMultiProperty('yz', docs='A list of Y and Z coordinates.')
     zy = FloatMultiProperty('zy', docs='A list of Z and Y coordinates.')
-    
+
     xz = FloatMultiProperty('xz', docs='A list of X and Z coordinates.')
     zx = FloatMultiProperty('zx', docs='A list of Z and X coordinates.')
 
@@ -189,7 +189,7 @@ class Point(collections.Mapping):
 
         r = random.uniform(0, radius)
         u = random.uniform(0, Two_Pi)
-        v = random.uniform(-Half_Pi,Half_Pi)
+        v = random.uniform(-Half_Pi, Half_Pi)
 
         r_cosv = r * math.cos(v)
 
@@ -386,7 +386,7 @@ class Point(collections.Mapping):
         Raises TypeError for any other key.
         '''
         # XXX reverse dual accessors missing [ yx, zy, zx ]
-        
+
         if key in ['x', 0]:
             return self.x
         if key in ['y', 1]:
@@ -1487,7 +1487,7 @@ class PointCollection(collections.OrderedDict):
         for label, p in self.items():
             s.append('{}={!r}'.format(label, p))
         return '[' + ','.join(s) + ']'
-    
+
     def __repr__(self):
         return '{pc.__class__.__name__}({pc!s})'.format(pc=self)
 
@@ -1552,7 +1552,7 @@ class PointCollection(collections.OrderedDict):
     # pointcollection op point -> apply op and point to all points (translate becomes easy)
     # pointcollection op otherpointcollection -> iterate thru otherpointcollection, add points
     # pointcollection op scalar -> apply op and scalar to all points
-    # 
+    #
 
     def __add__(self, other):
         pass
@@ -1571,5 +1571,4 @@ class PointCollection(collections.OrderedDict):
         if key == index:
             return True
 
-        return key == chr(ord(base)+index)
-        
+        return key == chr(ord(base) + index)

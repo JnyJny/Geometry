@@ -8,6 +8,7 @@ class ZeroSlope(Exception):
     '''
     pass
 
+
 class InfiniteSlope(Exception):
     '''
     '''
@@ -41,6 +42,7 @@ class InfiniteLength(Exception):
 class ExceededEpsilonError(Exception):
     '''
     '''
+
     def __init(self, x, y, epsilon):
         self.x, self.y, self.epsilon = x, y, epsilon
 
