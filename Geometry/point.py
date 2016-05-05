@@ -5,7 +5,7 @@ import collections
 import hashlib
 import random
 import math
-from .constants import two_pi, pi_half
+from .constants import  Half_Pi, Two_Pi
 from .exceptions import CollinearPoints
 from .propgen import FloatProperty, FloatMultiProperty
 
@@ -92,9 +92,15 @@ class Point(collections.Mapping):
                               readonly_keys='w')
     xyz = FloatMultiProperty('xyz',
                              docs='A list of all coordinates excluding W.')
+    
     xy = FloatMultiProperty('xy', docs='A list of X and Y coordinates.')
+    yx = FloatMultiProperty('yx', docs='A list of Y and X coordinates.')
+    
     yz = FloatMultiProperty('yz', docs='A list of Y and Z coordinates.')
+    zy = FloatMultiProperty('zy', docs='A list of Z and Y coordinates.')
+    
     xz = FloatMultiProperty('xz', docs='A list of X and Z coordinates.')
+    zx = FloatMultiProperty('zx', docs='A list of Z and X coordinates.')
 
     _keys = 'xyz'
 
@@ -182,8 +188,8 @@ class Point(collections.Mapping):
         p = cls(origin)
 
         r = random.uniform(0, radius)
-        u = random.uniform(0, two_pi)
-        v = random.uniform(-pi_half, pi_half)
+        u = random.uniform(0, Two_Pi)
+        v = random.uniform(-Half_Pi,Half_Pi)
 
         r_cosv = r * math.cos(v)
 
@@ -379,6 +385,8 @@ class Point(collections.Mapping):
 
         Raises TypeError for any other key.
         '''
+        # XXX reverse dual accessors missing [ yx, zy, zx ]
+        
         if key in ['x', 0]:
             return self.x
         if key in ['y', 1]:
@@ -1284,6 +1292,13 @@ class Point(collections.Mapping):
 
         return (self + self.__class__._convert(other)) / 2
 
+    @property
+    def isOrigin(self):
+        '''
+        True if this point's coordinates are (0,0,0), boolean.
+        '''
+        return sum(self.xyz) == 0
+
     def isBetween(self, a, b, axes='xyz'):
         '''
         :a: Point or point equivalent
@@ -1378,7 +1393,7 @@ class Point(collections.Mapping):
         :axis: optional string or integer in set('x',0,'y',1,'z',2)
         :return: boolean
 
-        Returns True if the angle determined by a,self,b around 'axis'
+        True if the angle determined by a,self,b around 'axis'
         describes a counter-clockwise rotation, otherwise False.
 
         Raises CollinearPoints if self, b, c are collinear.
@@ -1397,7 +1412,7 @@ class Point(collections.Mapping):
         :c: Point or point equivalent
         :return: boolean
 
-        Returns True if 'self' is collinear with 'b' and 'c', otherwise False.
+        True if 'self' is collinear with 'b' and 'c', otherwise False.
         '''
 
         return all(self.ccw(b, c, axis) == 0 for axis in self._keys)
@@ -1465,14 +1480,16 @@ class PointCollection(collections.OrderedDict):
     A named sequence of points.  Work in Progress.
     '''
 
+    _base = 'A'
+
     def __str__(self):
         s = []
         for label, p in self.items():
             s.append('{}={!r}'.format(label, p))
         return '[' + ','.join(s) + ']'
-
+    
     def __repr__(self):
-        return '{p.__class__.__name__}({p!s})'.format(p=self)
+        return '{pc.__class__.__name__}({pc!s})'.format(pc=self)
 
     def __hash__(self):
         '''
@@ -1531,6 +1548,12 @@ class PointCollection(collections.OrderedDict):
         return self.values()
 
     # how to disambiguate point label collisions?
+    #
+    # pointcollection op point -> apply op and point to all points (translate becomes easy)
+    # pointcollection op otherpointcollection -> iterate thru otherpointcollection, add points
+    # pointcollection op scalar -> apply op and scalar to all points
+    # 
+
     def __add__(self, other):
         pass
 
@@ -1542,3 +1565,11 @@ class PointCollection(collections.OrderedDict):
 
     def __rsub__(self, other):
         pass
+
+    def _keymatch(self, key, index, base='A'):
+
+        if key == index:
+            return True
+
+        return key == chr(ord(base)+index)
+        
