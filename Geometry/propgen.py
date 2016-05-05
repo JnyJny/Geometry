@@ -6,7 +6,7 @@ These functions try to avoid some of the boilerplate of using
 
 '''
 
-from .constants import epsilon
+from .constants import nearly_eq, nearly_zero, Epsilon
 
 import collections
 
@@ -42,15 +42,14 @@ def FloatProperty(name, default=0.0, readonly=False, docs=None):
     if readonly:
         setf = None
     else:
-
-        # fset: creates a float from v unless that float is less than
-        #       epsilon, which will be considered effectively zero.
-        #
-        def epsilon_set(v):
-            fv = float(v)
-            return fv if abs(fv) - epsilon > epsilon else 0.0
-
         def setf(self, newValue):
+            def epsilon_set(v):
+                # epsilon_set: creates a float from v unless that
+                #              float is less than epsilon, which will
+                #              be considered effectively zero.
+                fv = float(v)
+                return 0.0 if nearly_zero(fv) else fv
+            
             try:
                 setattr(self, private_name, epsilon_set(newValue))
                 return
