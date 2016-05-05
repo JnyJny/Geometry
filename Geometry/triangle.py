@@ -379,14 +379,7 @@ class Triangle(object):
         in the segments property is returned.
 
         '''
-        hlen = max(self.sides)
-
-        for s in self.segments:
-            if s.length == hlen:
-                return s
-
-        raise AttributeError(
-            "this triangle {} doesn't have a hypotenuse?".format(self))
+        return max(self.segments,key=lambda s:s.length)
 
     @property
     def centroid(self):
@@ -422,7 +415,7 @@ class Triangle(object):
     def incircle(self):
         '''
         The circle inscribed in the triangle whose center
-        is at incenter with radius inradius, Circle.
+        is at 'incenter' with radius 'inradius', Circle.
 
         '''
         return Circle(self.incenter, self.inradius)
@@ -580,7 +573,7 @@ class Triangle(object):
     @property
     def isCCW(self):
         '''
-        Returns True if ABC has a counter-clockwise rotation, boolean.
+        True if ABC has a counter-clockwise rotation, boolean.
 
         '''
         return self.A.isCCW(self.B, self.C)
@@ -763,24 +756,16 @@ class Triangle(object):
                  all self and other sides are equal.
 
         '''
-        angles = list(other.angles)
-        for a in self.angles:
-            try:
-                angles.remove(a)
-            except ValueError:
-                return False
 
-        if len(angles) != 0:
+        a = set(self.angles)
+        b = set(other.angles)
+        if len(a) != len(b) or len(a.difference(b)) != 0:
             return False
 
-        sides = list(other.sides)
-        for s in self.sides:
-            try:
-                sides.remove(s)
-            except ValueError:
-                return False
+        a = set(self.sides)
+        b = set(other.sides)
+        return len(a) == len(b) and len(a.difference(b)) == 0
 
-        return len(sides) == 0
 
     def __contains__(self, point):
         '''
