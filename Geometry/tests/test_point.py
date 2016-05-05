@@ -5,7 +5,7 @@ import math
 
 from .. import Point
 from ..exceptions import *
-from .. import epsilon
+from ..constants import nearly_eq
 
 
 class PointTestCase(unittest.TestCase):
@@ -44,9 +44,9 @@ class PointTestCase(unittest.TestCase):
 
     def assertEpsilonEqual(self, test_value, known_value):
         '''
-        '''
 
-        return abs(known_value - test_value) < epsilon
+        '''
+        return nearly_eq(test_value, known_value)
 
     def testOriginPointCreation(self):
         '''
