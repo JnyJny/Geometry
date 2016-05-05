@@ -21,7 +21,6 @@ from .line import Line, Segment, Ray
 from .triangle import Triangle
 from .rectangle import Rectangle
 from .graph import Node, Edge, Graph
-from .constants import epsilon
 from .exceptions import (ZeroSlope, InfiniteSlope, CollinearPoints,
                          InfiniteLength, ParallelLines, CollinearLines)
 
@@ -35,5 +34,4 @@ __all__ = ['Point', 'PointCollection',
            'Graph', 'Node', 'Edge',
            'ZeroSlope', 'InfiniteSlope', 'CollinearPoints',
            'InfiniteLength', 'ParallelLines', 'CollinearLines',
-           'epsilon',
            '__author__', '__version__']
