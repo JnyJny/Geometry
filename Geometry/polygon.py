@@ -1,65 +1,70 @@
-'''
+''' python Polygon
 
 '''
 
-import math
-from .exceptions import InfiniteLength
-from . import Point, PointCollection
+from . import Point, PointSequence, Segment
 
+class Polygon(PointSequence):
+    '''
+    A plane figure that is bound by a finite chain of straight
+    line segments closing in a loop to form a closed chain or
+    circuit. The segments are called edges and the points where
+    the two edges meet are the polgon's vertices.
 
-class Polygon(PointCollection):
+    '''
+
+    def __contains__(self, point):
+        '''
+        True IFF point is on the perimeter or enclosed by the polygon.
+
+        '''
+        try:
+            r = [a.isCCW(b,point) for a,b in self.pairs()]
+        except CollinearPoints:
+            return True
+
+        return not (any(r) and not all(r))
+        
+    def edges(self):
+        '''
+        A list of Segments.
+        '''
+        return [Segment(a,b,) for a,b in self.pairs()]
+
+    def sides(self):
+        '''
+        Segment lengths, list of floats.
+        '''
+        return [s.length for s in self.segments()]
 
     @property
     def perimeter(self):
         '''
-        Sum of the length of all sides.
+        Sum of the length of all sides, float.
         '''
-        try:
-            return self._perimeter
-        except AttributeError:
-            pass
-
-        if self.closed:
-            self._perimeter = sum([a.distance(b) for a, b in self.pairs])
-            return self._perimeter
-        raise InfiniteLength()
+        return sum([a.distance(b) for a, b in self.pairs()])
 
     @property
-    def closed(self):
-        '''
-        Property :closed: is true if the point collection's last
-        point is equal to the first point.
-        '''
-        try:
-            return self._closed
-        except AttributeError:
-            pass
-        self._closed = True
-        return self._closed
+    def centroid(self):
 
-    @closed.setter
-    def closed(self, value):
-        self._closed = bool(value)
+        return sum(self.vertices) / len(self.vertices)
+
+    def incenter(self):
+
+        return sum([s*p for s,p in zip(self.sides, self.vertices)]) / len(self.vertices)
 
     @property
-    def sides(self):
+    def midpoints(self):
         '''
-        A list of point pairs.
+        The midpoints of each edge, list of Points.
+
         '''
-        try:
-            return self._pairs
-        except AttributeError:
-            pass
-        keys = [k for k in self.keys()]
-        if len(keys) <= 1:
-            return []
+        return [s.midpoint for s in self.edges]    
 
-        if len(keys) == 2:
-            return [tuple(self.values()), ]
 
-        if self.closed:
-            keys.append(keys.pop(0))
-        else:
-            keys.pop(0)
-        self._pairs = [(self[x], self[y]) for x, y in zip(self.keys(), keys)]
-        return self._pairs
+        
+        
+
+
+
+
