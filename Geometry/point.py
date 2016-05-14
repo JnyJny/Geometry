@@ -1475,100 +1475,253 @@ class Point(collections.Mapping):
         raise NotImplementedError("working on it")
 
 
-class PointCollection(collections.OrderedDict):
+    
+class PointSequence(collections.MutableSequence):
     '''
-    A named sequence of points.  Work in Progress.
+    A named mutable sequence of points.  Work in Progress.
+
     '''
 
-    _base = 'A'
-
-    def __str__(self):
-        s = []
-        for label, p in self.items():
-            s.append('{}={!r}'.format(label, p))
-        return '[' + ','.join(s) + ']'
-
-    def __repr__(self):
-        return '{pc.__class__.__name__}({pc!s})'.format(pc=self)
-
-    def __hash__(self):
+    _labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    
+    # XXX what happens when n-vertices > 26
+    #     doubling letters starts crashing into
+    #     the point pair namespace eg AB for points A and B
+    #     instead of naming point 'AB'.
+    #     'ab' should be the Segment for Points A,B
+    #
+    
+    def __init__(self,vertices=None, base='A'):
         '''
-        Hash computed from the repr value. Re-computed if the
-        object's repr string changes (points added or deleted).
+        :vertices: optional list of Points
+        :base: optional base character to begin labeling with
         '''
+        self._base = base
+
+        if vertices:
+            verticesClass = type(vertices)
+            if isinstance(vertices,collections.Iterable):
+                self.extend(vertices)
+            if isinstance(vertices,collections.Mapping):
+                self.extend(vertices.values())
+            if issubclass(type(vertices), Point):
+                self.append(vertices)
+
+    @property
+    def vertices(self):
         try:
-            return self._hashvalue
+            return self._points
         except AttributeError:
             pass
-        digest = hashlib.sha1(bytes(repr(self), 'utf-8')).hexdigest()
-        self._hashvalue = int(digest, 16)
-        return self._hashvalue
-
-    def _uncache(self):
-        for attr in ['_hashvalue', '_pairs']:
-            try:
-                super().__delattr__(attr)
-            except AttributeError:
-                pass
-
-    def __setitem__(self, key, item):
-        try:
-            super().__setitem__(key, Point._convert(item))
-            self._uncache()
-            return
-        except:
-            pass
-
-        super().__setitem__(key, item)
-
-    def __delitem__(self, key):
-        super().__delitem__(key)
-        self._uncache()
-
-    def __getattr__(self, attr):
-        try:
-            return self[attr]
-        except KeyError:
-            pass
-        return super().__getattr__(attr)
-
-    def __setattr__(self, attr, value):
-        try:
-            self[attr] = value
-        except AttributeError:
-            pass
-        return super().__setattr__(attr, value)
+        self._points = []
+        return self._points
 
     @property
     def labels(self):
-        return self.keys()
+        return self._labels[:len(self)]
 
-    @property
-    def points(self):
-        return self.values()
+    def __str__(self):
+        s = []
+        for label, vertex in zip(self.labels,self):
+            s.append('{}={!r}'.format(label, vertex))
+        return ','.join(s)
 
-    # how to disambiguate point label collisions?
-    #
-    # pointcollection op point -> apply op and point to all points (translate becomes easy)
-    # pointcollection op otherpointcollection -> iterate thru otherpointcollection, add points
-    # pointcollection op scalar -> apply op and scalar to all points
-    #
+    def __repr__(self):
+        return '{s.__class__.__name__}({s!s})'.format(s=self)
+
+    def __hash__(self):
+        '''
+        Hash computed from the repr value.
+        '''
+        return int(hashlib.sha1(bytes(repr(self),'utf-8')).hexdigest(), 16)
+
+    def __contains__(self, point):
+        '''
+        True iff point is in the PointSequence list.
+        '''
+        return point in self.vertices
+
+
+    def _keyToIndex(self,key):
+        '''
+        '''
+        try:
+            return int(key)
+        except ValueError:
+            pass
+        except TypeError:
+            return key
+        
+        return ord(key) - ord(self._base)
+    
+
+    def _keyToLabel(self, key):
+        '''
+        '''
+        try:
+            return chr(ord(key)+ord(self._base))
+        except TypeError:
+            pass
+        try:
+            return chr(ord(self._base)+key)
+        except TypeError:
+            pass
+        return key
+
+    def __getitem__(self, key):
+        '''
+        '''
+        return self.vertices[self._keyToIndex(key)]
+
+    def __setitem__(self, key, value):
+        '''
+        '''
+        
+        p = self.vertices[self._keyToIndex(key)]
+        print("before",p,value)
+        p.xyz = value
+        print("after",p,value)
+
+    def __delitem__(self, key):
+        '''
+        '''
+        del(self.vertices[self._keyToIndex(key)])
+
+    def __getattr__(self, attr):
+        '''
+        '''
+        if attr in self._labels:
+            try:
+                return self[attr]
+            except (KeyError, IndexError):
+                pass
+        try:
+            return self.__dict__[attr]
+        except KeyError:
+            pass
+        
+        raise AttributeError("{} object has no attribute '{}'".format(self.__class__.__name__,attr))
+
+    def __setattr__(self, attr, value):
+        '''
+        '''
+
+        if attr in self._labels:
+            try:
+                self[attr].xyz = value
+                return
+            except (KeyError, IndexError):
+                pass
+        super().__setattr__(attr, value)
+
+        
+    def __delattr__(self, attr):
+        '''
+
+        '''
+        try:
+            del(self[attr])
+            return
+        except KeyError:
+            pass
+        except TypeError:
+            pass
+        super().__delattr__(attr)
+
+    def __iter__(self):
+        '''
+
+        '''
+        return iter(self.vertices)
+
+    def __reversed__(self):
+        '''
+
+        '''
+        return reversed(self.vertices)
+
+
+    def __len__(self):
+        '''
+
+        '''
+        return len(self.vertices)
+
+    def append(self, point):
+        '''
+
+        '''
+        if not issubclass(type(point),Point):
+            raise TypeError('{!r} is not a subclass of Point'.format(point))
+        self.vertices.append(point)
+
+    def extend(self, iterable):
+        '''
+
+        '''
+        for p in iterable:
+            self.append(p)
+
+    def insert(self, index, point):
+        '''
+
+        '''
+        self.vertices.insert(index,point)
+
+    def count(self, point):
+        '''
+
+        '''
+        return self.vertices.count(point)
+
+    def index(self, point):
+        '''
+
+        '''
+        return self.vertices.index(point)
+
+    def pairs(self,xy=None):
+        '''
+
+        '''
+
+        if isinstance(xy,collections.Iterable):
+            return (self[xy[0]],self[xy[1]])
+        
+        return zip(self[0:],self[1:]+self[0:1])
+
+    def __eq__(self,other):
+        '''
+        x == y iff x and y have:
+                 1. an equal number of vertices
+                 2. the same vertices
+        '''
+
+        return len(set(self.vertices).difference(set(other.vertices))) == 0
+
 
     def __add__(self, other):
-        pass
+        '''
+        x + y
+        '''
+
+        # y is a pointsequence
+        # y is a point
+        # y is a scalar ( float, integer)
+        
 
     def __radd__(self, other):
-        pass
+        '''
+        y + x
+        '''
 
-    def __sub__(self, other):
-        pass
+    def __iadd__(self, other):
+        '''
+        x += y
+        '''
+        
 
-    def __rsub__(self, other):
-        pass
 
-    def _keymatch(self, key, index, base='A'):
 
-        if key == index:
-            return True
 
-        return key == chr(ord(base) + index)
+
