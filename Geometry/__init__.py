@@ -15,18 +15,19 @@ __author__ = '\n'.join(["Erik O'Shaughnessy",
 
 __version__ = "0.0.23"
 
-from .point import Point, PointCollection
-from .ellipse import Ellipse, Circle
+from .point import Point, PointSequence
 from .line import Line, Segment, Ray
-from .triangle import Triangle
+from .ellipse import Ellipse, Circle
+from .polygon import Polygon
+from .triangle2 import Triangle
 from .rectangle import Rectangle
 from .graph import Node, Edge, Graph
+
 from .exceptions import (ZeroSlope, InfiniteSlope, CollinearPoints,
                          InfiniteLength, ParallelLines, CollinearLines)
 
-from .polygon import Polygon
 
-__all__ = ['Point', 'PointCollection',
+__all__ = ['Point', 'PointSequence',
            'Polygon',
            'Ellipse', 'Circle',
            'Line', 'Segment', 'Ray',
