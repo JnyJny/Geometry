@@ -2,7 +2,8 @@
 
 '''
 
-from . import Point, PointSequence, Segment
+from . import Point, PointSequence, MutablePointSequence, Segment
+from . import CollinearPoints
 
 class Polygon(PointSequence):
     '''
@@ -62,9 +63,7 @@ class Polygon(PointSequence):
         return [s.midpoint for s in self.edges]    
 
 
-        
-        
-
-
+class MutablePolygon(Polygon, MutablePointSequence):
+    pass
 
 
