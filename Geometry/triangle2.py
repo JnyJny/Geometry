@@ -37,27 +37,27 @@ class Triangle(Polygon):
         raise NotImplementedError("withSides") 
         
 
-    def __init__(self, A=None, B=None, C=None):
+    def __init__(self, *args, **kwds):
         '''
         :args: iterable of Point or Point equivalents
         :kwds: named Points where recognized names are 'A', 'B' and 'C'.
+
+        If A is an iterable containing Point or Point equivalent objects
+        it will be used to initialize up to three points in the triangle.
+
         '''
 
-        v = []
-        if isinstance(A, collections.Iterable) and not issubclass(type(A),Point):
-            v.extend(A)
-        else:
-            if not A:
-                v.insert(0,Point())
-            
-            if not B:
-                v.insert(1,Point(1,0))
-            
-            if not C:
-                v.insert(2,Point(0,1))
-            
-        super().__init__(vertices=v)
-            
+        #A = A if A is not None else Point()
+        #B = B if B is not None else Point(1,0)
+        #C = C if C is not None else Point(0,1)
+
+        kwds['defaults'] = Point(),Point(1,0),Point(0,1)
+
+        super().__init__(*args,**kwds)
+        
+        if len(self) != 3:
+            raise ValueError(len(self))
+
 
     @property
     def AB(self):
