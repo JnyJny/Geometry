@@ -1474,47 +1474,67 @@ class Point(collections.Mapping):
 
         raise NotImplementedError("working on it")
 
-
-    
-class PointSequence(collections.MutableSequence):
+class PointSequence(collections.Sequence):
     '''
-    A named mutable sequence of points.  Work in Progress.
+    A labeled sequence of points.
 
     '''
 
     _labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    
-    # XXX what happens when n-vertices > 26
-    #     doubling letters starts crashing into
-    #     the point pair namespace eg AB for points A and B
-    #     instead of naming point 'AB'.
-    #     'ab' should be the Segment for Points A,B
-    #
-    
-    def __init__(self,vertices=None, base='A'):
-        '''
-        :vertices: optional list of Points
-        :base: optional base character to begin labeling with
-        '''
-        self._base = base
 
-        if vertices:
-            verticesClass = type(vertices)
-            if isinstance(vertices,collections.Iterable):
-                self.extend(vertices)
-            if isinstance(vertices,collections.Mapping):
-                self.extend(vertices.values())
-            if issubclass(type(vertices), Point):
-                self.append(vertices)
+    def __init__(self,*args,**kwds):
+        '''
+        :args: list of points
+        :base: optional base character for labeling points
 
+        The first point is labeled with the base character and
+        subsequent points are labeled with the character 
+        calculated by:
+
+        label = chr(ord(base)+index)
+    
+        '''
+        self(*args, **kwds)
+
+    def __call__(self, *args, **kwds):
+        '''
+        '''
+        
+        try:
+            self._base = kwds['base']
+        except KeyError:
+            self._base = 'A'
+
+        try:
+            if kwds['clear']:
+                self.vertices.clear()
+        except KeyError:
+            pass
+
+        if len(args) == 1:
+            self.vertices.extend(args[0])
+        else:
+            self.vertices.extend(args)        
+
+        try:
+            for i,p in enumerate(kwds['defaults']):
+                try:
+                    self[i]
+                except IndexError:
+                    self.vertices.insert(i,p)
+        except KeyError:
+            pass
+
+
+            
     @property
     def vertices(self):
         try:
-            return self._points
+            return self._vertices
         except AttributeError:
             pass
-        self._points = []
-        return self._points
+        self._vertices = []
+        return self._vertices
 
     @property
     def labels(self):
@@ -1541,7 +1561,6 @@ class PointSequence(collections.MutableSequence):
         '''
         return point in self.vertices
 
-
     def _keyToIndex(self,key):
         '''
         '''
@@ -1553,7 +1572,6 @@ class PointSequence(collections.MutableSequence):
             return key
         
         return ord(key) - ord(self._base)
-    
 
     def _keyToLabel(self, key):
         '''
@@ -1572,20 +1590,6 @@ class PointSequence(collections.MutableSequence):
         '''
         '''
         return self.vertices[self._keyToIndex(key)]
-
-    def __setitem__(self, key, value):
-        '''
-        '''
-        
-        p = self.vertices[self._keyToIndex(key)]
-        print("before",p,value)
-        p.xyz = value
-        print("after",p,value)
-
-    def __delitem__(self, key):
-        '''
-        '''
-        del(self.vertices[self._keyToIndex(key)])
 
     def __getattr__(self, attr):
         '''
@@ -1647,27 +1651,6 @@ class PointSequence(collections.MutableSequence):
         '''
         return len(self.vertices)
 
-    def append(self, point):
-        '''
-
-        '''
-        if not issubclass(type(point),Point):
-            raise TypeError('{!r} is not a subclass of Point'.format(point))
-        self.vertices.append(point)
-
-    def extend(self, iterable):
-        '''
-
-        '''
-        for p in iterable:
-            self.append(p)
-
-    def insert(self, index, point):
-        '''
-
-        '''
-        self.vertices.insert(index,point)
-
     def count(self, point):
         '''
 
@@ -1698,6 +1681,66 @@ class PointSequence(collections.MutableSequence):
         '''
 
         return len(set(self.vertices).difference(set(other.vertices))) == 0
+    
+    
+    
+class MutablePointSequence(PointSequence,collections.MutableSequence):
+    '''
+    A labeled mutable sequence of points.  Work in Progress.
+
+    '''
+
+    def __delitem__(self, key):
+        '''
+        '''
+        del(self.vertices[self._keyToIndex(key)])
+
+    def __setitem__(self, key, value):
+        '''
+
+        '''
+        self.vertices[self._keyToIndex(key)].xyz = value
+
+    def append(self, point):
+        '''
+
+        '''
+        point = Point._convert(point)
+        if not issubclass(type(point),Point):
+            raise TypeError('{!r} is not a subclass of Point'.format(point))
+        self.vertices.append(point)
+
+    def extend(self, iterable):
+        '''
+        '''
+        [self.append(p) for p in iterable]
+
+    def insert(self, index, point):
+        '''
+
+        '''
+        point = Point._convert(point)
+        self.vertices.insert(index,point)
+
+    def clear(self):
+        '''
+        '''
+        self.vertices.clear()
+
+    def pop(self, index=-1):
+        '''
+        '''
+        return self.vertices.pop(index)
+
+    def remove(self, point):
+        '''
+        '''
+        self.vertices.remove(point)
+
+    def reverse(self):
+        '''
+        '''
+        self.vertices.reverse()
 
 
     def __add__(self, other):
