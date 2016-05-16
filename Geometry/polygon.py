@@ -30,7 +30,7 @@ class Polygon(PointSequence):
         '''
         A list of Segments.
         '''
-        return [Segment(a,b,) for a,b in self.pairs()]
+        return [Segment(a,b) for a,b in self.pairs()]
 
     def sides(self):
         '''
@@ -44,6 +44,13 @@ class Polygon(PointSequence):
         Sum of the length of all sides, float.
         '''
         return sum([a.distance(b) for a, b in self.pairs()])
+
+    @property
+    def semiperimeter(self):
+        '''
+        Half of the perimeter, float.
+        '''
+        return self.perimeter / 2
 
     @property
     def centroid(self):
