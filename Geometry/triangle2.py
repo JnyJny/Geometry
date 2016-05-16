@@ -34,7 +34,11 @@ class Triangle(Polygon):
         If only 'a' is specified, an equilateral triangle is returned.
 
         '''
-        raise NotImplementedError("withSides") 
+        raise NotImplementedError("withSides")
+
+    @classmethod
+    def unit(cls,scale=1):
+        return cls(Point.units(scale))
         
 
     def __init__(self, *args, **kwds):
@@ -46,10 +50,6 @@ class Triangle(Polygon):
         it will be used to initialize up to three points in the triangle.
 
         '''
-
-        #A = A if A is not None else Point()
-        #B = B if B is not None else Point(1,0)
-        #C = C if C is not None else Point(0,1)
 
         kwds['defaults'] = Point(),Point(1,0),Point(0,1)
 
@@ -70,6 +70,7 @@ class Triangle(Polygon):
     @property
     def BA(self):
         return self.pairs('BA')
+
 
     @BA.setter
     def BA(self, iterable):
@@ -103,7 +104,7 @@ class Triangle(Polygon):
     def CA(self):
         return self.pairs('CA')
 
-    @AC.setter
+    @CA.setter
     def CA(self, iterable):
         self.C, self.A = iterable
 
@@ -154,14 +155,60 @@ class Triangle(Polygon):
         '''
         s = self.semiperimeter
 
-        return math.sqrt(s * ((s - self.a) * (s - self.b) * (s - self.c)))        
+        return math.sqrt(s * ((s - self.a) * (s - self.b) * (s - self.c)))
+
+    @property
+    def circumcenter(self):
+
+        if self.isRight:
+            return self.hypotenuse.midpoint
+
+        if self.A.isOrigin:
+            t = self
+        else:
+            t = Triangle(self.A - self.A, self.B - self.A, self.C - self.A)
+
+        if not t.A.isOrigin:
+            raise ValueError('failed to translate {} to origin'.format(t))
+        
+        BmulC = t.B * t.C.yx
+
+        d = 2 * (BmulC.x - BmulC.y)
+
+        bSqSum = sum((t.B ** 2).xy)
+        cSqSum = sum((t.C ** 2).xy)
+
+        x = (((t.C.y * bSqSum) - (t.B.y * cSqSum)) / d) + self.A.x
+        y = (((t.B.x * cSqSum) - (t.C.x * bSqSum)) / d) + self.A.y
+
+        return Point(x, y)
+
+    @property
+    def circumradius(self):
+        '''
+        '''
+
+        return (self.a * self.b * self.c) / (self.area * 4)
+
+    @property
+    def circumcircle(self):
+        '''
+        '''
+        return Circle(self.circumcenter, self.circumradius)
+
+    @property
+    def orthocenter(self):
+        '''
+        '''
+        raise NotImplementedError('orthocenter')
+
 
     @property
     def hypotenuse(self):
         '''
         The longest edge of the triangle, Segment.
         '''
-        return max(self.edges,key=lambda s:s.length)
+        return max(self.edges(),key=lambda s:s.length)
 
     @property
     def alpha(self):
@@ -238,8 +285,68 @@ class Triangle(Polygon):
         '''
         A = self.area * 2
 
-        return [A / self.a, A / self.b, A / self.c]    
+        return [A / self.a, A / self.b, A / self.c]
+
+    @property
+    def isEquilateral(self):
+        '''
+        '''
+
+        return self.a == self.b == self.c
+#        if not nearly_eq(self.a, self.b):
+#            return False
+#
+#        if not nearly_eq(self.b, self.c):
+#            return False
+#
+#        return nearly_eq(self.a, self.c);
+
+    @property
+    def isIsosceles(self):
+        '''
+        '''
+        return (self.a == self.b) or (self.a == self.c) or (self.b == self.c)
+
+    @property
+    def isScalene(self):
+        '''
+        '''
+        return self.a != self.b != self.c
+
+    @property
+    def isRight(self):
+        '''
+        '''
+        return any([nearly_eq(v,Half_Pi) for v in self.angles])
+
+    @property
+    def isObtuse(self):
+        '''
+        '''
+
+        return any([v > Half_Pi for v in self.angles])
+
+    @property
+    def isAcute(self):
+        '''
+        '''
+        return all([v < Half_Pi for v in self.angles])
+
+    def congruent(self, other):
+        '''
+        '''
+
+        a = set(self.angles)
+        b = set(other.angles)
+
+        if len(a) != len(b) or len(a.difference(b)) != 0:
+            return False
+
+        a = set(self.sides)
+        b = set(other.sides)
+
+        return len(a) == len(b) and len(a.difference(b)) == 0
 
     
-    
+
         
