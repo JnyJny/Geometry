@@ -1525,7 +1525,12 @@ class PointSequence(collections.Sequence):
         except KeyError:
             pass
 
-
+        if len(args) == 0:
+            for label in self._labels:
+                try:
+                    setattr(self,label,kwds[label])
+                except KeyError:
+                    pass
             
     @property
     def vertices(self):
@@ -1570,8 +1575,8 @@ class PointSequence(collections.Sequence):
             pass
         except TypeError:
             return key
-        
         return ord(key) - ord(self._base)
+
 
     def _keyToLabel(self, key):
         '''
@@ -1610,12 +1615,21 @@ class PointSequence(collections.Sequence):
         '''
         '''
 
-        if attr in self._labels:
+        if issubclass(type(value),Point):
             try:
-                self[attr].xyz = value
+                self[attr[:1]].xyz = value
                 return
             except (KeyError, IndexError):
                 pass
+
+        if all([x in self._labels for x in attr]):
+            try:
+                for label, point in zip(attr, value):
+                    self[label].xyz = point
+                return
+            except KeyError:
+                pass
+
         super().__setattr__(attr, value)
 
         
@@ -1747,21 +1761,31 @@ class MutablePointSequence(PointSequence,collections.MutableSequence):
         '''
         x + y
         '''
+        for p in self:
+            p += other
+        return self
 
-        # y is a pointsequence
-        # y is a point
-        # y is a scalar ( float, integer)
+    def __isub__(self, other):
+        for p in self:
+            p -= other
+        return self            
         
+    def __imul__(self, other):
+        for p in self:
+            p *= other
+        return self             
 
-    def __radd__(self, other):
-        '''
-        y + x
-        '''
+    def __itruediv__(self, other):
+        for p in self:
+            p /= other
+        return self
+    
+    def __ifloordiv__(self, other):
+        for p in self:
+            p //= other
+        return self
 
-    def __iadd__(self, other):
-        '''
-        x += y
-        '''
+        
         
 
 
