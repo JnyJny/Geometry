@@ -16,7 +16,7 @@ class Polygon(PointSequence):
 
     def __contains__(self, point):
         '''
-        True IFF point is on the perimeter or enclosed by the polygon.
+        True iff point is on the perimeter or enclosed by the polygon.
 
         '''
         try:
@@ -54,11 +54,13 @@ class Polygon(PointSequence):
 
     @property
     def centroid(self):
-
+        '''
+        '''
         return sum(self.vertices) / len(self.vertices)
 
     def incenter(self):
-
+        '''
+        '''
         return sum([s*p for s,p in zip(self.sides, self.vertices)]) / len(self.vertices)
 
     @property

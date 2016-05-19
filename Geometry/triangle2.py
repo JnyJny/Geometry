@@ -1,3 +1,7 @@
+''' a Triangle
+'''
+
+
 import math
 import collections
 import itertools
@@ -7,6 +11,35 @@ from .exceptions import *
 
 
 class Triangle(Polygon):
+
+    '''a pythonic Triangle
+
+    Implements a Triangle object in the XY plane having three
+    non-coincident vertices and three intersecting edges.
+
+    Vertices are labeled;  'A', 'B' and 'C'.
+
+    Edges are labeled; 'AB', 'BC' and 'AC'.
+
+    The length of edges opposite each vertex are labeled:
+
+       'a' for the side opposite vertex A.
+       'b' for the side opposite vertex B.
+       'c' for the side opposite vertex C.
+
+    Interior angles in radians are labeled:
+
+      'alpha' for CAB
+      'beta'  for ABC
+      'gamma' for BCA
+
+    Usage:
+
+    >>> a = Triangle()
+    >>> b = Triangle(A,B,C)    # A,B,C are Points or Point equivalents
+    >>> c = Triangle([p,q,r])  # p,q,r are Points or Point equivalents
+    >>> d = Triangle([x,y,z],[x,y,z],[x,y,z])
+    '''
 
     @classmethod
     def withAngles(cls, origin=None, base=1, alpha=None,
@@ -158,7 +191,25 @@ class Triangle(Polygon):
         return math.sqrt(s * ((s - self.a) * (s - self.b) * (s - self.c)))
 
     @property
+    def inradius(self):
+        '''
+        The radius of the triangle's incircle, float.
+        '''
+
+        return (self.area * 2) / self.perimeter
+
+    @property
     def circumcenter(self):
+        '''
+        The intersection of the median perpendicular bisectors, Point.
+
+        The center of the circumscribed circle, which is the circle that
+        passes through all vertices of the triangle.
+
+        https://en.wikipedia.org/wiki/Circumscribed_circle#Cartesian_coordinates_2
+
+        BUG: only finds the circumcenter in the XY plane
+        '''
 
         if self.isRight:
             return self.hypotenuse.midpoint
@@ -186,19 +237,24 @@ class Triangle(Polygon):
     @property
     def circumradius(self):
         '''
-        '''
+        Distance from the circumcenter to all the verticies in
+        the Triangle, float.
 
+        '''
         return (self.a * self.b * self.c) / (self.area * 4)
 
     @property
     def circumcircle(self):
         '''
+        A circle whose center is equidistant from all the
+        vertices of the triangle, Circle.
         '''
         return Circle(self.circumcenter, self.circumradius)
 
     @property
     def orthocenter(self):
         '''
+        The intersection of the altitudes of the triangle, Point.
         '''
         raise NotImplementedError('orthocenter')
 
@@ -209,6 +265,7 @@ class Triangle(Polygon):
         The longest edge of the triangle, Segment.
         '''
         return max(self.edges(),key=lambda s:s.length)
+
 
     @property
     def alpha(self):
@@ -290,50 +347,56 @@ class Triangle(Polygon):
     @property
     def isEquilateral(self):
         '''
+        True iff all side lengths are equal, boolean.
         '''
-
         return self.a == self.b == self.c
-#        if not nearly_eq(self.a, self.b):
-#            return False
-#
-#        if not nearly_eq(self.b, self.c):
-#            return False
-#
-#        return nearly_eq(self.a, self.c);
 
     @property
     def isIsosceles(self):
         '''
+        True iff two side lengths are equal, boolean.
         '''
         return (self.a == self.b) or (self.a == self.c) or (self.b == self.c)
 
     @property
     def isScalene(self):
         '''
+        True iff all side lengths are unequal, boolean.
         '''
         return self.a != self.b != self.c
 
     @property
     def isRight(self):
         '''
+        True if one angle measures 90 degrees (Pi/2 radians), float. 
         '''
         return any([nearly_eq(v,Half_Pi) for v in self.angles])
 
     @property
     def isObtuse(self):
         '''
-        '''
+        True if one angle measures greater than 90 degrees (Pi/2 radians),
+        float.
 
+        '''
         return any([v > Half_Pi for v in self.angles])
 
     @property
     def isAcute(self):
         '''
+        True iff all angles measure less than 90 degrees (Pi/2 radians),
+        float.
+
         '''
         return all([v < Half_Pi for v in self.angles])
 
     def congruent(self, other):
         '''
+        A congruent B
+
+        True iff all angles of 'A' equal angles in 'B' and
+        all side lengths of 'A' equal all side lengths of 'B', boolean.
+
         '''
 
         a = set(self.angles)
